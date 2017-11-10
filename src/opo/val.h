@@ -11,13 +11,12 @@ extern "C" {
 #include <stdint.h>
 #include <stdio.h>
 
-#include <ojc/buf.h>
-
 #include "err.h"
 
     typedef const uint8_t	*opoVal;
 
     typedef enum {
+	OPO_VAL_NONE	= (uint8_t)0,
 	OPO_VAL_NULL	= (uint8_t)'n',
 	OPO_VAL_BOOL	= (uint8_t)'b',
 	OPO_VAL_INT	= (uint8_t)'i',
@@ -49,25 +48,19 @@ extern "C" {
 
     extern size_t	opo_val_bsize(opoVal val);
     extern size_t	opo_val_size(opoVal val);
+    extern opoValType	opo_val_type(opoVal val);
 
     extern opoErrCode	opo_val_iterate(opoErr err, opoVal val, opoMsgCallbacks callbacks, void *ctx);
 
-    extern opoVal	ojc_val_get(opoVal val, const char *path);
-    extern opoVal	ojc_val_aget(opoVal val, const char **path);
-
-    extern opoVal	ojc_val_has(opoVal val, const char *path);
-    extern opoVal	ojc_val_ahas(opoVal val, const char **path);
-
-    extern void		opo_val_json(struct _Buf *buf, opoVal val, int indent, int depth);
-
-    extern opoValType	opo_val_type(opoVal val);
+    extern opoVal	opo_val_get(opoVal val, const char *path);
+    extern opoVal	opo_val_aget(opoVal val, const char **path);
 
     extern bool		opo_val_bool(opoErr err, opoVal val);
     extern int64_t	opo_val_int(opoErr err, opoVal val);
     extern double	opo_val_double(opoErr err, opoVal val);
-    extern const char*	opo_val_str(opoErr err, opoVal val, int *lenp);
+    extern const char*	opo_val_string(opoErr err, opoVal val, int *lenp);
     extern const char*	opo_val_uuid_str(opoErr err, opoVal val);
-    extern void		opo_val_uuid_str(opoErr err, opoVal val, uint64_t *hip, uint64_t *lop);
+    extern void		opo_val_uuid(opoErr err, opoVal val, uint64_t *hip, uint64_t *lop);
     extern uint64_t	opo_val_time(opoErr err, opoVal val);
     extern opoVal	opo_val_members(opoErr err, opoVal val);
     extern opoVal	opo_val_next(opoVal val);

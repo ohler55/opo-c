@@ -7,6 +7,8 @@
 extern "C" {
 #endif
 
+#include <stdint.h>
+
     typedef enum {
 	VAL_NULL	= (uint8_t)'Z',
 	VAL_TRUE	= (uint8_t)'t',

@@ -13,94 +13,94 @@
 
 extern int	build_sample_msg(opoBuilder builder); // defined in builder_test.c
 
-static int
+static bool
 begin_object(opoErr err, void *ctx) {
     strcat((char*)ctx, "{");
-    return OPO_ERR_OK;
+    return true;
 }
 
-static int
+static bool
 end_object(opoErr err, void *ctx) {
     strcat((char*)ctx, "}");
-    return OPO_ERR_OK;
+    return true;
 }
 
-static int
+static bool
 begin_array(opoErr err, void *ctx) {
     strcat((char*)ctx, "[");
-    return OPO_ERR_OK;
+    return true;
 }
 
-static int
+static bool
 end_array(opoErr err, void *ctx) {
     strcat((char*)ctx, "]");
-    return OPO_ERR_OK;
+    return true;
 }
 
-static int
+static bool
 key(opoErr err, const char *key, int len, void *ctx) {
     strncat((char*)ctx, key, len);
     strcat((char*)ctx, ":");
-    return OPO_ERR_OK;
+    return true;
 }
 
-static int
+static bool
 null(opoErr err, void *ctx) {
     strcat((char*)ctx, "null ");
-    return OPO_ERR_OK;
+    return true;
 }
 
-static int
+static bool
 boolean(opoErr err, bool b, void *ctx) {
     if (b) {
 	strcat((char*)ctx, "true ");
     } else {
 	strcat((char*)ctx, "false ");
     }
-    return OPO_ERR_OK;
+    return true;
 }
 
-static int
+static bool
 fixnum(opoErr err, int64_t num, void *ctx) {
     char	buf[32];
 
     sprintf(buf, "%lld ", (unsigned long long)num);
     strcat((char*)ctx, buf);
-    return OPO_ERR_OK;
+    return true;
 }
 
-static int
+static bool
 decimal(opoErr err, double num, void *ctx) {
     char	buf[32];
 
     sprintf(buf, "%f ", num);
     strcat((char*)ctx, buf);
-    return OPO_ERR_OK;
+    return true;
 }
 
-static int
+static bool
 string(opoErr err, const char *str, int len, void *ctx) {
     strncat((char*)ctx, str, len);
     strcat((char*)ctx, " ");
-    return OPO_ERR_OK;
+    return true;
 }
 
-static int
+static bool
 uuid_str(opoErr err, const char *str, void *ctx) {
     strcat((char*)ctx, str);
     strcat((char*)ctx, " ");
-    return OPO_ERR_OK;
+    return true;
 }
 
-static int
+static bool
 time_str(opoErr err, const char *str, void *ctx) {
     strcat((char*)ctx, str);
     strcat((char*)ctx, " ");
 
-    return OPO_ERR_OK;
+    return true;
 }
 
-void
+static void
 iterate_test() {
     struct _opoBuilder	builder;
     struct _opoErr	err = OPO_ERR_INIT;

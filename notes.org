@@ -23,3 +23,15 @@
    - opoVal
   
  - each pulls up page on right side
+
+- msg/val
+ - get
+ - members, next
+
+- opo
+ - ojc_to_msg
+ - msg_to_ojc
+ - size
+
+- remove from ojc
+

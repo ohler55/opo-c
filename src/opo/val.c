@@ -1,18 +1,11 @@
 // Copyright 2017 by Peter Ohler, All Rights Reserved
 
-#include <errno.h>
-#include <string.h>
 #include <stdlib.h>
+#include <string.h>
 #include <time.h>
-#include <unistd.h>
 
 #include "internal.h"
 #include "val.h"
-
-#define MSG_INC	4096
-#define MAX_STACK_BUF	4096
-#define MIN_MSG_BUF	1024
-#define UUID_STR_LEN	36
 
 static const uint8_t*
 read_uint16(const uint8_t *b, uint16_t *nump) {
@@ -50,31 +43,179 @@ read_uint64(const uint8_t *b, uint64_t *nump) {
     return b;
 }
 
+size_t
+opo_val_bsize(opoVal val) {
+    size_t	size = 0;
+
+    if (NULL != val) {
+	switch (*val) {
+	case VAL_NULL:	size = 1;	break;
+	case VAL_TRUE:	size = 1;	break;
+	case VAL_FALSE:	size = 1;	break;
+	case VAL_INT1:	size = 2;	break;
+	case VAL_INT2:	size = 3;	break;
+	case VAL_INT4:	size = 5;	break;
+	case VAL_INT8:	size = 9;	break;
+	case VAL_STR1:
+	    size = 3 + (size_t)*(val + 1);
+	    break;
+	case VAL_STR2: {
+	    uint16_t	num;
+
+	    read_uint16(val + 1, &num);
+	    size = 4 + (size_t)num;
+	    break;
+	}
+	case VAL_STR4: {
+	    uint32_t	num;
+
+	    read_uint32(val + 1, &num);
+	    size = 6 + (size_t)num;
+	    break;
+	}
+	case VAL_KEY1:
+	    size = 3 + (size_t)*(val + 1);
+	    break;
+	case VAL_KEY2: {
+	    uint16_t	num;
+
+	    read_uint16(val + 1, &num);
+	    size = 4 + (size_t)num;
+	    break;
+	}
+	case VAL_DEC:
+	    size = 2 + (size_t)*(val + 1);
+	    break;
+	case VAL_UUID:	size = 17;	break;
+	case VAL_TIME:	size = 9;	break;
+	case VAL_OBEG: {
+	    const uint8_t	*b = val + 1;
+
+	    while (VAL_OEND != *b) {
+		b += opo_val_bsize(b);
+	    }
+	    b++;
+	    size = b - val;
+	    break;
+	}
+	case VAL_ABEG: {
+	    const uint8_t	*b = val + 1;
+
+	    while (VAL_AEND != *b) {
+		b += opo_val_bsize(b);
+	    }
+	    b++;
+	    size = b - val;
+	    break;
+	}
+	default:
+	    break;
+	}
+    }
+    return size;
+}
+
+size_t
+opo_val_size(opoVal val) {
+    size_t	size = 0;
+
+    if (NULL != val) {
+	switch (*val) {
+	case VAL_INT1:	size = 1;	break;
+	case VAL_INT2:	size = 2;	break;
+	case VAL_INT4:	size = 4;	break;
+	case VAL_INT8:	size = 8;	break;
+	case VAL_STR1:
+	    size = (size_t)*(val + 1);
+	    break;
+	case VAL_STR2: {
+	    uint16_t	num;
+
+	    read_uint16(val + 1, &num);
+	    size = (size_t)num;
+	    break;
+	}
+	case VAL_STR4: {
+	    uint32_t	num;
+
+	    read_uint32(val + 1, &num);
+	    size = (size_t)num;
+	    break;
+	}
+	case VAL_KEY1:
+	    size = (size_t)*(val + 1);
+	    break;
+	case VAL_KEY2: {
+	    uint16_t	num;
+
+	    read_uint16(val + 1, &num);
+	    size = (size_t)num;
+	    break;
+	}
+	case VAL_DEC:
+	    size = (size_t)*(val + 1);
+	    break;
+	case VAL_UUID:	size = 16;	break;
+	case VAL_TIME:	size = 8;	break;
+	default:
+	    break;
+	}
+    }
+    return size;
+}
+
+opoValType
+opo_val_type(opoVal val) {
+    opoValType	type = OPO_VAL_NONE;
+    
+    if (NULL != val) {
+	switch (*val) {
+	case VAL_NULL:	type = OPO_VAL_NULL;	break;
+	case VAL_TRUE:	type = OPO_VAL_BOOL;	break;
+	case VAL_FALSE:	type = OPO_VAL_BOOL;	break;
+	case VAL_INT1:	type = OPO_VAL_INT;	break;
+	case VAL_INT2:	type = OPO_VAL_INT;	break;
+	case VAL_INT4:	type = OPO_VAL_INT;	break;
+	case VAL_INT8:	type = OPO_VAL_INT;	break;
+	case VAL_STR1:	type = OPO_VAL_STR;	break;
+	case VAL_STR2:	type = OPO_VAL_STR;	break;
+	case VAL_STR4:	type = OPO_VAL_STR;	break;
+	case VAL_DEC:	type = OPO_VAL_DEC;	break;
+	case VAL_UUID:	type = OPO_VAL_UUID;	break;
+	case VAL_TIME:	type = OPO_VAL_TIME;	break;
+	case VAL_OBEG:	type = OPO_VAL_OBJ;	break;
+	case VAL_ABEG:	type = OPO_VAL_ARRAY;	break;
+	default:				break;
+	}
+    }
+    return type;
+}
+
 opoErrCode
 opo_val_iterate(opoErr err, opoVal val, opoMsgCallbacks callbacks, void *ctx) {
-    // TBD no end available, terminate on last pop or when top is set and stack is empty
-    const uint8_t	*end = val + opo_val_size(val);
-    
-    while (val < end) {
+    int		depth = 0;
+    bool	cont = true;
+
+    do {
 	switch (*val++) {
 	case VAL_NULL:
 	    if (NULL != callbacks->null) {
-		callbacks->null(err, ctx);
+		cont = callbacks->null(err, ctx);
 	    }
 	    break;
 	case VAL_TRUE:
 	    if (NULL != callbacks->boolean) {
-		callbacks->boolean(err, true, ctx);
+		cont = callbacks->boolean(err, true, ctx);
 	    }
 	    break;
 	case VAL_FALSE:
 	    if (NULL != callbacks->boolean) {
-		callbacks->boolean(err, false, ctx);
+		cont = callbacks->boolean(err, false, ctx);
 	    }
 	    break;
 	case VAL_INT1:
 	    if (NULL != callbacks->fixnum) {
-		callbacks->fixnum(err, (int64_t)(int8_t)*val, ctx);
+		cont = callbacks->fixnum(err, (int64_t)(int8_t)*val, ctx);
 	    }
 	    val++;
 	    break;
@@ -83,7 +224,7 @@ opo_val_iterate(opoErr err, opoVal val, opoMsgCallbacks callbacks, void *ctx) {
 		uint16_t	num;;
 
 		val = read_uint16(val, &num);
-		callbacks->fixnum(err, (int64_t)(int16_t)num, ctx);
+		cont = callbacks->fixnum(err, (int64_t)(int16_t)num, ctx);
 	    } else {
 		val += 2;
 	    }
@@ -93,7 +234,7 @@ opo_val_iterate(opoErr err, opoVal val, opoMsgCallbacks callbacks, void *ctx) {
 		uint32_t	num;;
 
 		val = read_uint32(val, &num);
-		callbacks->fixnum(err, (int64_t)(int32_t)num, ctx);
+		cont = callbacks->fixnum(err, (int64_t)(int32_t)num, ctx);
 	    } else {
 		val += 4;
 	    }
@@ -103,7 +244,7 @@ opo_val_iterate(opoErr err, opoVal val, opoMsgCallbacks callbacks, void *ctx) {
 		uint64_t	num;
 
 		val = read_uint64(val, &num);
-		callbacks->fixnum(err, (int64_t)num, ctx);
+		cont = callbacks->fixnum(err, (int64_t)num, ctx);
 	    } else {
 		val += 8;
 	    }
@@ -112,7 +253,7 @@ opo_val_iterate(opoErr err, opoVal val, opoMsgCallbacks callbacks, void *ctx) {
 	    uint8_t	len = *val++;
 
 	    if (NULL != callbacks->string) {
-		callbacks->string(err, (const char*)val, (int)len, ctx);
+		cont = callbacks->string(err, (const char*)val, (int)len, ctx);
 	    }
 	    val += len + 1;
 	    break;
@@ -122,7 +263,7 @@ opo_val_iterate(opoErr err, opoVal val, opoMsgCallbacks callbacks, void *ctx) {
 	    
 	    val = read_uint16(val, &len);
 	    if (NULL != callbacks->string) {
-		callbacks->string(err, (const char*)val, (int)len, ctx);
+		cont = callbacks->string(err, (const char*)val, (int)len, ctx);
 	    }
 	    val += len + 1;
 	    break;
@@ -132,7 +273,7 @@ opo_val_iterate(opoErr err, opoVal val, opoMsgCallbacks callbacks, void *ctx) {
 	    
 	    val = read_uint32(val, &len);
 	    if (NULL != callbacks->string) {
-		callbacks->string(err, (const char*)val, (int)len, ctx);
+		cont = callbacks->string(err, (const char*)val, (int)len, ctx);
 	    }
 	    val += len + 1;
 	    break;
@@ -141,7 +282,7 @@ opo_val_iterate(opoErr err, opoVal val, opoMsgCallbacks callbacks, void *ctx) {
 	    uint8_t	len = *val++;
 
 	    if (NULL != callbacks->key) {
-		callbacks->key(err, (const char*)val, (int)len, ctx);
+		cont = callbacks->key(err, (const char*)val, (int)len, ctx);
 	    }
 	    val += len + 1;
 	    break;
@@ -151,7 +292,7 @@ opo_val_iterate(opoErr err, opoVal val, opoMsgCallbacks callbacks, void *ctx) {
 	    
 	    val = read_uint16(val, &len);
 	    if (NULL != callbacks->key) {
-		callbacks->key(err, (const char*)val, (int)len, ctx);
+		cont = callbacks->key(err, (const char*)val, (int)len, ctx);
 	    }
 	    val += len + 1;
 	    break;
@@ -162,11 +303,11 @@ opo_val_iterate(opoErr err, opoVal val, opoMsgCallbacks callbacks, void *ctx) {
 	    if (NULL != callbacks->decimal) {
 		char	buf[256];
 		double	d;
-		
+
 		memcpy(buf, val, (size_t)len);
 		buf[len] = '\0';
 		d = strtod(buf, NULL);
-		callbacks->decimal(err, d, ctx);
+		cont = callbacks->decimal(err, d, ctx);
 	    }
 	    val += len;
 	    break;
@@ -222,32 +363,157 @@ opo_val_iterate(opoErr err, opoVal val, opoMsgCallbacks callbacks, void *ctx) {
 	    }
 	    break;
 	case VAL_OBEG:
+	    depth++;
 	    if (NULL != callbacks->begin_object) {
-		callbacks->begin_object(err, ctx);
+		cont = callbacks->begin_object(err, ctx);
 	    }
 	    break;
 	case VAL_OEND:
+	    depth--;
 	    if (NULL != callbacks->end_object) {
-		callbacks->end_object(err, ctx);
+		cont = callbacks->end_object(err, ctx);
 	    }
 	    break;
 	case VAL_ABEG:
+	    depth++;
 	    if (NULL != callbacks->begin_array) {
-		callbacks->begin_array(err, ctx);
+		cont = callbacks->begin_array(err, ctx);
 	    }
 	    break;
 	case VAL_AEND:
+	    depth--;
 	    if (NULL != callbacks->end_array) {
-		callbacks->end_array(err, ctx);
+		cont = callbacks->end_array(err, ctx);
 	    }
 	    break;
 	default:
 	    opo_err_set(err, OPO_ERR_PARSE, "corrupt message format");
 	    break;
 	}
+	if (!cont) {
+	    break;
+	}
 	if (OPO_ERR_OK != err->code) {
 	    break;
 	}
-    }
+    } while (0 < depth);
+    
     return err->code;
+}
+
+opoVal
+opo_val_get(opoVal val, const char *path) {
+    // TBD
+    return 0;
+}
+
+opoVal
+opo_val_aget(opoVal val, const char **path) {
+    // TBD
+    return 0;
+}
+
+bool
+opo_val_bool(opoErr err, opoVal val) {
+    if (NULL == val) {
+	opo_err_set(err, OPO_ERR_TYPE, "NULL is not an integer value");
+	return 0;
+    }
+    bool	v = false;
+
+    switch (*val++) {
+    case VAL_TRUE:	v = true;	break;
+    case VAL_FALSE:	v = false;	break;
+    default:
+	opo_err_set(err, OPO_ERR_TYPE, "not a boolean value");
+	break;
+    }
+    return v;
+}
+
+int64_t
+opo_val_int(opoErr err, opoVal val) {
+    if (NULL == val) {
+	opo_err_set(err, OPO_ERR_TYPE, "NULL is not an integer value");
+	return 0;
+    }
+    int64_t	i = 0;
+    
+    switch (*val++) {
+    case VAL_INT1:
+	i = (int64_t)(int8_t)*val;
+	break;
+    case VAL_INT2: {
+	uint16_t	num;;
+
+	val = read_uint16(val, &num);
+	i = (int64_t)(int16_t)num;
+	break;
+    }
+    case VAL_INT4: {
+	uint32_t	num;;
+
+	val = read_uint32(val, &num);
+	i = (int64_t)(int32_t)num;
+	break;
+    }
+    case VAL_INT8: {
+	uint64_t	num;
+
+	val = read_uint64(val, &num);
+	i = (int64_t)num;
+	break;
+    }
+    default:
+	opo_err_set(err, OPO_ERR_TYPE, "not an integer value");
+	break;
+    }
+    return i;
+}
+
+double
+opo_val_double(opoErr err, opoVal val) {
+    // TBD
+    return 0;
+}
+
+const char*
+opo_val_string(opoErr err, opoVal val, int *lenp) {
+    // TBD
+    return 0;
+}
+
+const char*
+opo_val_uuid_str(opoErr err, opoVal val) {
+    // TBD
+    return 0;
+}
+
+void
+opo_val_uuid(opoErr err, opoVal val, uint64_t *hip, uint64_t *lop) {
+    // TBD
+}
+
+uint64_t
+opo_val_time(opoErr err, opoVal val) {
+    // TBD
+    return 0;
+}
+
+opoVal
+opo_val_members(opoErr err, opoVal val) {
+    // TBD
+    return 0;
+}
+
+opoVal
+opo_val_next(opoVal val) {
+    // TBD
+    return 0;
+}
+
+int
+opo_val_member_count(opoErr err, opoVal val) {
+    // TBD
+    return 0;
 }
