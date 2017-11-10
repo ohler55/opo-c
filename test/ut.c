@@ -394,7 +394,7 @@ ut_same_cmp(void *expected,
 }
 
 bool
-ut_null(void *value, const char *fmt, ...) {
+ut_null(const void *value, const char *fmt, ...) {
     if (NULL != value) {
 	if (NULL != fmt) {
 	    va_list	ap;
@@ -420,7 +420,7 @@ ut_null(void *value, const char *fmt, ...) {
 }
 
 bool
-ut_not_null(void *value, const char *fmt, ...) {
+ut_not_null(const void *value, const char *fmt, ...) {
     if (NULL == value) {
 	if (NULL != fmt) {
 	    va_list	ap;

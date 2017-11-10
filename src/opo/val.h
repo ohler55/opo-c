@@ -53,12 +53,12 @@ extern "C" {
     extern opoErrCode	opo_val_iterate(opoErr err, opoVal val, opoMsgCallbacks callbacks, void *ctx);
 
     extern opoVal	opo_val_get(opoVal val, const char *path);
-    extern opoVal	opo_val_aget(opoVal val, const char **path);
 
     extern bool		opo_val_bool(opoErr err, opoVal val);
     extern int64_t	opo_val_int(opoErr err, opoVal val);
     extern double	opo_val_double(opoErr err, opoVal val);
     extern const char*	opo_val_string(opoErr err, opoVal val, int *lenp);
+    extern const char*	opo_val_key(opoErr err, opoVal key, int *lenp);
     extern void		opo_val_uuid_str(opoErr err, opoVal val, char *str);
     extern void		opo_val_uuid(opoErr err, opoVal val, uint64_t *hip, uint64_t *lop);
     extern uint64_t	opo_val_time(opoErr err, opoVal val);

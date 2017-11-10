@@ -1,10 +1,11 @@
 
 CC=cc
 CV=$(shell if [ `uname` = "Darwin" ]; then echo "c11"; elif [ `uname` = "Linux" ]; then echo "gnu11"; fi;)
+OS=$(shell echo `uname`)
 ifeq ($(build),release)
-	CFLAGS=-c -Wall -O3 -std=$(CV) -pedantic
+	CFLAGS=-c -Wall -O3 -std=$(CV) -pedantic -D$(OS)
 else
-	CFLAGS=-c -Wall -g -Og -std=$(CV) -pedantic
+	CFLAGS=-c -Wall -g -Og -std=$(CV) -pedantic -D$(OS)
 endif
 
 SRC_DIR=.

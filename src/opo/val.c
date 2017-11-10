@@ -401,16 +401,79 @@ opo_val_iterate(opoErr err, opoVal val, opoMsgCallbacks callbacks, void *ctx) {
     return err->code;
 }
 
-opoVal
-opo_val_get(opoVal val, const char *path) {
-    // TBD
-    return 0;
+static const char*
+val_key(opoVal val, int *lenp) {
+    const char	*key = NULL;
+    
+    switch (*val++) {
+    case VAL_KEY1:
+	*lenp = (int)*val++;;
+	key = (const char*)val;
+	break;
+    case VAL_STR2: {
+	uint16_t	len;
+	    
+	val = read_uint16(val, &len);
+	*lenp = (int)len;
+	key = (const char*)val;
+	break;
+    }
+    default:
+	break;
+    }
+    return key;
 }
 
 opoVal
-opo_val_aget(opoVal val, const char **path) {
-    // TBD
-    return 0;
+opo_val_get(opoVal val, const char *path) {
+    if (NULL == path || '\0' == *path) {
+	return val;
+    }
+    const char	*dot = path;
+    
+    for (; '.' != *dot && '\0' != *dot; dot++) {
+    }
+    switch (*val++) {
+    case VAL_OBEG: {
+	const char	*key;
+	int		len = dot - path;
+	int		size;
+	
+	while (VAL_OEND != *val) {
+	    key = val_key(val, &size);
+	    val += opo_val_bsize(val);
+	    if (len == size && 0 == strncmp(key, path, len)) {
+		if ('\0' == *dot) {
+		    return val;
+		}
+		return opo_val_get(val, dot + 1);
+	    }
+	    val += opo_val_bsize(val);
+	}
+	break;
+    }
+    case VAL_ABEG: {
+	char	*end;
+	long	i = strtol(path, &end, 10);
+
+	if (end != dot) {
+	    break;
+	}
+	for (; VAL_AEND != *val; i--) {
+	    if (0 == i) {
+		if ('\0' == *dot) {
+		    return val;
+		}
+		return opo_val_get(val, dot + 1);
+	    }
+	    val += opo_val_bsize(val);
+	}
+	break;
+    }
+    default:
+	break;
+    }	
+    return NULL;
 }
 
 bool
@@ -536,6 +599,39 @@ opo_val_string(opoErr err, opoVal val, int *lenp) {
     return str;
 }
 
+const char*
+opo_val_key(opoErr err, opoVal val, int *lenp) {
+    if (NULL == val) {
+	opo_err_set(err, OPO_ERR_TYPE, "NULL is not an string value");
+	return NULL;
+    }
+    const char	*key = NULL;
+    
+    switch (*val++) {
+    case VAL_KEY1:
+	if (NULL != lenp) {
+	    *lenp = (int)*val;
+	}
+	val++;
+	key = (const char*)val;
+	break;
+    case VAL_STR2: {
+	uint16_t	len;
+	    
+	val = read_uint16(val, &len);
+	if (NULL != lenp) {
+	    *lenp = (int)len;
+	}
+	key = (const char*)val;
+	break;
+    }
+    default:
+	break;
+    }
+    return key;
+}
+
+
 void
 opo_val_uuid_str(opoErr err, opoVal val, char *str) {
     if (NULL == val) {
@@ -590,18 +686,51 @@ opo_val_time(opoErr err, opoVal val) {
 
 opoVal
 opo_val_members(opoErr err, opoVal val) {
-    // TBD
-    return 0;
+    opoVal	members = NULL;
+    
+    if (NULL == val) {
+	opo_err_set(err, OPO_ERR_TYPE, "NULL is not a object or array value");
+    } else if (VAL_OBEG != *val && VAL_ABEG != *val) {
+	opo_err_set(err, OPO_ERR_TYPE, "not an object or array value");
+    } else {
+	members = val + 1;
+    }
+    return members;
 }
 
 opoVal
 opo_val_next(opoVal val) {
-    // TBD
-    return 0;
+    if (VAL_OEND == *val || VAL_AEND == *val) {
+	return NULL;
+    }
+    return val + opo_val_bsize(val);
 }
 
 int
 opo_val_member_count(opoErr err, opoVal val) {
-    // TBD
-    return 0;
+    if (NULL == val) {
+	opo_err_set(err, OPO_ERR_TYPE, "NULL is not a object or array value");
+	return 0;
+    }
+    int	cnt = 0;
+
+    switch (*val++) {
+    case VAL_OBEG:
+	while (VAL_OEND != *val) {
+	    cnt++;
+	    val += opo_val_bsize(val);
+	    val += opo_val_bsize(val);
+	}
+	break;
+    case VAL_ABEG:
+	while (VAL_OEND != *val) {
+	    cnt++;
+	    val += opo_val_bsize(val);
+	}
+	break;
+    default:
+	opo_err_set(err, OPO_ERR_TYPE, "not an object or array value");
+	break;
+    }
+    return cnt;
 }

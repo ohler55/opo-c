@@ -219,10 +219,36 @@ opo_builder_take(opoBuilder builder) {
     return buf;
 }
 
+static opoErrCode
+check_key(opoErr err, opoBuilder builder, const char *key, int klen) {
+    if (builder->top < builder->stack) {
+	if (builder->head + 4 < builder->cur) {
+	    return opo_err_set(err, OPO_ERR_OVERFLOW, "only one element can be in a builder");
+	}
+	if (NULL != key) {
+	    return opo_err_set(err, OPO_ERR_ARG, "only members of an object are keyed");
+	}
+    } else if (NULL != key) {
+	if (!*builder->top) {
+	    return opo_err_set(err, OPO_ERR_ARG, "only members of an object are keyed");
+	}
+	if (0 >= klen) {
+	    klen = strlen(key);
+	}
+	builder_push_key(err, builder, key, klen);
+    } else if (*builder->top) {
+	return opo_err_set(err, OPO_ERR_ARG, "members of an object must be keyed");
+    }
+    return OPO_ERR_OK;
+}
+
 opoErrCode
-opo_builder_push_object(opoErr err, opoBuilder builder) {
+opo_builder_push_object(opoErr err, opoBuilder builder, const char *key, int klen) {
     if (builder->stack + OPO_MSG_MAX_DEPTH <= builder->top) {
 	return opo_err_set(err, OPO_ERR_OVERFLOW, "too deeply nested. Limit is %d", OPO_MSG_MAX_DEPTH);
+    }
+    if (OPO_ERR_OK != check_key(err, builder, key, klen)) {
+	return err->code;
     }
     builder->top++;
     *builder->top = true;
@@ -231,9 +257,12 @@ opo_builder_push_object(opoErr err, opoBuilder builder) {
 }
 
 opoErrCode
-opo_builder_push_array(opoErr err, opoBuilder builder) {
+opo_builder_push_array(opoErr err, opoBuilder builder, const char *key, int klen) {
     if (builder->stack + OPO_MSG_MAX_DEPTH <= builder->top) {
 	return opo_err_set(err, OPO_ERR_OVERFLOW, "too deeply nested. Limit is %d", OPO_MSG_MAX_DEPTH);
+    }
+    if (OPO_ERR_OK != check_key(err, builder, key, klen)) {
+	return err->code;
     }
     builder->top++;
     *builder->top = false;
@@ -257,31 +286,26 @@ opo_builder_pop(opoErr err, opoBuilder builder) {
 }
 
 opoErrCode
-opo_builder_push_key(opoErr err, opoBuilder builder, const char *key, int len) {
-    if (!*builder->top) {
-	return opo_err_set(err, OPO_ERR_ARG, "can only push a key to an object");
-    }
-    if (0 >= len) {
-	len = strlen(key);
-    }
-    if (OPO_ERR_OK != builder_push_key(err, builder, key, len)) {
+opo_builder_push_null(opoErr err, opoBuilder builder, const char *key, int klen) {
+    if (OPO_ERR_OK != check_key(err, builder, key, klen)) {
 	return err->code;
     }
-    return OPO_ERR_OK;
-}
-
-opoErrCode
-opo_builder_push_null(opoErr err, opoBuilder builder) {
     return builder_append_byte(err, builder, VAL_NULL);
 }
 
 opoErrCode
-opo_builder_push_bool(opoErr err, opoBuilder builder, bool value) {
+opo_builder_push_bool(opoErr err, opoBuilder builder, bool value, const char *key, int klen) {
+    if (OPO_ERR_OK != check_key(err, builder, key, klen)) {
+	return err->code;
+    }
     return builder_append_byte(err, builder, value ? VAL_TRUE : VAL_FALSE);
 }
 
 opoErrCode
-opo_builder_push_int(opoErr err, opoBuilder builder, int64_t value) {
+opo_builder_push_int(opoErr err, opoBuilder builder, int64_t value, const char *key, int klen) {
+    if (OPO_ERR_OK != check_key(err, builder, key, klen)) {
+	return err->code;
+    }
     if (-128 <= value && value <= 127) {
 	if (OPO_ERR_OK != builder_assure(err, builder, 2)) {
 	    return err->code;
@@ -311,10 +335,13 @@ opo_builder_push_int(opoErr err, opoBuilder builder, int64_t value) {
 }
 
 opoErrCode
-opo_builder_push_double(opoErr err, opoBuilder builder, double value) {
+opo_builder_push_double(opoErr err, opoBuilder builder, double value, const char *key, int klen) {
     char	str[64];
     int		cnt;
     
+    if (OPO_ERR_OK != check_key(err, builder, key, klen)) {
+	return err->code;
+    }
     if (value == (double)(int64_t)value) {
 	cnt = snprintf(str, sizeof(str) - 1, "%.1f", value);
     } else {
@@ -332,9 +359,12 @@ opo_builder_push_double(opoErr err, opoBuilder builder, double value) {
 }
 
 opoErrCode
-opo_builder_push_string(opoErr err, opoBuilder builder, const char *value, int len) {
+opo_builder_push_string(opoErr err, opoBuilder builder, const char *value, int len, const char *key, int klen) {
     if (0 >= len) {
 	len = strlen(value);
+    }
+    if (OPO_ERR_OK != check_key(err, builder, key, klen)) {
+	return err->code;
     }
     if (OPO_ERR_OK != builder_push_str(err, builder, value, len)) {
 	return err->code;
@@ -343,7 +373,10 @@ opo_builder_push_string(opoErr err, opoBuilder builder, const char *value, int l
 }
 
 opoErrCode
-opo_builder_push_uuid(opoErr err, opoBuilder builder, uint64_t hi, uint64_t lo) {
+opo_builder_push_uuid(opoErr err, opoBuilder builder, uint64_t hi, uint64_t lo, const char *key, int klen) {
+    if (OPO_ERR_OK != check_key(err, builder, key, klen)) {
+	return err->code;
+    }
     if (OPO_ERR_OK != builder_assure(err, builder, 17)) {
 	return err->code;
     }
@@ -355,7 +388,10 @@ opo_builder_push_uuid(opoErr err, opoBuilder builder, uint64_t hi, uint64_t lo) 
 }
 
 opoErrCode
-opo_builder_push_uuid_string(opoErr err, opoBuilder builder, const char *value) {
+opo_builder_push_uuid_string(opoErr err, opoBuilder builder, const char *value, const char *key, int klen) {
+    if (OPO_ERR_OK != check_key(err, builder, key, klen)) {
+	return err->code;
+    }
     if (OPO_ERR_OK != builder_assure(err, builder, 17)) {
 	return err->code;
     }
@@ -365,7 +401,10 @@ opo_builder_push_uuid_string(opoErr err, opoBuilder builder, const char *value) 
 }
 
 opoErrCode
-opo_builder_push_time(opoErr err, opoBuilder builder, uint64_t value) {
+opo_builder_push_time(opoErr err, opoBuilder builder, uint64_t value, const char *key, int klen) {
+    if (OPO_ERR_OK != check_key(err, builder, key, klen)) {
+	return err->code;
+    }
     if (OPO_ERR_OK != builder_assure(err, builder, 37)) {
 	return err->code;
     }
@@ -374,3 +413,21 @@ opo_builder_push_time(opoErr err, opoBuilder builder, uint64_t value) {
 
     return OPO_ERR_OK;
 }
+
+#if 0
+
+opoErrCode
+opo_builder_push_key(opoErr err, opoBuilder builder, const char *key, int klen) {
+    if (!*builder->top) {
+	return opo_err_set(err, OPO_ERR_ARG, "can only push a key to an object");
+    }
+    if (0 >= len) {
+	len = strlen(key);
+    }
+    if (OPO_ERR_OK != builder_push_key(err, builder, key, len)) {
+	return err->code;
+    }
+    return OPO_ERR_OK;
+}
+
+#endif

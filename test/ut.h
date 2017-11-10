@@ -102,8 +102,8 @@ extern bool	ut_same_cmp(void *expected,
 				  char* (*cmp)(void *ex, void *ac),
 				  const char *format, ...);
 
-extern bool	ut_null(void *value, const char *fmt, ...);
-extern bool	ut_not_null(void *value, const char *fmt, ...);
+extern bool	ut_null(const void *value, const char *fmt, ...);
+extern bool	ut_not_null(const void *value, const char *fmt, ...);
 
 /**
  * Check the result of a test by looking at the value of the <i>condition</i>

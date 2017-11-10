@@ -23,28 +23,19 @@ int
 build_sample_msg(opoBuilder builder) {
     struct _opoErr	err = OPO_ERR_INIT;
     
-    opo_builder_push_object(&err, builder);
+    opo_builder_push_object(&err, builder, NULL, 0);
 
-    opo_builder_push_key(&err, builder, "nil", -1);
-    opo_builder_push_null(&err, builder);
-
-    opo_builder_push_key(&err, builder, "yes", -1);
-    opo_builder_push_bool(&err, builder, true);
+    opo_builder_push_null(&err, builder, "nil", -1);
+    opo_builder_push_bool(&err, builder, true, "yes", -1);
+    opo_builder_push_bool(&err, builder, false, "no", -1);
+    opo_builder_push_int(&err, builder, 12345, "int", -1);
+    opo_builder_push_array(&err, builder, "array", -1);
     
-    opo_builder_push_key(&err, builder, "no", -1);
-    opo_builder_push_bool(&err, builder, false);
-
-    opo_builder_push_key(&err, builder, "int", -1);
-    opo_builder_push_int(&err, builder, 12345);
-
-    opo_builder_push_key(&err, builder, "array", -1);
-    opo_builder_push_array(&err, builder);
-    
-    opo_builder_push_int(&err, builder, -23);
-    opo_builder_push_double(&err, builder, 1.23);
-    opo_builder_push_string(&err, builder, "string", -1);
-    opo_builder_push_uuid_string(&err, builder, "123e4567-e89b-12d3-a456-426655440000");
-    opo_builder_push_time(&err, builder, 1489504166123456789LL);
+    opo_builder_push_int(&err, builder, -23, NULL, 0);
+    opo_builder_push_double(&err, builder, 1.23, NULL, 0);
+    opo_builder_push_string(&err, builder, "string", -1, NULL, 0);
+    opo_builder_push_uuid_string(&err, builder, "123e4567-e89b-12d3-a456-426655440000", NULL, 0);
+    opo_builder_push_time(&err, builder, 1489504166123456789LL, NULL, 0);
 
     opo_builder_finish(&err, builder);
     ut_same_int(OPO_ERR_OK, err.code, "error writing data. %s", err.msg);
