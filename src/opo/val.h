@@ -59,7 +59,7 @@ extern "C" {
     extern int64_t	opo_val_int(opoErr err, opoVal val);
     extern double	opo_val_double(opoErr err, opoVal val);
     extern const char*	opo_val_string(opoErr err, opoVal val, int *lenp);
-    extern const char*	opo_val_uuid_str(opoErr err, opoVal val);
+    extern void		opo_val_uuid_str(opoErr err, opoVal val, char *str);
     extern void		opo_val_uuid(opoErr err, opoVal val, uint64_t *hip, uint64_t *lop);
     extern uint64_t	opo_val_time(opoErr err, opoVal val);
     extern opoVal	opo_val_members(opoErr err, opoVal val);

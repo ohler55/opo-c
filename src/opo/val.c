@@ -416,7 +416,7 @@ opo_val_aget(opoVal val, const char **path) {
 bool
 opo_val_bool(opoErr err, opoVal val) {
     if (NULL == val) {
-	opo_err_set(err, OPO_ERR_TYPE, "NULL is not an integer value");
+	opo_err_set(err, OPO_ERR_TYPE, "NULL is not an boolean value");
 	return 0;
     }
     bool	v = false;
@@ -473,31 +473,119 @@ opo_val_int(opoErr err, opoVal val) {
 
 double
 opo_val_double(opoErr err, opoVal val) {
-    // TBD
-    return 0;
+    if (NULL == val) {
+	opo_err_set(err, OPO_ERR_TYPE, "NULL is not an double value");
+	return 0.0;
+    }
+    if (VAL_DEC != *val) {
+	opo_err_set(err, OPO_ERR_TYPE, "not a double value");
+	return 0.0;
+    }
+    val++;
+    uint8_t	len = *val++;
+    char	buf[256];
+
+    memcpy(buf, val, (size_t)len);
+    buf[len] = '\0';
+
+    return strtod(buf, NULL);
 }
 
 const char*
 opo_val_string(opoErr err, opoVal val, int *lenp) {
-    // TBD
-    return 0;
+    if (NULL == val) {
+	opo_err_set(err, OPO_ERR_TYPE, "NULL is not an string value");
+	return NULL;
+    }
+    const char	*str = NULL;
+    
+    switch (*val++) {
+    case VAL_STR1: {
+	uint8_t	len = *val++;
+
+	if (NULL != lenp) {
+	    *lenp = (int)len;
+	}
+	str = (const char*)val;
+	break;
+    }
+    case VAL_STR2: {
+	uint16_t	len;
+	    
+	val = read_uint16(val, &len);
+	if (NULL != lenp) {
+	    *lenp = (int)len;
+	}
+	str = (const char*)val;
+	break;
+    }
+    case VAL_STR4: {
+	uint32_t	len;
+	    
+	val = read_uint32(val, &len);
+	if (NULL != lenp) {
+	    *lenp = (int)len;
+	}
+	str = (const char*)val;
+	break;
+    }
+    default:
+	opo_err_set(err, OPO_ERR_TYPE, "not a string value");
+	break;
+    }
+    return str;
 }
 
-const char*
-opo_val_uuid_str(opoErr err, opoVal val) {
-    // TBD
-    return 0;
+void
+opo_val_uuid_str(opoErr err, opoVal val, char *str) {
+    if (NULL == val) {
+	opo_err_set(err, OPO_ERR_TYPE, "NULL is not a UUID value");
+    } else if (VAL_UUID != *val) {
+	opo_err_set(err, OPO_ERR_TYPE, "not a UUID value");
+    } else {
+	uint64_t	hi;
+	uint64_t	lo;
+	
+	val++;
+	val = read_uint64(val, &hi);
+	val = read_uint64(val, &lo);
+	sprintf(str, "%08lx-%04lx-%04lx-%04lx-%012lx",
+		(unsigned long)(hi >> 32),
+		(unsigned long)((hi >> 16) & 0x000000000000FFFFUL),
+		(unsigned long)(hi & 0x000000000000FFFFUL),
+		(unsigned long)(lo >> 48),
+		(unsigned long)(lo & 0x0000FFFFFFFFFFFFUL));
+    }
 }
 
 void
 opo_val_uuid(opoErr err, opoVal val, uint64_t *hip, uint64_t *lop) {
-    // TBD
+    if (NULL == val) {
+	opo_err_set(err, OPO_ERR_TYPE, "NULL is not a UUID value");
+	return;
+    } else if (VAL_UUID != *val) {
+	opo_err_set(err, OPO_ERR_TYPE, "not a UUID value");
+    } else {
+	val++;
+	val = read_uint64(val, hip);
+	val = read_uint64(val, lop);
+    }
 }
 
 uint64_t
 opo_val_time(opoErr err, opoVal val) {
-    // TBD
-    return 0;
+    uint64_t	t = 0;
+    
+    if (NULL == val) {
+	opo_err_set(err, OPO_ERR_TYPE, "NULL is not a time value");
+	return 0;
+    } else if (VAL_TIME != *val) {
+	opo_err_set(err, OPO_ERR_TYPE, "not a time value");
+    } else {
+	val++;
+	read_uint64(val, &t);
+    }
+    return t;
 }
 
 opoVal

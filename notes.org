@@ -25,9 +25,11 @@
  - each pulls up page on right side
 
 - msg/val
+ - change push method to take key
  - get
  - members, next
 
+ 
 - opo
  - ojc_to_msg
  - msg_to_ojc

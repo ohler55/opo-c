@@ -398,7 +398,7 @@ value_bool_test() {
     opo_builder_init(&err, &builder, data, sizeof(data));
     opo_builder_push_int(&err, &builder, 1);
     opo_val_bool(&err, opo_msg_top(builder.head));
-    ut_same_int(OPO_ERR_TYPE, err.code, "huge incorrect size");
+    ut_same_int(OPO_ERR_TYPE, err.code, "incorrect error code");
 }
 
 static void
@@ -409,27 +409,103 @@ value_int_test() {
     
     opo_builder_init(&err, &builder, data, sizeof(data));
     opo_builder_push_int(&err, &builder, 23);
-    ut_same_int(23, opo_val_int(&err, opo_msg_top(builder.head)), "small incorrect size");
+    ut_same_int(23, opo_val_int(&err, opo_msg_top(builder.head)), "small incorrect value");
 
     opo_builder_init(&err, &builder, data, sizeof(data));
     opo_builder_push_int(&err, &builder, -129);
-    ut_same_int(-129, opo_val_int(&err, opo_msg_top(builder.head)), "medium incorrect size");
+    ut_same_int(-129, opo_val_int(&err, opo_msg_top(builder.head)), "medium incorrect value");
 
     opo_builder_init(&err, &builder, data, sizeof(data));
     opo_builder_push_int(&err, &builder, 55555);
-    ut_same_int(55555, opo_val_int(&err, opo_msg_top(builder.head)), "large incorrect size");
+    ut_same_int(55555, opo_val_int(&err, opo_msg_top(builder.head)), "large incorrect value");
 
     opo_builder_init(&err, &builder, data, sizeof(data));
     opo_builder_push_int(&err, &builder, 2147483649);
-    ut_same_int(2147483649, opo_val_int(&err, opo_msg_top(builder.head)), "huge incorrect size");
+    ut_same_int(2147483649, opo_val_int(&err, opo_msg_top(builder.head)), "huge incorrect value");
 
     opo_builder_init(&err, &builder, data, sizeof(data));
     opo_builder_push_bool(&err, &builder, false);
     opo_val_int(&err, opo_msg_top(builder.head));
-    ut_same_int(OPO_ERR_TYPE, err.code, "huge incorrect size");
+    ut_same_int(OPO_ERR_TYPE, err.code, "incorrect error code");
 }
 
+static void
+value_double_test() {
+    struct _opoBuilder	builder;
+    struct _opoErr	err = OPO_ERR_INIT;
+    uint8_t		data[1024];
+    
+    opo_builder_init(&err, &builder, data, sizeof(data));
+    opo_builder_push_double(&err, &builder, 1.23);
+    ut_true(1.23 == opo_val_double(&err, opo_msg_top(builder.head)), "incorrect value");
 
+    opo_builder_init(&err, &builder, data, sizeof(data));
+    opo_builder_push_bool(&err, &builder, false);
+    opo_val_double(&err, opo_msg_top(builder.head));
+    ut_same_int(OPO_ERR_TYPE, err.code, "incorrect error code");
+}
+
+static void
+value_str_test() {
+    struct _opoBuilder	builder;
+    struct _opoErr	err = OPO_ERR_INIT;
+    uint8_t		data[1024];
+    
+    opo_builder_init(&err, &builder, data, sizeof(data));
+    opo_builder_push_string(&err, &builder, "hello", -1);
+    ut_same("hello", opo_val_string(&err, opo_msg_top(builder.head), NULL), "incorrect value");
+
+    int	len = 0;
+    
+    ut_same("hello", opo_val_string(&err, opo_msg_top(builder.head), &len), "incorrect value2");
+    ut_same_int(5, len, "incorrect length");
+
+    opo_builder_init(&err, &builder, data, sizeof(data));
+    opo_builder_push_bool(&err, &builder, false);
+    opo_val_string(&err, opo_msg_top(builder.head), NULL);
+    ut_same_int(OPO_ERR_TYPE, err.code, "incorrect error code");
+}
+
+static void
+value_uuid_test() {
+    struct _opoBuilder	builder;
+    struct _opoErr	err = OPO_ERR_INIT;
+    uint8_t		data[1024];
+    char		uuid[40];
+    
+    opo_builder_init(&err, &builder, data, sizeof(data));
+    opo_builder_push_uuid_string(&err, &builder, "123e4567-e89b-12d3-a456-426655440000");
+    opo_val_uuid_str(&err, opo_msg_top(builder.head), uuid);
+    ut_same("123e4567-e89b-12d3-a456-426655440000", uuid, "incorrect value");
+
+    uint64_t	hi;
+    uint64_t	lo;
+    
+    opo_val_uuid(&err, opo_msg_top(builder.head), &hi, &lo);
+    ut_same_int(0x123e4567e89b12d3ULL, hi, "uuid high incorrect");
+    ut_same_int(0xa456426655440000ULL, lo, "uuid low incorrect");
+
+    opo_builder_init(&err, &builder, data, sizeof(data));
+    opo_builder_push_bool(&err, &builder, false);
+    opo_val_uuid(&err, opo_msg_top(builder.head), &hi, &lo);
+    ut_same_int(OPO_ERR_TYPE, err.code, "incorrect error code");
+}
+
+static void
+value_time_test() {
+    struct _opoBuilder	builder;
+    struct _opoErr	err = OPO_ERR_INIT;
+    uint8_t		data[1024];
+    
+    opo_builder_init(&err, &builder, data, sizeof(data));
+    opo_builder_push_time(&err, &builder, 1489504166123456789LL);
+    ut_same_int(1489504166123456789LL, opo_val_time(&err, opo_msg_top(builder.head)), "incorrect value");
+
+    opo_builder_init(&err, &builder, data, sizeof(data));
+    opo_builder_push_bool(&err, &builder, false);
+    opo_val_time(&err, opo_msg_top(builder.head));
+    ut_same_int(OPO_ERR_TYPE, err.code, "incorrect error code");
+}
 
 void
 append_val_tests(utTest tests) {
@@ -457,10 +533,10 @@ append_val_tests(utTest tests) {
 
     ut_appenda(tests, "opo.val.value.bool", value_bool_test, NULL);
     ut_appenda(tests, "opo.val.value.int", value_int_test, NULL);
-    //ut_appenda(tests, "opo.val.value.double", value_double_test, NULL);
-    //ut_appenda(tests, "opo.val.value.str", value_str_test, NULL);
-    //ut_appenda(tests, "opo.val.value.uuid", value_uuid_test, NULL);
-    //ut_appenda(tests, "opo.val.value.time", value_time_test, NULL);
+    ut_appenda(tests, "opo.val.value.double", value_double_test, NULL);
+    ut_appenda(tests, "opo.val.value.str", value_str_test, NULL);
+    ut_appenda(tests, "opo.val.value.uuid", value_uuid_test, NULL);
+    ut_appenda(tests, "opo.val.value.time", value_time_test, NULL);
 
     // TBD tests for get and aget
     // TBD tests for members and next
