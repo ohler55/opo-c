@@ -1,0 +1,25 @@
+
+- docs
+ - html
+ - index
+ - typedefs (structs, enums, macros)
+ - global variables
+ - functions
+ - examples
+ - script to form index and doc stubs
+
+ - left size list/index
+  - introduction (how client works, structure of docs by types)
+  - install (separate page)
+  - guides
+   - basic
+   - async
+   - ...
+  - API
+   - typedefs
+   - opoMsg (show page struct _opoMsg)
+    - opo_msg_init()
+    - ...
+   - opoVal
+  
+ - each pulls up page on right side
