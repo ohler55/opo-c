@@ -648,14 +648,14 @@ ojc_wire_parse_fd(ojcErr err, int fd) {
 
 #endif
 
-opoMsg
+opoVal
 opo_ojc_to_msg(opoErr err, ojcVal val) {
     // TBD
     return NULL;
 }
 
 ojcVal
-opo_msg_to_ojc(opoErr err, const opoMsg msg) {
+opo_msg_to_ojc(opoErr err, const opoVal msg) {
     // TBD
     return NULL;
 }

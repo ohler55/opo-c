@@ -25,10 +25,8 @@ extern "C" {
 	VAL_DEC		= (uint8_t)'d',
 	VAL_UUID	= (uint8_t)'u',
 	VAL_TIME	= (uint8_t)'T',
-	VAL_OBEG	= (uint8_t)'{',
-	VAL_OEND	= (uint8_t)'}',
-	VAL_ABEG	= (uint8_t)'[',
-	VAL_AEND	= (uint8_t)']',
+	VAL_OBJ		= (uint8_t)'{',
+	VAL_ARRAY	= (uint8_t)'[',
     } ValType;
 
 #ifdef __cplusplus

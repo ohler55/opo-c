@@ -12,12 +12,12 @@
 #include "ut.h"
 
 static const char	*expect_sample_dump = "\
-00 00 00 54 7B 6B 03 6E  69 6C 00 5A 6B 03 79 65   ...T{k.n il.Zk.ye\n\
+7B 00 00 00 55 6B 03 6E  69 6C 00 5A 6B 03 79 65   {...Uk.n il.Zk.ye\n\
 73 00 74 6B 02 6E 6F 00  66 6B 03 69 6E 74 00 32   s.tk.no. fk.int.2\n\
-30 39 6B 05 61 72 72 61  79 00 5B 69 E9 64 04 31   09k.arra y.[i.d.1\n\
-2E 32 33 73 06 73 74 72  69 6E 67 00 75 12 3E 45   .23s.str ing.u.>E\n\
-67 E8 9B 12 D3 A4 56 42  66 55 44 00 00 54 14 AB   g.....VB fUD..T..\n\
-C8 25 B9 40 C9 15 5D 7D                            .%.@..]} \n";
+30 39 6B 05 61 72 72 61  79 00 5B 00 00 00 2B 69   09k.arra y.[...+i\n\
+E9 64 04 31 2E 32 33 73  06 73 74 72 69 6E 67 00   .d.1.23s .string.\n\
+75 12 3E 45 67 E8 9B 12  D3 A4 56 42 66 55 44 00   u.>Eg... ..VBfUD.\n\
+00 54 14 AB C8 25 B9 40  C9 15                     .T...%.@ ..\n";
 
 int
 build_sample_msg(opoBuilder builder) {

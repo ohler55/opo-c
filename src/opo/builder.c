@@ -173,7 +173,6 @@ opo_builder_init(opoErr err, opoBuilder builder, uint8_t *buf, size_t size) {
     builder->cur = builder->head;
     memset(builder->stack, 0, sizeof(builder->stack));
     builder->top = builder->stack - 1;
-    builder->cur = fill_uint32(builder->cur, 0);
     
     return OPO_ERR_OK;
 }
@@ -187,19 +186,12 @@ opo_builder_cleanup(opoBuilder builder) {
 
 opoErrCode
 opo_builder_finish(opoErr err, opoBuilder builder) {
-    for (; builder->stack <= builder->top; builder->top--) {
-	if (*builder->top) {
-	    if (OPO_ERR_OK != builder_append_byte(err, builder, VAL_OEND)) {
-		return err->code;
-	    }
-	} else {
-	    if (OPO_ERR_OK != builder_append_byte(err, builder, VAL_AEND)) {
-		return err->code;
-	    }
-	}
-    }
-    fill_uint32(builder->head, (uint32_t)(builder->cur - builder->head - 4));
+    uint8_t	*start;
 
+    for (; builder->stack <= builder->top; builder->top--) {
+	start = builder->head + *builder->top;
+	fill_uint32(start + 1, (uint32_t)(builder->cur - start - 5));
+    }
     return 0;
 }
 
@@ -208,35 +200,36 @@ opo_builder_length(opoBuilder builder) {
     return builder->cur - builder->head;
 }
 
-opoMsg
+opoVal
 opo_builder_take(opoBuilder builder) {
-    uint8_t	*buf = builder->head;
+    uint8_t	*val = builder->head;
 
     builder->head = NULL;
     builder->cur = NULL;
     builder->end = NULL;
     
-    return buf;
+    return val;
 }
 
 static opoErrCode
 check_key(opoErr err, opoBuilder builder, const char *key, int klen) {
     if (builder->top < builder->stack) {
-	if (builder->head + 4 < builder->cur) {
+	if (builder->head < builder->cur) {
 	    return opo_err_set(err, OPO_ERR_OVERFLOW, "only one element can be in a builder");
 	}
 	if (NULL != key) {
 	    return opo_err_set(err, OPO_ERR_ARG, "only members of an object are keyed");
 	}
     } else if (NULL != key) {
-	if (!*builder->top) {
+	// TBD check for obj
+	if (VAL_OBJ != *(builder->head + *builder->top)) {
 	    return opo_err_set(err, OPO_ERR_ARG, "only members of an object are keyed");
 	}
 	if (0 >= klen) {
 	    klen = strlen(key);
 	}
 	builder_push_key(err, builder, key, klen);
-    } else if (*builder->top) {
+    } else if (VAL_ARRAY != *(builder->head + *builder->top)) {
 	return opo_err_set(err, OPO_ERR_ARG, "members of an object must be keyed");
     }
     return OPO_ERR_OK;
@@ -251,9 +244,15 @@ opo_builder_push_object(opoErr err, opoBuilder builder, const char *key, int kle
 	return err->code;
     }
     builder->top++;
-    *builder->top = true;
-	
-    return builder_append_byte(err, builder, VAL_OBEG);
+    *builder->top = builder->cur - builder->head;
+
+    if (OPO_ERR_OK != builder_assure(err, builder, 5)) {
+	return err->code;
+    }
+    *builder->cur++ = VAL_OBJ;
+    builder->cur += 4;
+
+    return OPO_ERR_OK;
 }
 
 opoErrCode
@@ -265,9 +264,12 @@ opo_builder_push_array(opoErr err, opoBuilder builder, const char *key, int klen
 	return err->code;
     }
     builder->top++;
-    *builder->top = false;
+    *builder->top = builder->cur - builder->head;
 	
-    return builder_append_byte(err, builder, VAL_ABEG);
+    *builder->cur++ = VAL_ARRAY;
+    builder->cur += 4;
+
+    return OPO_ERR_OK;
 }
 
 opoErrCode
@@ -275,11 +277,9 @@ opo_builder_pop(opoErr err, opoBuilder builder) {
     if (builder->stack > builder->top) {
 	return opo_err_set(err, OPO_ERR_OVERFLOW, "nothing left to pop");
     }
-    if (*builder->top) {
-	builder_append_byte(err, builder, VAL_OEND);
-    } else {
-	builder_append_byte(err, builder, VAL_AEND);
-    }
+    uint8_t	*start = builder->head + *builder->top;
+    
+    fill_uint32(start + 1, (uint32_t)(builder->cur - start - 5));
     builder->top--;
 
     return OPO_ERR_OK;
@@ -413,21 +413,3 @@ opo_builder_push_time(opoErr err, opoBuilder builder, uint64_t value, const char
 
     return OPO_ERR_OK;
 }
-
-#if 0
-
-opoErrCode
-opo_builder_push_key(opoErr err, opoBuilder builder, const char *key, int klen) {
-    if (!*builder->top) {
-	return opo_err_set(err, OPO_ERR_ARG, "can only push a key to an object");
-    }
-    if (0 >= len) {
-	len = strlen(key);
-    }
-    if (OPO_ERR_OK != builder_push_key(err, builder, key, len)) {
-	return err->code;
-    }
-    return OPO_ERR_OK;
-}
-
-#endif

@@ -11,24 +11,24 @@ extern "C" {
 #include <stdint.h>
 
 #include "err.h"
-#include "msg.h"
+#include "val.h"
 
 #define OPO_MSG_MAX_DEPTH	512
 
     typedef struct _opoBuilder {
-	uint8_t	*head;
-	uint8_t	*end;
-	uint8_t	*cur;
-	bool	own;
-	bool	*top;
-	bool	stack[OPO_MSG_MAX_DEPTH]; // true if an object, false an array
+	uint8_t		*head;
+	uint8_t		*end;
+	uint8_t		*cur;
+	bool		own;
+	uint64_t	*top;
+	uint64_t	stack[OPO_MSG_MAX_DEPTH]; // offset from head to start of array or object
     } *opoBuilder;
 
     extern opoErrCode	opo_builder_init(opoErr err, opoBuilder builder, uint8_t *buf, size_t size);
     extern void		opo_builder_cleanup(opoBuilder builder);
     extern opoErrCode	opo_builder_finish(opoErr err, opoBuilder builder);
     extern size_t	opo_builder_length(opoBuilder builder);
-    extern opoMsg	opo_builder_take(opoBuilder builder);
+    extern opoVal	opo_builder_take(opoBuilder builder);
 
     extern opoErrCode	opo_builder_push_object(opoErr err, opoBuilder builder, const char *key, int klen);
     extern opoErrCode	opo_builder_push_array(opoErr err, opoBuilder builder, const char *key, int klen);

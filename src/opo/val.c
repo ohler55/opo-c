@@ -88,24 +88,12 @@ opo_val_bsize(opoVal val) {
 	    break;
 	case VAL_UUID:	size = 17;	break;
 	case VAL_TIME:	size = 9;	break;
-	case VAL_OBEG: {
-	    const uint8_t	*b = val + 1;
-
-	    while (VAL_OEND != *b) {
-		b += opo_val_bsize(b);
-	    }
-	    b++;
-	    size = b - val;
-	    break;
-	}
-	case VAL_ABEG: {
-	    const uint8_t	*b = val + 1;
-
-	    while (VAL_AEND != *b) {
-		b += opo_val_bsize(b);
-	    }
-	    b++;
-	    size = b - val;
+	case VAL_OBJ:
+	case VAL_ARRAY: {
+	    uint32_t	num;
+	    
+	    read_uint32(val + 1, &num);
+	    size = (size_t)num + 5;
 	    break;
 	}
 	default:
@@ -183,20 +171,19 @@ opo_val_type(opoVal val) {
 	case VAL_DEC:	type = OPO_VAL_DEC;	break;
 	case VAL_UUID:	type = OPO_VAL_UUID;	break;
 	case VAL_TIME:	type = OPO_VAL_TIME;	break;
-	case VAL_OBEG:	type = OPO_VAL_OBJ;	break;
-	case VAL_ABEG:	type = OPO_VAL_ARRAY;	break;
+	case VAL_OBJ:	type = OPO_VAL_OBJ;	break;
+	case VAL_ARRAY:	type = OPO_VAL_ARRAY;	break;
 	default:				break;
 	}
     }
     return type;
 }
 
-opoErrCode
-opo_val_iterate(opoErr err, opoVal val, opoMsgCallbacks callbacks, void *ctx) {
-    int		depth = 0;
+static bool
+val_iterate(opoErr err, opoVal val, opoValCallbacks callbacks, void *ctx, opoVal end) {
     bool	cont = true;
 
-    do {
+    while (val < end) {
 	switch (*val++) {
 	case VAL_NULL:
 	    if (NULL != callbacks->null) {
@@ -362,27 +349,33 @@ opo_val_iterate(opoErr err, opoVal val, opoMsgCallbacks callbacks, void *ctx) {
 		val += 8;
 	    }
 	    break;
-	case VAL_OBEG:
-	    depth++;
+	case VAL_OBJ:
 	    if (NULL != callbacks->begin_object) {
 		cont = callbacks->begin_object(err, ctx);
 	    }
-	    break;
-	case VAL_OEND:
-	    depth--;
-	    if (NULL != callbacks->end_object) {
+	    if (cont) {
+		uint32_t	size;
+
+		val = read_uint32(val, &size);
+		cont = val_iterate(err, val, callbacks, ctx, val + size);
+		val += size;
+	    }
+	    if (NULL != callbacks->end_object && cont) {
 		cont = callbacks->end_object(err, ctx);
 	    }
 	    break;
-	case VAL_ABEG:
-	    depth++;
+	case VAL_ARRAY:
 	    if (NULL != callbacks->begin_array) {
 		cont = callbacks->begin_array(err, ctx);
 	    }
-	    break;
-	case VAL_AEND:
-	    depth--;
-	    if (NULL != callbacks->end_array) {
+	    if (cont) {
+		uint32_t	size;
+
+		val = read_uint32(val, &size);
+		cont = val_iterate(err, val, callbacks, ctx, val + size);
+		val += size;
+	    }
+	    if (NULL != callbacks->end_array && cont) {
 		cont = callbacks->end_array(err, ctx);
 	    }
 	    break;
@@ -390,14 +383,18 @@ opo_val_iterate(opoErr err, opoVal val, opoMsgCallbacks callbacks, void *ctx) {
 	    opo_err_set(err, OPO_ERR_PARSE, "corrupt message format");
 	    break;
 	}
-	if (!cont) {
+	if (!cont || OPO_ERR_OK != err->code) {
 	    break;
 	}
-	if (OPO_ERR_OK != err->code) {
-	    break;
-	}
-    } while (0 < depth);
+    }
     
+    return cont;
+}
+
+opoErrCode
+opo_val_iterate(opoErr err, opoVal val, opoValCallbacks callbacks, void *ctx) {
+    val_iterate(err, val, callbacks, ctx, val + 1);
+
     return err->code;
 }
 
@@ -430,19 +427,27 @@ opo_val_get(opoVal val, const char *path) {
 	return val;
     }
     const char	*dot = path;
+    uint32_t	size;
+    opoVal	end;
     
     for (; '.' != *dot && '\0' != *dot; dot++) {
     }
     switch (*val++) {
-    case VAL_OBEG: {
+    case VAL_OBJ: {
 	const char	*key;
 	int		len = dot - path;
-	int		size;
-	
-	while (VAL_OEND != *val) {
-	    key = val_key(val, &size);
+	int		klen;
+
+	int	x = 10;
+
+	val = read_uint32(val, &size);
+	end = val + size;
+	while (val < end) {
+	    if (x-- < 0) { break; }
+	    
+	    key = val_key(val, &klen);
 	    val += opo_val_bsize(val);
-	    if (len == size && 0 == strncmp(key, path, len)) {
+	    if (len == klen && 0 == strncmp(key, path, len)) {
 		if ('\0' == *dot) {
 		    return val;
 		}
@@ -452,14 +457,16 @@ opo_val_get(opoVal val, const char *path) {
 	}
 	break;
     }
-    case VAL_ABEG: {
-	char	*end;
-	long	i = strtol(path, &end, 10);
+    case VAL_ARRAY: {
+	char	*iend;
+	long	i = strtol(path, &iend, 10);
 
-	if (end != dot) {
+	if (iend != dot) {
 	    break;
 	}
-	for (; VAL_AEND != *val; i--) {
+	val = read_uint32(val, &size);
+	end = val + size;
+	for (; val < end; i--) {
 	    if (0 == i) {
 		if ('\0' == *dot) {
 		    return val;
@@ -690,19 +697,16 @@ opo_val_members(opoErr err, opoVal val) {
     
     if (NULL == val) {
 	opo_err_set(err, OPO_ERR_TYPE, "NULL is not a object or array value");
-    } else if (VAL_OBEG != *val && VAL_ABEG != *val) {
+    } else if (VAL_OBJ != *val && VAL_ARRAY != *val) {
 	opo_err_set(err, OPO_ERR_TYPE, "not an object or array value");
     } else {
-	members = val + 1;
+	members = val + 5;
     }
     return members;
 }
 
 opoVal
 opo_val_next(opoVal val) {
-    if (VAL_OEND == *val || VAL_AEND == *val) {
-	return NULL;
-    }
     return val + opo_val_bsize(val);
 }
 
@@ -712,18 +716,24 @@ opo_val_member_count(opoErr err, opoVal val) {
 	opo_err_set(err, OPO_ERR_TYPE, "NULL is not a object or array value");
 	return 0;
     }
-    int	cnt = 0;
+    int		cnt = 0;
+    opoVal	end;
+    uint32_t	size;
 
     switch (*val++) {
-    case VAL_OBEG:
-	while (VAL_OEND != *val) {
+    case VAL_OBJ:
+	val = read_uint32(val, &size);
+	end = val + size;
+	while (val < end) {
 	    cnt++;
 	    val += opo_val_bsize(val);
 	    val += opo_val_bsize(val);
 	}
 	break;
-    case VAL_ABEG:
-	while (VAL_OEND != *val) {
+    case VAL_ARRAY:
+	val = read_uint32(val, &size);
+	end = val + size;
+	while (val < end) {
 	    cnt++;
 	    val += opo_val_bsize(val);
 	}

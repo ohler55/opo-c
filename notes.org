@@ -1,4 +1,13 @@
 
+ 
+- opo
+ - ojc_to_msg
+ - msg_to_ojc
+ - size
+
+- remove from ojc
+
+
 - docs
  - html
  - index
@@ -23,21 +32,4 @@
    - opoVal
   
  - each pulls up page on right side
-
-- ???
- - should arrays and objects have a 4 byte length?
-  - faster traverse
-  - safety limit for walking
-  - larger messages
-  - builder would have to keep track of the start of each
-   - instead of bools, use pointer (deref for valtype)
-  - msg and val the same
-
- 
-- opo
- - ojc_to_msg
- - msg_to_ojc
- - size
-
-- remove from ojc
 

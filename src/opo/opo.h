@@ -13,11 +13,10 @@ extern "C" {
 #include <ojc/ojc.h>
 
 #include "builder.h"
-#include "msg.h"
 #include "val.h"
 
-    extern opoMsg	opo_ojc_to_msg(opoErr err, ojcVal val);
-    extern ojcVal	opo_msg_to_ojc(opoErr err, const opoMsg msg);
+    extern opoVal	opo_ojc_to_msg(opoErr err, ojcVal val);
+    extern ojcVal	opo_msg_to_ojc(opoErr err, const opoVal msg);
 
     extern size_t	opo_ojc_msg_size(ojcVal val);
 

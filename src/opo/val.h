@@ -28,7 +28,8 @@ extern "C" {
 	OPO_VAL_ARRAY	= (uint8_t)'a',
     } opoValType;
 
-    typedef struct _opoMsgCallbacks {
+    // TBD change to opoValCallbacks
+    typedef struct _opoValCallbacks {
 	bool	(*begin_object)(opoErr err, void *ctx);
 	bool	(*end_object)(opoErr err, void *ctx);
 	bool	(*key)(opoErr err, const char *key, int len, void *ctx);
@@ -44,13 +45,13 @@ extern "C" {
 	bool	(*uuid_str)(opoErr err, const char *str, void *ctx);
 	bool	(*time)(opoErr err, int64_t hi, void *ctx);
 	bool	(*time_str)(opoErr err, const char *str, void *ctx);
-    } *opoMsgCallbacks;
+    } *opoValCallbacks;
 
     extern size_t	opo_val_bsize(opoVal val);
     extern size_t	opo_val_size(opoVal val);
     extern opoValType	opo_val_type(opoVal val);
 
-    extern opoErrCode	opo_val_iterate(opoErr err, opoVal val, opoMsgCallbacks callbacks, void *ctx);
+    extern opoErrCode	opo_val_iterate(opoErr err, opoVal val, opoValCallbacks callbacks, void *ctx);
 
     extern opoVal	opo_val_get(opoVal val, const char *path);
 
