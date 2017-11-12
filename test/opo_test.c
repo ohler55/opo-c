@@ -8,6 +8,8 @@
 #include <ctype.h>
 #include <math.h>
 
+#include <ojc/buf.h>
+
 #include "opo/opo.h"
 #include "ut.h"
 
@@ -15,6 +17,8 @@ typedef struct _Jlen {
     const char	*json;
     int		len;
 } *Jlen;
+
+extern int	build_sample_msg(opoBuilder builder); // defined in builder_test.c
 
 void
 ojc_msg_size_test() {
@@ -87,6 +91,35 @@ ojc_to_msg_test() {
 
 void
 msg_to_ojc_test() {
+    struct _opoBuilder	builder;
+    struct _opoErr	err = OPO_ERR_INIT;
+    uint8_t		data[1024];
+    
+    opo_builder_init(&err, &builder, data, sizeof(data));
+    build_sample_msg(&builder);
+
+    ojcVal	val = opo_msg_to_ojc(&err, builder.head);
+
+    ut_same_int(OPO_ERR_OK, err.code, "error creating ojc. %s", err.msg);
+    opo_builder_cleanup(&builder);
+
+    struct _Buf	buf;
+
+    buf_init(&buf, 0);
+    ojc_buf(&buf, val, 2, 0);
+    ut_same("{\n\
+  \"nil\":null,\n\
+  \"yes\":true,\n\
+  \"no\":false,\n\
+  \"int\":12345,\n\
+  \"array\":[\n\
+    -23,\n\
+    1.23,\n\
+    \"string\",\n\
+    \"123e4567-e89b-12d3-a456-426655440000\",\n\
+    \"2017-03-14T15:09:26.123456789Z\"\n\
+  ]\n\
+}", buf.head, "JSON did not match");
 }
 
 void

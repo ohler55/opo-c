@@ -36,6 +36,7 @@ build_sample_msg(opoBuilder builder) {
     opo_builder_push_string(&err, builder, "string", -1, NULL, 0);
     opo_builder_push_uuid_string(&err, builder, "123e4567-e89b-12d3-a456-426655440000", NULL, 0);
     opo_builder_push_time(&err, builder, 1489504166123456789LL, NULL, 0);
+    opo_builder_pop(&err, builder);
 
     opo_builder_finish(&err, builder);
     ut_same_int(OPO_ERR_OK, err.code, "error writing data. %s", err.msg);

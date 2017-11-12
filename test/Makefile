@@ -16,7 +16,7 @@ OBJS=$(SRCS:.c=.o)
 
 INC_DIRS=-I../../ojc/include
 LIB_DIRS=-L../../ojc/lib
-LIBS=-lopo -lojc -lpthread
+LIBS=-lopo -lojc -lm -lpthread
 TARGET=run_tests
 
 all: $(TARGET)

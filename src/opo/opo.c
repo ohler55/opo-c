@@ -11,15 +11,19 @@
 #define TIME_STR_LEN	30
 #define UUID_STR_LEN	36
 
-typedef struct _ParseCtx {
-    ojcVal	top;
-    ojcVal	stack[OPO_MSG_MAX_DEPTH];
-    ojcVal	*cur;
-    ojcVal	*end;
-    const char	*key;
-    int		klen;
-} *ParseCtx;
+typedef struct _StackNode {
+    ojcVal	val;
+    opoVal	end;
+} *StackNode;
 
+typedef struct _ParseCtx {
+    ojcVal		top;
+    struct _StackNode	stack[OPO_MSG_MAX_DEPTH];
+    StackNode		cur;
+    StackNode		end;
+    const char		*key;
+    int			klen;
+} *ParseCtx;
 
 static const char	uuid_char_map[257] = "\
 ................................\
@@ -130,342 +134,6 @@ time_parse(const char *s, int len) {
 
     return (int64_t)secs * 1000000000ULL + (int64_t)nsecs;
 }
-
-#if 0
-
-int
-ojc_wire_size(ojcVal val) {
-    if (NULL == val) {
-	return 0;
-    }
-    return wire_size(val) + 4;
-}
-
-uint8_t*
-ojc_wire_write_mem(ojcErr err, ojcVal val) {
-    if (NULL == val) {
-	err->code = OJC_ARG_ERR;
-	snprintf(err->msg, sizeof(err->msg), "NULL value");
-	return NULL;
-    }
-    size_t	size = (size_t)wire_size(val);
-    uint8_t	*wire = (uint8_t*)malloc(size + 4);
-
-    if (NULL == wire) {
-	err->code = OJC_MEMORY_ERR;
-	snprintf(err->msg, sizeof(err->msg), "memory allocation failed for size %lu", (unsigned long)size );
-	return NULL;
-    }
-    if ((int64_t)0xffffffffU < size) {
-	err->code = OJC_ARG_ERR;
-	snprintf(err->msg, sizeof(err->msg), "too large (%lu bytes), limit is %d bytes", (unsigned long)size, (int)0xffffffffU);
-	return NULL;
-    }
-    ojc_wire_fill(val, wire, size + 4);
-
-    return wire;
-}
-
-size_t
-ojc_wire_fill(ojcVal val, uint8_t *wire, size_t size) {
-    if (0 == size) {
-	size = wire_size(val);
-	if (0xffffffffU < size) {
-	    return 0;
-	}
-    } else if (NULL == val) {
-	return 0;
-    } else {
-	size -= 4;
-    }
-    wire_fill(val, fill_uint32(wire, (uint32_t)size));
-
-    return size + 4;
-}
-
-int
-ojc_wire_write_file(ojcErr err, ojcVal val, FILE *file) {
-    return ojc_wire_write_fd(err, val, fileno(file));
-}
-
-int
-ojc_wire_write_fd(ojcErr err, ojcVal val, int fd) {
-    int		size = wire_size(val) + 4;
-
-    if (MAX_STACK_BUF <= size) {
-	uint8_t	*buf = (uint8_t*)malloc(size);
-
-	ojc_wire_fill(val, buf, size);
-	if (size != write(fd, buf, size)) {
-	    err->code = OJC_WRITE_ERR;
-	    snprintf(err->msg, sizeof(err->msg), "write failed: %s", strerror(errno));
-	}
-	free(buf);
-    } else {
-	uint8_t	buf[MAX_STACK_BUF];
-
-	ojc_wire_fill(val, buf, size);
-	if (size != write(fd, buf, size)) {
-	    err->code = OJC_WRITE_ERR;
-	    snprintf(err->msg, sizeof(err->msg), "write failed: %s", strerror(errno));
-	}
-    }
-    return err->code;
-}
-
-///// parse
-
-// Did not use the callbacks as that adds 10% to 20% over this more direct
-// approach.
-ojcVal
-ojc_wire_parse(ojcErr err, const uint8_t *wire) {
-    const uint8_t	*end = wire + ojc_wire_buf_size(wire);
-    struct _ParseCtx	ctx;
-
-    memset(&ctx, 0, sizeof(ctx));
-    ctx.top = NULL;
-    ctx.cur = ctx.stack - 1;
-    ctx.end = ctx.stack + WIRE_STACK_SIZE;
-    
-    wire += 4;
-    while (wire < end) {
-	switch (*wire++) {
-	case WIRE_NULL:
-	    push_parse_value(err, &ctx, ojc_create_null());
-	    break;
-	case WIRE_TRUE:
-	    push_parse_value(err, &ctx, ojc_create_bool(true));
-	    break;
-	case WIRE_FALSE:
-	    push_parse_value(err, &ctx, ojc_create_bool(false));
-	    break;
-	case WIRE_INT1:
-	    push_parse_value(err, &ctx, ojc_create_int((int64_t)(int8_t)*wire));
-	    wire++;
-	    break;
-	case WIRE_INT2: {
-	    uint16_t	num;;
-
-	    wire = read_uint16(wire, &num);
-	    push_parse_value(err, &ctx, ojc_create_int((int64_t)(int16_t)num));
-	    break;
-	}
-	case WIRE_INT4: {
-	    uint32_t	num;;
-
-	    wire = read_uint32(wire, &num);
-	    push_parse_value(err, &ctx, ojc_create_int((int64_t)(int32_t)num));
-	    break;
-	}
-	case WIRE_INT8: {
-	    uint64_t	num;
-
-	    wire = read_uint64(wire, &num);
-	    push_parse_value(err, &ctx, ojc_create_int((int64_t)num));
-	    break;
-	}
-	case WIRE_STR1: {
-	    uint8_t	len = *wire++;
-
-	    push_parse_value(err, &ctx, ojc_create_str((const char*)wire, (int)len));
-	    wire += len;
-	    break;
-	}
-	case WIRE_STR2: {
-	    uint16_t	len;
-	    
-	    wire = read_uint16(wire, &len);
-	    push_parse_value(err, &ctx, ojc_create_str((const char*)wire, (int)len));
-	    wire += len;
-	    break;
-	}
-	case WIRE_STR4: {
-	    uint32_t	len;
-	    
-	    wire = read_uint32(wire, &len);
-	    push_parse_value(err, &ctx, ojc_create_str((const char*)wire, (int)len));
-	    wire += len;
-	    break;
-	}
-	case WIRE_KEY1: {
-	    uint8_t	len = *wire++;
-
-	    ctx.key = (const char*)wire;
-	    ctx.klen = len;
-	    wire += len;
-	    break;
-	}
-	case WIRE_KEY2: {
-	    uint16_t	len;
-	    
-	    wire = read_uint16(wire, &len);
-	    ctx.key = (const char*)wire;
-	    ctx.klen = len;
-	    wire += len;
-	    break;
-	}
-	case WIRE_KEY4: {
-	    uint32_t	len;
-	    
-	    wire = read_uint32(wire, &len);
-	    ctx.key = (const char*)wire;
-	    ctx.klen = len;
-	    wire += len;
-	    break;
-	}
-	case WIRE_DEC: {
-	    uint8_t	len = *wire++;
-	    char	buf[256];
-	    double	d;
-		
-	    memcpy(buf, wire, (size_t)len);
-	    buf[len] = '\0';
-	    d = strtod(buf, NULL);
-	    push_parse_value(err, &ctx, ojc_create_double(d));
-	    wire += len;
-	    break;
-	}
-	case WIRE_NUM1: {
-	    uint8_t	len = *wire++;
-
-	    push_parse_value(err, &ctx, ojc_create_number((const char*)wire, (int)len));
-	    wire += len;
-	    break;
-	}
-	case WIRE_NUM2: {
-	    uint16_t	len;
-	    
-	    wire = read_uint16(wire, &len);
-	    push_parse_value(err, &ctx, ojc_create_str((const char*)wire, (int)len));
-	    wire += len;
-	    break;
-	}
-	case WIRE_NUM4: {
-	    uint32_t	len;
-	    
-	    wire = read_uint32(wire, &len);
-	    push_parse_value(err, &ctx, ojc_create_str((const char*)wire, (int)len));
-	    wire += len;
-	    break;
-	}
-	case WIRE_UUID: {
-	    uint64_t	hi;
-	    uint64_t	lo;
-	    char	buf[40];
-	    
-	    wire = read_uint64(wire, &hi);
-	    wire = read_uint64(wire, &lo);
-	    sprintf(buf, "%08lx-%04lx-%04lx-%04lx-%012lx",
-		    (unsigned long)(hi >> 32),
-		    (unsigned long)((hi >> 16) & 0x000000000000FFFFUL),
-		    (unsigned long)(hi & 0x000000000000FFFFUL),
-		    (unsigned long)(lo >> 48),
-		    (unsigned long)(lo & 0x0000FFFFFFFFFFFFUL));
-
-	    push_parse_value(err, &ctx, ojc_create_str(buf, UUID_STR_LEN));
-	    break;
-	}
-	case WIRE_TIME: {
-	    uint64_t	nsec;
-	    
-	    wire = read_uint64(wire, &nsec);
-	    char	buf[64];
-	    struct tm	tm;
-	    time_t	t = (time_t)(nsec / 1000000000LL);
-	    long	frac = nsec - (int64_t)t * 1000000000LL;
-
-	    if (NULL == gmtime_r(&t, &tm)) {
-		err->code = OJC_PARSE_ERR;
-		snprintf(err->msg, sizeof(err->msg), "invalid time");
-		break;
-	    }
-	    sprintf(buf, "%04d-%02d-%02dT%02d:%02d:%02d.%09ldZ",
-		    1900 + tm.tm_year, 1 + tm.tm_mon, tm.tm_mday,
-		    tm.tm_hour, tm.tm_min, tm.tm_sec, frac);
-	    push_parse_value(err, &ctx, ojc_create_str(buf, TIME_STR_LEN));
-	    break;
-	}
-	case WIRE_OBEG:
-	    if (ctx.end - 1 <= ctx.cur) {
-		err->code = OJC_PARSE_ERR;
-		snprintf(err->msg, sizeof(err->msg), "too deeply nested");
-	    } else {
-		ojcVal	obj = _ojc_val_create(OJC_OBJECT);
-
-		if (OJC_OK == push_parse_value(err, &ctx, obj)) {
-		    ctx.cur++;
-		    *ctx.cur = obj;
-		}
-	    }
-	    break;
-	case WIRE_ABEG:
-	    if (ctx.end - 1 <= ctx.cur) {
-		err->code = OJC_PARSE_ERR;
-		snprintf(err->msg, sizeof(err->msg), "too deeply nested");
-	    } else {
-		ojcVal	array = _ojc_val_create(OJC_ARRAY);
-
-		if (OJC_OK == push_parse_value(err, &ctx, array)) {
-		    ctx.cur++;
-		    *ctx.cur = array;
-		}
-	    }
-	    break;
-	case WIRE_OEND:
-	case WIRE_AEND:
-	    if (ctx.cur < ctx.stack) {
-		err->code = OJC_PARSE_ERR;
-		snprintf(err->msg, sizeof(err->msg), "too many closes");
-	    } else {
-		ctx.cur--;
-	    }
-	    break;
-	default:
-	    err->code = OJC_PARSE_ERR;
-	    snprintf(err->msg, sizeof(err->msg), "corrupt wire format");
-	    break;
-	}
-	if (OJC_OK != err->code) {
-	    break;
-	}
-    }
-    return ctx.top;
-}
-
-ojcVal
-ojc_wire_parse_file(ojcErr err, FILE *file) {
-    return ojc_wire_parse_fd(err, fileno(file));
-}
-
-ojcVal
-ojc_wire_parse_fd(ojcErr err, int fd) {
-    off_t	here = lseek(fd, 0, SEEK_CUR);
-    off_t	size = lseek(fd, 0, SEEK_END) - here;
-    ojcVal	val = NULL;
-    
-    lseek(fd, here, SEEK_SET);
-    if (MAX_STACK_BUF <= size) {
-	uint8_t	*buf = (uint8_t*)malloc(size);
-
-	if (size != read(fd, buf, size)) {
-	    err->code = OJC_PARSE_ERR;
-	    snprintf(err->msg, sizeof(err->msg), "read failed: %s", strerror(errno));
-	}
-	val = ojc_wire_parse(err, buf);
-	free(buf);
-    } else {
-	uint8_t	buf[MAX_STACK_BUF];
-
-	if (size != read(fd, buf, size)) {
-	    err->code = OJC_PARSE_ERR;
-	    snprintf(err->msg, sizeof(err->msg), "read failed: %s", strerror(errno));
-	}
-	val = ojc_wire_parse(err, buf);
-    }
-    return val;
-}
-
-#endif
 
 static int
 isize_bytes(int64_t n) {
@@ -806,7 +474,7 @@ wire_fill(ojcVal val, uint8_t *w) {
 static opoErrCode
 push_parse_value(opoErr err, ParseCtx pc, ojcVal val) {
     if (pc->stack <= pc->cur) {
-	ojcVal	parent = *pc->cur;
+	ojcVal	parent = pc->cur->val;
 	
 	if (OJC_OBJECT == ojc_type(parent)) {
 	    if (NULL == pc->key) {
@@ -860,9 +528,10 @@ opo_msg_to_ojc(opoErr err, opoVal msg) {
     ctx.cur = ctx.stack - 1;
     ctx.end = ctx.stack + sizeof(ctx.stack) / sizeof(*ctx.stack);
     
-    msg += 4;
     while (msg < end) {
-	// TBD check cur to see if a pop is needed
+	if (ctx.stack <= ctx.cur && ctx.cur->end <= msg) {
+	    ctx.cur--;
+	}
 	switch (*msg++) {
 	case VAL_NULL:
 	    push_parse_value(err, &ctx, ojc_create_null());
@@ -902,7 +571,7 @@ opo_msg_to_ojc(opoErr err, opoVal msg) {
 	    uint8_t	len = *msg++;
 
 	    push_parse_value(err, &ctx, ojc_create_str((const char*)msg, (int)len));
-	    msg += len;
+	    msg += len + 1;
 	    break;
 	}
 	case VAL_STR2: {
@@ -910,7 +579,7 @@ opo_msg_to_ojc(opoErr err, opoVal msg) {
 	    
 	    msg = read_uint16(msg, &len);
 	    push_parse_value(err, &ctx, ojc_create_str((const char*)msg, (int)len));
-	    msg += len;
+	    msg += len + 1;
 	    break;
 	}
 	case VAL_STR4: {
@@ -918,7 +587,7 @@ opo_msg_to_ojc(opoErr err, opoVal msg) {
 	    
 	    msg = read_uint32(msg, &len);
 	    push_parse_value(err, &ctx, ojc_create_str((const char*)msg, (int)len));
-	    msg += len;
+	    msg += len + 1;
 	    break;
 	}
 	case VAL_KEY1: {
@@ -926,7 +595,7 @@ opo_msg_to_ojc(opoErr err, opoVal msg) {
 
 	    ctx.key = (const char*)msg;
 	    ctx.klen = len;
-	    msg += len;
+	    msg += len + 1;
 	    break;
 	}
 	case VAL_KEY2: {
@@ -935,7 +604,7 @@ opo_msg_to_ojc(opoErr err, opoVal msg) {
 	    msg = read_uint16(msg, &len);
 	    ctx.key = (const char*)msg;
 	    ctx.klen = len;
-	    msg += len;
+	    msg += len + 1;
 	    break;
 	}
 	case VAL_DEC: {
@@ -992,12 +661,14 @@ opo_msg_to_ojc(opoErr err, opoVal msg) {
 		err->code = OJC_PARSE_ERR;
 		snprintf(err->msg, sizeof(err->msg), "too deeply nested");
 	    } else {
-		ojcVal	obj = _ojc_val_create(OJC_OBJECT);
+		ojcVal		obj = ojc_create_object();
+		uint32_t	size;
 
-		// TBD push on end of obj
-		if (OJC_OK == push_parse_value(err, &ctx, obj)) {
+		msg = read_uint32(msg, &size);
+		if (OPO_ERR_OK == push_parse_value(err, &ctx, obj)) {
 		    ctx.cur++;
-		    *ctx.cur = obj;
+		    ctx.cur->val = obj;
+		    ctx.cur->end = msg + size;
 		}
 	    }
 	    break;
@@ -1006,12 +677,14 @@ opo_msg_to_ojc(opoErr err, opoVal msg) {
 		err->code = OJC_PARSE_ERR;
 		snprintf(err->msg, sizeof(err->msg), "too deeply nested");
 	    } else {
-		ojcVal	array = _ojc_val_create(OJC_ARRAY);
+		ojcVal	array = ojc_create_array();
+		uint32_t	size;
 
-		// TBD push on end of obj, cur--
-		if (OJC_OK == push_parse_value(err, &ctx, array)) {
+		msg = read_uint32(msg, &size);
+		if (OPO_ERR_OK == push_parse_value(err, &ctx, array)) {
 		    ctx.cur++;
-		    *ctx.cur = array;
+		    ctx.cur->val = array;
+		    ctx.cur->end = msg + size;
 		}
 	    }
 	    break;
