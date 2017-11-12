@@ -49,34 +49,107 @@ a.opo {
     flex-direction: row;
 }
 .index {
-    width: 280px;
+    width: 300px;
     border: solid 1px #888;
-    padding: 16px;
+    padding: 8px 0px;
     color: white;
     background-color: black;
     font-family: 'HelveticaNeue-Bold', 'Helvetica Neue', 'Arial', sans-serif;
-    font-size: 16px;
+    font-size: 14px;
 }
-.index a {
-    color: white;
+.item {
+    width: 100%;
     display: block;
+    padding: 2px;
+    margin: 0px;
+    color: white;
+    text-align: left;
+    background-color: black;
     text-decoration: none;
+    border: 0px;
+    font-family: 'HelveticaNeue-Bold', 'Helvetica Neue', 'Arial', sans-serif;
+    font-size: 14px;
 }
-.index a:hover {
-    color: #acf;
+.item:hover {
+    background-color: #666;
+    color: #ff8;
+}
+.level1 {
+    padding: 2px 2px 2px 16px;
+}
+.level2 {
+    padding: 2px 2px 2px 32px;
+}
+.level3 {
+    padding: 2px 2px 2px 48px;
+}
+.selected {
+    background-color: #bdf;
+    color: black;
+}
+.selected:hover {
+    background-color: #68a;
+    color: #dd7;
 }
 .cat {
     color: #ace;
     display: block;
     font-style: italic;
+    padding: 2px 2px 2px 16px;
+}
+.indent {
+    margin-left: 16px;
 }
 .desc-pane {
-    border: solid red 1px;
-    padding: 10px;
+    width: 100%;
     color: black;
     font-family: 'HelveticaNeue-Bold', 'Helvetica Neue', 'Arial', sans-serif;
     font-size: 16px;
 }
-.indent {
-    margin-left: 16px;
+.desc {
+    display: block;
+    padding: 16px;
+    color: black;
+}
+.title {
+    display: block;
+    font-size: 24px;
+    font-weight: bold;
+}
+.synopsis {
+    display: block;
+    font-family: monospace;
+    font-size: 18px;
+    white-space: pre;
+    margin: 16px 0px 8px 8px;
+    padding: 8px;
+    background: #eee;
+    border: 1px solid #c0d0e0;
+}
+.desc-text {
+    margin: 16px 0px 8px 8px;
+    padding: 8px;
+}
+table.params {
+    margin: 0px 0px 0px 16px;
+}
+.params td {
+    padding: 4px;
+    #margin: 4px;
+}
+.param {
+    font-family: monospace;
+    font-size: 16px;
+    padding: 4px;
+    white-space: pre;
+    background: #eee;
+    border: 1px solid #c0d0e0;
+}
+.returns {
+    font-weight: bold;
+    height: 60px;
+}
+.code {
+    font-family: monospace;
+    font-size: 16px;
 }

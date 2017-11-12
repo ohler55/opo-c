@@ -6,93 +6,385 @@
     <link rel="stylesheet" type="text/css" media="screen,print" href="opo-api.css" />
     <meta name="viewport" content="width=device-width, initial-scale=1">
   </head>
-  <body>
+  <body onload="displayDesc(event,'Introduction')">
     <div class="header">
       <div class="headtitle">
-        <a href="http://opo.technology/index.html" class="normal">OpO</a> <span class="small-header">Client APIs</span>
+        <a href="http://opo.technology/index.html" class="normal">OpO</a> <span class="small-header">Client APIs v1.0.0</span>
       </div>
     </div>
     <div class="page">
       <div class="index">
-        <a href="#">Introduction</a>
-        <a href="#">Install</a>
-        <a href="#">Guides</a>
+        <button class="item level1" onclick="displayDesc(event,'Introduction')">Introduction</button>
+        <button class="item level1" onclick="displayDesc(event,'Install')">Install</button>
+        <button class="item level1" onclick="displayDesc(event,'Guides')">Guides</button>
         <span class="cat">Types</span>
-        <div class="indent">
-          <a href="#">opoBuilder</a>
-          <div class="indent">
-            <a href="">opo_builder_init()</a>
-            <a href="">opo_builder_cleanup()</a>
-            <a href="">opo_builder_finish()</a>
-            <a href="">opo_builder_length()</a>
-            <a href="">opo_builder_take()</a>
-            <a href="">opo_builder_push_object()</a>
-            <a href="">opo_builder_push_array()</a>
-            <a href="">opo_builder_pop()</a>
-            <a href="">opo_builder_push_null()</a>
-            <a href="">opo_builder_push_bool()</a>
-            <a href="">opo_builder_push_int()</a>
-            <a href="">opo_builder_push_double()</a>
-            <a href="">opo_builder_push_string()</a>
-            <a href="">opo_builder_push_uuid()</a>
-            <a href="">opo_builder_push_uuid_string()</a>
-            <a href="">opo_builder_push_time()</a>
-          </div>
-          <a href="http://opo.technology/index.html">opoClient</a>
-          <div class="indent">
-            <a href="#">opoRef</a>
-            <a href="#">opoQueryCallback</a>
-            <a href="#">opo_client_connect()</a>
-            <a href="#">opo_client_close()</a>
-            <a href="#">opo_client_query()</a>
-            <a href="#">opo_client_query_wait()</a>
-          </div>
-          <a href="#">opoErr</a>
-          <div class="indent">
-            <a href="#">OPO_ERR_INIT</a>
-            <a href="#">opoErrCode</a>
-            <a href="">opo_err_set()</a>
-            <a href="">opo_err_no()</a>
-            <a href="">opo_err_str()</a>
-            <a href="">opo_err_clear()</a>
-          </div>
-          <a href="#">opoVal</a>
-          <div class="indent">
-            <a href="#">opoValType</a>
-            <a href="#">opoValCallbacks</a>
-            <a href="#"></a>
-            <a href="">opo_val_bsize()</a>
-            <a href="">opo_val_size()</a>
-            <a href="">opo_val_type()</a>
-            <a href="">opo_val_iterate()</a>
-            <a href="">opo_val_get()</a>
-            <a href="">opo_val_bool()</a>
-            <a href="">opo_val_int()</a>
-            <a href="">opo_val_double()</a>
-            <a href="">opo_val_string()</a>
-            <a href="">opo_val_key()</a>
-            <a href="">opo_val_uuid_str()</a>
-            <a href="">opo_val_uuid()</a>
-            <a href="">opo_val_time()</a>
-            <a href="">opo_val_members()</a>
-            <a href="">opo_val_next()</a>
-            <a href="">opo_val_member_count()</a>
-          </div>
+
+        <button class="item level2" onclick="displayDesc(event,'opoBuilder')">opoBuilder</button>
+        <button class="item level3" onclick="displayDesc(event,'opo_builder_init')">opo_builder_init()</button>
+        <button class="item level3" onclick="displayDesc(event,'opo_builder_cleanup')">opo_builder_cleanup()</button>
+        <button class="item level3" onclick="displayDesc(event,'opo_builder_finish')">opo_builder_finish()</button>
+        <button class="item level3" onclick="displayDesc(event,'opo_builder_length')">opo_builder_length()</button>
+        <button class="item level3" onclick="displayDesc(event,'opo_builder_take')">opo_builder_take()</button>
+        <button class="item level3" onclick="displayDesc(event,'opo_builder_push_object')">opo_builder_push_object()</button>
+        <button class="item level3" onclick="displayDesc(event,'opo_builder_push_array')">opo_builder_push_array()</button>
+        <button class="item level3" onclick="displayDesc(event,'opo_builder_pop')">opo_builder_pop()</button>
+        <button class="item level3" onclick="displayDesc(event,'opo_builder_push_null')">opo_builder_push_null()</button>
+        <button class="item level3" onclick="displayDesc(event,'opo_builder_push_bool')">opo_builder_push_bool()</button>
+        <button class="item level3" onclick="displayDesc(event,'opo_builder_push_int')">opo_builder_push_int()</button>
+        <button class="item level3" onclick="displayDesc(event,'opo_builder_push_double')">opo_builder_push_double()</button>
+        <button class="item level3" onclick="displayDesc(event,'opo_builder_push_string')">opo_builder_push_string()</button>
+        <button class="item level3" onclick="displayDesc(event,'opo_builder_push_uuid')">opo_builder_push_uuid()</button>
+        <button class="item level3" onclick="displayDesc(event,'opo_builder_push_uuid_string')">opo_builder_push_uuid_string()</button>
+        <button class="item level3" onclick="displayDesc(event,'opo_builder_push_time')">opo_builder_push_time()</button>
+
+        <button class="item level2" onclick="displayDesc(event,'opoClient')">opoClient</button>
+        <button class="item level3" onclick="displayDesc(event,'opoRef')">opoRef</button>
+        <button class="item level3" onclick="displayDesc(event,'opoQueryCallback')">opoQueryCallback</button>
+        <button class="item level3" onclick="displayDesc(event,'opo_client_connect')">opo_client_connect()</button>
+        <button class="item level3" onclick="displayDesc(event,'opo_client_close')">opo_client_close()</button>
+        <button class="item level3" onclick="displayDesc(event,'opo_client_query')">opo_client_query()</button>
+        <button class="item level3" onclick="displayDesc(event,'opo_client_query_wait')">opo_client_query_wait()</button>
+
+        <button class="item level2" onclick="displayDesc(event,'opoErr')">opoErr</button>
+        <button class="item level3" onclick="displayDesc(event,'OPO_ERR_INIT')">OPO_ERR_INIT</button>
+        <button class="item level3" onclick="displayDesc(event,'opoErrCode')">opoErrCode</button>
+        <button class="item level3" onclick="displayDesc(event,'opo_err_set')">opo_err_set()</button>
+        <button class="item level3" onclick="displayDesc(event,'opo_err_no')">opo_err_no()</button>
+        <button class="item level3" onclick="displayDesc(event,'opo_err_str')">opo_err_str()</button>
+        <button class="item level3" onclick="displayDesc(event,'opo_err_clear')">opo_err_clear()</button>
+
+        <button class="item level2" onclick="displayDesc(event,'opoVal')">opoVal</button>
+        <button class="item level3" onclick="displayDesc(event,'opoValType')">opoValType</button>
+        <button class="item level3" onclick="displayDesc(event,'opoValCallbacks')">opoValCallbacks</button>
+        <button class="item level3" onclick="displayDesc(event,'opo_val_bsize')">opo_val_bsize()</button>
+        <button class="item level3" onclick="displayDesc(event,'opo_val_size')">opo_val_size()</button>
+        <button class="item level3" onclick="displayDesc(event,'opo_val_type')">opo_val_type()</button>
+        <button class="item level3" onclick="displayDesc(event,'opo_val_iterate')">opo_val_iterate()</button>
+        <button class="item level3" onclick="displayDesc(event,'opo_val_get')">opo_val_get()</button>
+        <button class="item level3" onclick="displayDesc(event,'opo_val_bool')">opo_val_bool()</button>
+        <button class="item level3" onclick="displayDesc(event,'opo_val_int')">opo_val_int()</button>
+        <button class="item level3" onclick="displayDesc(event,'opo_val_double')">opo_val_double()</button>
+        <button class="item level3" onclick="displayDesc(event,'opo_val_string')">opo_val_string()</button>
+        <button class="item level3" onclick="displayDesc(event,'opo_val_key')">opo_val_key()</button>
+        <button class="item level3" onclick="displayDesc(event,'opo_val_uuid_str')">opo_val_uuid_str()</button>
+        <button class="item level3" onclick="displayDesc(event,'opo_val_uuid')">opo_val_uuid()</button>
+        <button class="item level3" onclick="displayDesc(event,'opo_val_time')">opo_val_time()</button>
+        <button class="item level3" onclick="displayDesc(event,'opo_val_members')">opo_val_members()</button>
+        <button class="item level3" onclick="displayDesc(event,'opo_val_next')">opo_val_next()</button>
+        <button class="item level3" onclick="displayDesc(event,'opo_val_member_count')">opo_val_member_count()</button>
+
+        <span class="cat">functions</span>
+        <button class="item level2" onclick="displayDesc(event,'opo_ojc_to_msg')">opo_ojc_to_msg()</button>
+        <button class="item level2" onclick="displayDesc(event,'opo_msg_to_ojc')">opo_msg_to_ojc()</button>
+        <button class="item level2" onclick="displayDesc(event,'opo_ojc_msg_size')">opo_ojc_msg_size()</button>
+
+      </div>
+
+      <div class="desc-pane">
+        <div id="Introduction" class="desc">
+          <div class="title">Introduction</div>
 
         </div>
-        <span class="cat">functions</span>
-        <div class="indent">
-          <a href="">opo_ojc_to_msg()</a>
-          <a href="">opo_msg_to_ojc()</a>
-          <a href="">opo_ojc_msg_size()</a>
+
+        <div id="Install" class="desc">
+          <div class="title">Install</div>
+
         </div>
-      </div>
-      <div class="desc-pane">
-        <a name="foo"></a>
-        hello
+
+        <div id="Guides" class="desc">
+          <div class="title">Guides</div>
+
+        </div>
+
+
+        <div id="opoBuilder" class="desc">
+          <div class="title">opoBuilder</div>
+
+        </div>
+
+        <div id="opo_builder_init" class="desc">
+          <div class="title">opo_builder_init()</div>
+
+        </div>
+
+        <div id="opo_builder_cleanup" class="desc">
+          <div class="title">opo_builder_cleanup()</div>
+
+        </div>
+
+        <div id="opo_builder_finish" class="desc">
+          <div class="title">opo_builder_finish()</div>
+
+        </div>
+
+        <div id="opo_builder_length" class="desc">
+          <div class="title">opo_builder_length()</div>
+
+        </div>
+
+        <div id="opo_builder_take" class="desc">
+          <div class="title">opo_builder_take()</div>
+
+        </div>
+
+        <div id="opo_builder_push_object" class="desc">
+          <div class="title">opo_builder_push_object()</div>
+
+        </div>
+
+        <div id="opo_builder_push_array" class="desc">
+          <div class="title">opo_builder_push_array()</div>
+
+        </div>
+
+        <div id="opo_builder_pop" class="desc">
+          <div class="title">opo_builder_pop()</div>
+
+        </div>
+
+        <div id="opo_builder_push_null" class="desc">
+          <div class="title">opo_builder_push_null()</div>
+
+        </div>
+
+        <div id="opo_builder_push_bool" class="desc">
+          <div class="title">opo_builder_push_bool()</div>
+
+        </div>
+
+        <div id="opo_builder_push_int" class="desc">
+          <div class="title">opo_builder_push_int()</div>
+
+        </div>
+
+        <div id="opo_builder_push_double" class="desc">
+          <div class="title">opo_builder_push_double()</div>
+
+        </div>
+
+        <div id="opo_builder_push_string" class="desc">
+          <div class="title">opo_builder_push_string()</div>
+
+        </div>
+
+        <div id="opo_builder_push_uuid" class="desc">
+          <div class="title">opo_builder_push_uuid()</div>
+
+        </div>
+
+        <div id="opo_builder_push_uuid_string" class="desc">
+          <div class="title">opo_builder_push_uuid_string()</div>
+
+        </div>
+
+        <div id="opo_builder_push_time" class="desc">
+          <div class="title">opo_builder_push_time()</div>
+
+        </div>
+
+        <div id="opoClient" class="desc">
+          <div class="title">opoClient</div>
+
+        </div>
+
+        <div id="opoRef" class="desc">
+          <div class="title">opoRef</div>
+
+        </div>
+
+        <div id="opoQueryCallback" class="desc">
+          <div class="title">opoQueryCallback</div>
+
+        </div>
+
+        <div id="opo_client_connect" class="desc">
+          <div class="title">opo_client_connect()</div>
+
+        </div>
+
+        <div id="opo_client_close" class="desc">
+          <div class="title">opo_client_close()</div>
+
+        </div>
+
+        <div id="opo_client_query" class="desc">
+          <div class="title">opo_client_query()</div>
+
+        </div>
+
+        <div id="opo_client_query_wait" class="desc">
+          <div class="title">opo_client_query_wait()</div>
+
+        </div>
+
+        <div id="opoErr" class="desc">
+          <div class="title">opoErr</div>
+
+        </div>
+
+        <div id="OPO_ERR_INIT" class="desc">
+          <div class="title">OPO_ERR_INIT</div>
+
+        </div>
+
+        <div id="opoErrCode" class="desc">
+          <div class="title">opoErrCode</div>
+
+        </div>
+
+        <div id="opo_err_set" class="desc">
+          <div class="title">opo_err_set()</div>
+
+        </div>
+
+        <div id="opo_err_no" class="desc">
+          <div class="title">opo_err_no()</div>
+
+        </div>
+
+        <div id="opo_err_str" class="desc">
+          <div class="title">opo_err_str()</div>
+
+        </div>
+
+        <div id="opo_err_clear" class="desc">
+          <div class="title">opo_err_clear()</div>
+
+        </div>
+
+        <div id="opoVal" class="desc">
+          <div class="title">opoVal</div>
+
+        </div>
+
+        <div id="opoValType" class="desc">
+          <div class="title">opoValType</div>
+
+        </div>
+
+        <div id="opoValCallbacks" class="desc">
+          <div class="title">opoValCallbacks</div>
+
+        </div>
+
+        <div id="opo_val_bsize" class="desc">
+          <div class="title">opo_val_bsize()</div>
+
+        </div>
+
+        <div id="opo_val_size" class="desc">
+          <div class="title">opo_val_size()</div>
+
+        </div>
+
+        <div id="opo_val_type" class="desc">
+          <div class="title">opo_val_type()</div>
+
+        </div>
+
+        <div id="opo_val_iterate" class="desc">
+          <div class="title">opo_val_iterate()</div>
+
+        </div>
+
+        <div id="opo_val_get" class="desc">
+          <div class="title">opo_val_get()</div>
+
+        </div>
+
+        <div id="opo_val_bool" class="desc">
+          <div class="title">opo_val_bool()</div>
+
+        </div>
+
+        <div id="opo_val_int" class="desc">
+          <div class="title">opo_val_int()</div>
+
+        </div>
+
+        <div id="opo_val_double" class="desc">
+          <div class="title">opo_val_double()</div>
+
+        </div>
+
+        <div id="opo_val_string" class="desc">
+          <div class="title">opo_val_string()</div>
+
+        </div>
+
+        <div id="opo_val_key" class="desc">
+          <div class="title">opo_val_key()</div>
+
+        </div>
+
+        <div id="opo_val_uuid_str" class="desc">
+          <div class="title">opo_val_uuid_str()</div>
+
+        </div>
+
+        <div id="opo_val_uuid" class="desc">
+          <div class="title">opo_val_uuid()</div>
+
+        </div>
+
+        <div id="opo_val_time" class="desc">
+          <div class="title">opo_val_time()</div>
+
+        </div>
+
+        <div id="opo_val_members" class="desc">
+          <div class="title">opo_val_members()</div>
+
+        </div>
+
+        <div id="opo_val_next" class="desc">
+          <div class="title">opo_val_next()</div>
+
+        </div>
+
+        <div id="opo_val_member_count" class="desc">
+          <div class="title">opo_val_member_count()</div>
+          <div class="synopsis">int opo_val_member_count(opoErr err, opoVal val)</div>
+          <p class="desc-text">
+            Counts the number of direct children of the value specified.
+          </p>
+          <table class="params">
+            <tr><td><span class="param">err</span></td><td>Errors are reported using this argument. It must not be NULL.</td></tr>
+            <tr><td><span class="param">val</span></td><td>The value to count the members of. If not an array or object then the count will be zero.</td></tr>
+            <tr><td class="returns">Returns:</td><td>The number of direct members of the <span class="code">val</span> argument.</td></tr>
+          </table>
+        </div>
+
+        <div id="opo_ojc_to_msg" class="desc">
+          <div class="title">opo_ojc_to_msg()</div>
+
+        </div>
+
+        <div id="opo_msg_to_ojc" class="desc">
+          <div class="title">opo_msg_to_ojc()</div>
+
+        </div>
+
+        <div id="opo_ojc_msg_size" class="desc">
+          <div class="title">opo_ojc_msg_size()</div>
+
+        </div>
+
       </div>
     </div>
-    
-    
+    <script>
+function displayDesc(e,d){
+    var all = document.getElementsByClassName('desc');
+    for (var i = all.length - 1; 0 <= i; i--) {
+        all[i].style.display = 'none';
+    }
+    all = document.getElementsByClassName('item');
+    for (var i = all.length - 1; 0 <= i; i--) {
+        all[i].className = all[i].className.replace(' selected', '');
+    }
+    document.getElementById(d).style.display = 'block';  
+    e.currentTarget.className += ' selected';
+}
+    </script>
   </body>
 </html>
