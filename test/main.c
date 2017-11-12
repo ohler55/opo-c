@@ -9,6 +9,7 @@
 
 extern void	append_builder_tests(utTest tests);
 extern void	append_val_tests(utTest tests);
+extern void	append_opo_tests(utTest tests);
 
 int
 main(int argc, char **argv) {
@@ -16,6 +17,7 @@ main(int argc, char **argv) {
 
     append_builder_tests(tests);
     append_val_tests(tests);
+    append_opo_tests(tests);
 
     ut_init(argc, argv, "OpO", tests);
 

@@ -3,7 +3,6 @@
 #include <errno.h>
 #include <string.h>
 #include <stdlib.h>
-#include <time.h>
 #include <unistd.h>
 
 #include "internal.h"
@@ -401,15 +400,31 @@ opo_builder_push_uuid_string(opoErr err, opoBuilder builder, const char *value, 
 }
 
 opoErrCode
-opo_builder_push_time(opoErr err, opoBuilder builder, uint64_t value, const char *key, int klen) {
+opo_builder_push_time(opoErr err, opoBuilder builder, int64_t value, const char *key, int klen) {
     if (OPO_ERR_OK != check_key(err, builder, key, klen)) {
 	return err->code;
     }
-    if (OPO_ERR_OK != builder_assure(err, builder, 37)) {
+    if (OPO_ERR_OK != builder_assure(err, builder, 9)) {
 	return err->code;
     }
     *builder->cur++ = VAL_TIME;
-    builder->cur = fill_uint64(builder->cur, value);
+    builder->cur = fill_uint64(builder->cur, (uint64_t)value);
+
+    return OPO_ERR_OK;
+}
+
+opoErrCode
+opo_builder_push_val(opoErr err, opoBuilder builder, opoVal value, const char *key, int klen) {
+    if (OPO_ERR_OK != check_key(err, builder, key, klen)) {
+	return err->code;
+    }
+    size_t	size = opo_val_bsize(value);
+
+    if (OPO_ERR_OK != builder_assure(err, builder, size)) {
+	return err->code;
+    }
+    memcpy(builder->cur, value, size);
+    builder->cur += size;
 
     return OPO_ERR_OK;
 }

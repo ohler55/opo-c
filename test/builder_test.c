@@ -75,7 +75,40 @@ builder_build_alloc_test() {
 }
 
 void
+builder_build_val_test() {
+    struct _opoBuilder	builder;
+    struct _opoErr	err = OPO_ERR_INIT;
+    uint8_t		data[1024];
+    uint8_t		child[1024];
+    
+    opo_builder_init(&err, &builder, child, sizeof(child));
+    opo_builder_push_array(&err, &builder, NULL, 0);
+    opo_builder_push_int(&err, &builder, -23, NULL, 0);
+    opo_builder_push_double(&err, &builder, 1.23, NULL, 0);
+    opo_builder_push_string(&err, &builder, "string", -1, NULL, 0);
+    opo_builder_push_uuid_string(&err, &builder, "123e4567-e89b-12d3-a456-426655440000", NULL, 0);
+    opo_builder_push_time(&err, &builder, 1489504166123456789LL, NULL, 0);
+    opo_builder_finish(&err, &builder);
+    
+    opo_builder_init(&err, &builder, data, sizeof(data));
+    opo_builder_push_object(&err, &builder, NULL, 0);
+    opo_builder_push_null(&err, &builder, "nil", -1);
+    opo_builder_push_bool(&err, &builder, true, "yes", -1);
+    opo_builder_push_bool(&err, &builder, false, "no", -1);
+    opo_builder_push_int(&err, &builder, 12345, "int", -1);
+    opo_builder_push_val(&err, &builder, child, "array", -1);
+    opo_builder_finish(&err, &builder);
+
+    char	buf[1024];
+
+    ut_hex_dump_buf(data, (int)opo_builder_length(&builder), buf);
+    ut_same(expect_sample_dump, buf, "hex dump mismatch");
+    opo_builder_cleanup(&builder);
+}
+
+void
 append_builder_tests(utTest tests) {
     ut_appenda(tests, "opo.builder.buf", builder_build_buf_test, NULL);
     ut_appenda(tests, "opo.builder.alloc", builder_build_alloc_test, NULL);
+    ut_appenda(tests, "opo.builder.val", builder_build_val_test, NULL);
 }

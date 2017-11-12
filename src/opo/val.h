@@ -43,7 +43,7 @@ extern "C" {
 	bool	(*string)(opoErr err, const char *str, int len, void *ctx);
 	bool	(*uuid)(opoErr err , uint64_t hi, uint64_t lo, void *ctx);
 	bool	(*uuid_str)(opoErr err, const char *str, void *ctx);
-	bool	(*time)(opoErr err, int64_t hi, void *ctx);
+	bool	(*time)(opoErr err, int64_t t, void *ctx);
 	bool	(*time_str)(opoErr err, const char *str, void *ctx);
     } *opoValCallbacks;
 
@@ -62,7 +62,7 @@ extern "C" {
     extern const char*	opo_val_key(opoErr err, opoVal key, int *lenp);
     extern void		opo_val_uuid_str(opoErr err, opoVal val, char *str);
     extern void		opo_val_uuid(opoErr err, opoVal val, uint64_t *hip, uint64_t *lop);
-    extern uint64_t	opo_val_time(opoErr err, opoVal val);
+    extern int64_t	opo_val_time(opoErr err, opoVal val);
     extern opoVal	opo_val_members(opoErr err, opoVal val);
     extern opoVal	opo_val_next(opoVal val);
     extern int		opo_val_member_count(opoErr err, opoVal val);

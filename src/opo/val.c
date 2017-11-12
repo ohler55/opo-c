@@ -326,16 +326,20 @@ val_iterate(opoErr err, opoVal val, opoValCallbacks callbacks, void *ctx, opoVal
 	case VAL_TIME:
 	    if (NULL != callbacks->time || NULL != callbacks->time_str) {
 		uint64_t	nsec;
-	    
+
 		val = read_uint64(val, &nsec);
 		if (NULL != callbacks->time) {
-		    callbacks->time(err, nsec, ctx);
+		    callbacks->time(err, (int64_t)nsec, ctx);
 		} else {
+		    int64_t	ns = (int64_t)nsec;
 		    char	buf[64];
 		    struct tm	tm;
-		    time_t	t = (time_t)(nsec / 1000000000LL);
-		    long	frac = nsec - (int64_t)t * 1000000000LL;
+		    time_t	t = (time_t)(ns / 1000000000LL);
+		    long	frac = ns - (int64_t)t * 1000000000LL;
 
+		    if (frac < 0) {
+			frac = -frac;
+		    }
 		    if (NULL == gmtime_r(&t, &tm)) {
 			opo_err_set(err, OPO_ERR_PARSE, "invalid time");
 			break;
@@ -675,20 +679,19 @@ opo_val_uuid(opoErr err, opoVal val, uint64_t *hip, uint64_t *lop) {
     }
 }
 
-uint64_t
+int64_t
 opo_val_time(opoErr err, opoVal val) {
     uint64_t	t = 0;
     
     if (NULL == val) {
 	opo_err_set(err, OPO_ERR_TYPE, "NULL is not a time value");
-	return 0;
     } else if (VAL_TIME != *val) {
 	opo_err_set(err, OPO_ERR_TYPE, "not a time value");
     } else {
 	val++;
 	read_uint64(val, &t);
     }
-    return t;
+    return (int64_t)t;
 }
 
 opoVal

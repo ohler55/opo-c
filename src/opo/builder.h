@@ -40,7 +40,8 @@ extern "C" {
     extern opoErrCode	opo_builder_push_string(opoErr err, opoBuilder builder, const char *value, int len, const char *key, int klen);
     extern opoErrCode	opo_builder_push_uuid(opoErr err, opoBuilder builder, uint64_t hi, uint64_t lo, const char *key, int klen);
     extern opoErrCode	opo_builder_push_uuid_string(opoErr err, opoBuilder builder, const char *value, const char *key, int klen);
-    extern opoErrCode	opo_builder_push_time(opoErr err, opoBuilder builder, uint64_t value, const char *key, int klen);
+    extern opoErrCode	opo_builder_push_time(opoErr err, opoBuilder builder, int64_t value, const char *key, int klen);
+    extern opoErrCode	opo_builder_push_val(opoErr err, opoBuilder builder, opoVal value, const char *key, int klen);
 
 #ifdef __cplusplus
 }

@@ -1,12 +1,12 @@
 
- 
+
 - opo
  - ojc_to_msg
  - msg_to_ojc
  - size
-
 - remove from ojc
 
+- client.[ch]
 
 - docs
  - html
@@ -32,4 +32,4 @@
    - opoVal
   
  - each pulls up page on right side
-
+ - could use one long page with a refs
