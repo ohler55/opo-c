@@ -28,7 +28,6 @@ extern "C" {
 	OPO_VAL_ARRAY	= (uint8_t)'a',
     } opoValType;
 
-    // TBD change to opoValCallbacks
     typedef struct _opoValCallbacks {
 	bool	(*begin_object)(opoErr err, void *ctx);
 	bool	(*end_object)(opoErr err, void *ctx);

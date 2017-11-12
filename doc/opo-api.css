@@ -1,0 +1,82 @@
+.style {
+    padding: 0px;
+}
+body {
+    -webkit-text-size-adjust: none;
+    background: #f0f8ff;
+    margin: 0px;
+    padding: 0px;
+    width: 100%;
+    font-family: 'HelveticaNeue', 'Helvetica Neue', 'Arial', sans-serif;
+    text-align: left;
+}
+.bold {
+    font-weight: bold;
+}
+a.normal {
+    color: white;
+    text-decoration: none;
+}
+a.selected {
+    color: white;
+    text-decoration: none;
+}
+a.opo {
+    font-style: italic;
+    font-weight: bold;
+}
+
+.header {
+    color: white;
+    width: 100%;
+    background-color: black;
+    font-family: 'HelveticaNeue-Bold', 'Helvetica Neue', 'Arial', sans-serif;
+}
+.small-header {
+    font-size: 36px;
+    font-style: italic;
+    font-weight: normal;
+    color: #ff8;
+}
+.headtitle {
+    padding: 0px 8px 8px 16px;
+    font-size: 72px;
+    font-style: italic;
+    font-weight: bold;
+}
+.page {
+    display: flex;
+    flex-direction: row;
+}
+.index {
+    width: 280px;
+    border: solid 1px #888;
+    padding: 16px;
+    color: white;
+    background-color: black;
+    font-family: 'HelveticaNeue-Bold', 'Helvetica Neue', 'Arial', sans-serif;
+    font-size: 16px;
+}
+.index a {
+    color: white;
+    display: block;
+    text-decoration: none;
+}
+.index a:hover {
+    color: #acf;
+}
+.cat {
+    color: #ace;
+    display: block;
+    font-style: italic;
+}
+.desc-pane {
+    border: solid red 1px;
+    padding: 10px;
+    color: black;
+    font-family: 'HelveticaNeue-Bold', 'Helvetica Neue', 'Arial', sans-serif;
+    font-size: 16px;
+}
+.indent {
+    margin-left: 16px;
+}
