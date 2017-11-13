@@ -96,249 +96,626 @@
 
         </div>
 
-
         <div id="opoBuilder" class="desc">
           <div class="title">opoBuilder</div>
+          <div class="synopsis">#define OPO_MSG_MAX_DEPTH  512
 
+typedef struct _opoBuilder {
+    uint8_t *head;
+    uint8_t *end;
+    uint8_t *cur;
+    bool    own;
+    bool    *top;
+    bool    stack[OPO_MSG_MAX_DEPTH];
+} *opoBuilder;
+</div>
+          <p class="desc-text">
+            The builder is used to build a binary message that is an
+            opoVal. It is meant to be fast and achieves that by making the
+            message construction a single pass or linear build. The structure
+            members are public but only the <span class="code">.head</span>
+            should be accessed and then only for reading.
+          </p>
+          <p class="desc-text">
+            The normal use of the builder is to initialize the builder and
+            then make multiple calls to push values into the message. Finally
+            calling the <span class="code">opo_builder_finish()</span>
+            function to properly complete the message.
+          </p>
+          <table class="params">
+            <tr><td><span class="param">head</span></td><td>the current start or head of the messages being built</td></tr>
+            <tr><td><span class="param">end</span></td><td>the current allocatd end of the message buffer</td></tr>
+            <tr><td><span class="param">cur</span></td><td>the current message end</td></tr>
+            <tr><td><span class="param">own</span></td><td>a flag indicating the builder owns the message buffer</td></tr>
+            <tr><td><span class="param">top</span></td><td>a pointer to the current top of the stack where the latest object or array is</td></tr>
+            <tr><td><span class="param">stack</span></td><td>stack used to keep track of objets and array while building</td></tr>
+          </table>
         </div>
 
         <div id="opo_builder_init" class="desc">
           <div class="title">opo_builder_init()</div>
-
+          <div class="synopsis">opoErrCode opo_builder_init(opoErr err, opoBuilder builder, uint8_t *buf, size_t size)</div>
+          <p class="desc-text">
+            Initialize a <span class="code">struct_opoBuilder</span> with the
+            buffer specified. If the <span class="code">buf</span> argument
+            is <span class="code">NULL</span> the a buffer is allocated with
+            the size specified or with a minimum size. If
+            the <span class="code">buf</span> argument is
+            not <span class="code">NULL</span> then that buffer is unless the
+            message grows too large and a new buffer is allocated. This is
+            indicated by the <span class="code">.own</span> member of the
+            builder. There should be no need to check as long as
+            the <span class="code">opo_builder_take()</span> function is used.
+          </p>
+          <table class="params">
+            <tr><td><span class="param">err</span></td><td>pointer to an initialized <span class="code">opoErr</span> struct that will be set if an error occurs.</td></tr>
+            <tr><td><span class="param">buider</span></td><td>builder to initialize</td></tr>
+            <tr><td><span class="param">buf</span></td><td>buffer to use initialy</td></tr>
+            <tr><td><span class="param">size</span></td><td>the size of the initial buffer or the initial size to allocate if the <span class="code">buf</span> is <span class="code">NULL</span></td></tr>
+            <tr><td class="returns">Returns:</td><td>the error status code.</td></tr>
+          </table>
         </div>
 
         <div id="opo_builder_cleanup" class="desc">
           <div class="title">opo_builder_cleanup()</div>
-
+          <div class="synopsis">void opo_builder_cleanup(opoBuilder builder)</div>
+          <p class="desc-text">
+            Cleans up any memory allocated by the builder. The buider itself is not freed.
+          </p>
+          <table class="params">
+            <tr><td><span class="param">buider</span></td><td>builder to cleanup</td></tr>
+          </table>
         </div>
 
         <div id="opo_builder_finish" class="desc">
           <div class="title">opo_builder_finish()</div>
+          <div class="synopsis"></div>
+          <p class="desc-text">
+          </p>
+          <table class="params">
+            <tr><td><span class="param">err</span></td><td>zzz</td></tr>
+            <tr><td class="returns">Returns:</td><td>zzz</td></tr>
+          </table>
 
         </div>
 
         <div id="opo_builder_length" class="desc">
           <div class="title">opo_builder_length()</div>
+          <div class="synopsis"></div>
+          <p class="desc-text">
+          </p>
+          <table class="params">
+            <tr><td><span class="param">err</span></td><td>zzz</td></tr>
+            <tr><td class="returns">Returns:</td><td>zzz</td></tr>
+          </table>
 
         </div>
 
         <div id="opo_builder_take" class="desc">
           <div class="title">opo_builder_take()</div>
+          <div class="synopsis"></div>
+          <p class="desc-text">
+          </p>
+          <table class="params">
+            <tr><td><span class="param">err</span></td><td>zzz</td></tr>
+            <tr><td class="returns">Returns:</td><td>zzz</td></tr>
+          </table>
 
         </div>
 
         <div id="opo_builder_push_object" class="desc">
           <div class="title">opo_builder_push_object()</div>
+          <div class="synopsis"></div>
+          <p class="desc-text">
+          </p>
+          <table class="params">
+            <tr><td><span class="param">err</span></td><td>zzz</td></tr>
+            <tr><td class="returns">Returns:</td><td>zzz</td></tr>
+          </table>
 
         </div>
 
         <div id="opo_builder_push_array" class="desc">
           <div class="title">opo_builder_push_array()</div>
+          <div class="synopsis"></div>
+          <p class="desc-text">
+          </p>
+          <table class="params">
+            <tr><td><span class="param">err</span></td><td>zzz</td></tr>
+            <tr><td class="returns">Returns:</td><td>zzz</td></tr>
+          </table>
 
         </div>
 
         <div id="opo_builder_pop" class="desc">
           <div class="title">opo_builder_pop()</div>
+          <div class="synopsis"></div>
+          <p class="desc-text">
+          </p>
+          <table class="params">
+            <tr><td><span class="param">err</span></td><td>zzz</td></tr>
+            <tr><td class="returns">Returns:</td><td>zzz</td></tr>
+          </table>
 
         </div>
 
         <div id="opo_builder_push_null" class="desc">
           <div class="title">opo_builder_push_null()</div>
+          <div class="synopsis"></div>
+          <p class="desc-text">
+          </p>
+          <table class="params">
+            <tr><td><span class="param">err</span></td><td>zzz</td></tr>
+            <tr><td class="returns">Returns:</td><td>zzz</td></tr>
+          </table>
 
         </div>
 
         <div id="opo_builder_push_bool" class="desc">
           <div class="title">opo_builder_push_bool()</div>
+          <div class="synopsis"></div>
+          <p class="desc-text">
+          </p>
+          <table class="params">
+            <tr><td><span class="param">err</span></td><td>zzz</td></tr>
+            <tr><td class="returns">Returns:</td><td>zzz</td></tr>
+          </table>
 
         </div>
 
         <div id="opo_builder_push_int" class="desc">
           <div class="title">opo_builder_push_int()</div>
+          <div class="synopsis"></div>
+          <p class="desc-text">
+          </p>
+          <table class="params">
+            <tr><td><span class="param">err</span></td><td>zzz</td></tr>
+            <tr><td class="returns">Returns:</td><td>zzz</td></tr>
+          </table>
 
         </div>
 
         <div id="opo_builder_push_double" class="desc">
           <div class="title">opo_builder_push_double()</div>
+          <div class="synopsis"></div>
+          <p class="desc-text">
+          </p>
+          <table class="params">
+            <tr><td><span class="param">err</span></td><td>zzz</td></tr>
+            <tr><td class="returns">Returns:</td><td>zzz</td></tr>
+          </table>
 
         </div>
 
         <div id="opo_builder_push_string" class="desc">
           <div class="title">opo_builder_push_string()</div>
+          <div class="synopsis"></div>
+          <p class="desc-text">
+          </p>
+          <table class="params">
+            <tr><td><span class="param">err</span></td><td>zzz</td></tr>
+            <tr><td class="returns">Returns:</td><td>zzz</td></tr>
+          </table>
 
         </div>
 
         <div id="opo_builder_push_uuid" class="desc">
           <div class="title">opo_builder_push_uuid()</div>
+          <div class="synopsis"></div>
+          <p class="desc-text">
+          </p>
+          <table class="params">
+            <tr><td><span class="param">err</span></td><td>zzz</td></tr>
+            <tr><td class="returns">Returns:</td><td>zzz</td></tr>
+          </table>
 
         </div>
 
         <div id="opo_builder_push_uuid_string" class="desc">
           <div class="title">opo_builder_push_uuid_string()</div>
+          <div class="synopsis"></div>
+          <p class="desc-text">
+          </p>
+          <table class="params">
+            <tr><td><span class="param">err</span></td><td>zzz</td></tr>
+            <tr><td class="returns">Returns:</td><td>zzz</td></tr>
+          </table>
 
         </div>
 
         <div id="opo_builder_push_time" class="desc">
           <div class="title">opo_builder_push_time()</div>
+          <div class="synopsis"></div>
+          <p class="desc-text">
+          </p>
+          <table class="params">
+            <tr><td><span class="param">err</span></td><td>zzz</td></tr>
+            <tr><td class="returns">Returns:</td><td>zzz</td></tr>
+          </table>
 
         </div>
 
         <div id="opoClient" class="desc">
           <div class="title">opoClient</div>
+          <div class="synopsis"></div>
+          <p class="desc-text">
+          </p>
+          <table class="params">
+            <tr><td><span class="param">err</span></td><td>zzz</td></tr>
+            <tr><td class="returns">Returns:</td><td>zzz</td></tr>
+          </table>
 
         </div>
 
         <div id="opoRef" class="desc">
           <div class="title">opoRef</div>
+          <div class="synopsis"></div>
+          <p class="desc-text">
+          </p>
+          <table class="params">
+            <tr><td><span class="param">err</span></td><td>zzz</td></tr>
+            <tr><td class="returns">Returns:</td><td>zzz</td></tr>
+          </table>
 
         </div>
 
         <div id="opoQueryCallback" class="desc">
           <div class="title">opoQueryCallback</div>
+          <div class="synopsis"></div>
+          <p class="desc-text">
+          </p>
+          <table class="params">
+            <tr><td><span class="param">err</span></td><td>zzz</td></tr>
+            <tr><td class="returns">Returns:</td><td>zzz</td></tr>
+          </table>
 
         </div>
 
         <div id="opo_client_connect" class="desc">
           <div class="title">opo_client_connect()</div>
+          <div class="synopsis"></div>
+          <p class="desc-text">
+          </p>
+          <table class="params">
+            <tr><td><span class="param">err</span></td><td>zzz</td></tr>
+            <tr><td class="returns">Returns:</td><td>zzz</td></tr>
+          </table>
 
         </div>
 
         <div id="opo_client_close" class="desc">
           <div class="title">opo_client_close()</div>
+          <div class="synopsis"></div>
+          <p class="desc-text">
+          </p>
+          <table class="params">
+            <tr><td><span class="param">err</span></td><td>zzz</td></tr>
+            <tr><td class="returns">Returns:</td><td>zzz</td></tr>
+          </table>
 
         </div>
 
         <div id="opo_client_query" class="desc">
           <div class="title">opo_client_query()</div>
+          <div class="synopsis"></div>
+          <p class="desc-text">
+          </p>
+          <table class="params">
+            <tr><td><span class="param">err</span></td><td>zzz</td></tr>
+            <tr><td class="returns">Returns:</td><td>zzz</td></tr>
+          </table>
 
         </div>
 
         <div id="opo_client_query_wait" class="desc">
           <div class="title">opo_client_query_wait()</div>
+          <div class="synopsis"></div>
+          <p class="desc-text">
+          </p>
+          <table class="params">
+            <tr><td><span class="param">err</span></td><td>zzz</td></tr>
+            <tr><td class="returns">Returns:</td><td>zzz</td></tr>
+          </table>
 
         </div>
 
         <div id="opoErr" class="desc">
           <div class="title">opoErr</div>
+          <div class="synopsis"></div>
+          <p class="desc-text">
+          </p>
+          <table class="params">
+            <tr><td><span class="param">err</span></td><td>zzz</td></tr>
+            <tr><td class="returns">Returns:</td><td>zzz</td></tr>
+          </table>
 
         </div>
 
         <div id="OPO_ERR_INIT" class="desc">
           <div class="title">OPO_ERR_INIT</div>
+          <div class="synopsis"></div>
+          <p class="desc-text">
+          </p>
+          <table class="params">
+            <tr><td><span class="param">err</span></td><td>zzz</td></tr>
+            <tr><td class="returns">Returns:</td><td>zzz</td></tr>
+          </table>
 
         </div>
 
         <div id="opoErrCode" class="desc">
           <div class="title">opoErrCode</div>
+          <div class="synopsis"></div>
+          <p class="desc-text">
+          </p>
+          <table class="params">
+            <tr><td><span class="param">err</span></td><td>zzz</td></tr>
+            <tr><td class="returns">Returns:</td><td>zzz</td></tr>
+          </table>
 
         </div>
 
         <div id="opo_err_set" class="desc">
           <div class="title">opo_err_set()</div>
+          <div class="synopsis"></div>
+          <p class="desc-text">
+          </p>
+          <table class="params">
+            <tr><td><span class="param">err</span></td><td>zzz</td></tr>
+            <tr><td class="returns">Returns:</td><td>zzz</td></tr>
+          </table>
 
         </div>
 
         <div id="opo_err_no" class="desc">
           <div class="title">opo_err_no()</div>
+          <div class="synopsis"></div>
+          <p class="desc-text">
+          </p>
+          <table class="params">
+            <tr><td><span class="param">err</span></td><td>zzz</td></tr>
+            <tr><td class="returns">Returns:</td><td>zzz</td></tr>
+          </table>
 
         </div>
 
         <div id="opo_err_str" class="desc">
           <div class="title">opo_err_str()</div>
+          <div class="synopsis"></div>
+          <p class="desc-text">
+          </p>
+          <table class="params">
+            <tr><td><span class="param">err</span></td><td>zzz</td></tr>
+            <tr><td class="returns">Returns:</td><td>zzz</td></tr>
+          </table>
 
         </div>
 
         <div id="opo_err_clear" class="desc">
           <div class="title">opo_err_clear()</div>
+          <div class="synopsis"></div>
+          <p class="desc-text">
+          </p>
+          <table class="params">
+            <tr><td><span class="param">err</span></td><td>zzz</td></tr>
+            <tr><td class="returns">Returns:</td><td>zzz</td></tr>
+          </table>
 
         </div>
 
         <div id="opoVal" class="desc">
           <div class="title">opoVal</div>
+          <div class="synopsis"></div>
+          <p class="desc-text">
+          </p>
+          <table class="params">
+            <tr><td><span class="param">err</span></td><td>zzz</td></tr>
+            <tr><td class="returns">Returns:</td><td>zzz</td></tr>
+          </table>
 
         </div>
 
         <div id="opoValType" class="desc">
           <div class="title">opoValType</div>
+          <div class="synopsis"></div>
+          <p class="desc-text">
+          </p>
+          <table class="params">
+            <tr><td><span class="param">err</span></td><td>zzz</td></tr>
+            <tr><td class="returns">Returns:</td><td>zzz</td></tr>
+          </table>
 
         </div>
 
         <div id="opoValCallbacks" class="desc">
           <div class="title">opoValCallbacks</div>
+          <div class="synopsis"></div>
+          <p class="desc-text">
+          </p>
+          <table class="params">
+            <tr><td><span class="param">err</span></td><td>zzz</td></tr>
+            <tr><td class="returns">Returns:</td><td>zzz</td></tr>
+          </table>
 
         </div>
 
         <div id="opo_val_bsize" class="desc">
           <div class="title">opo_val_bsize()</div>
+          <div class="synopsis"></div>
+          <p class="desc-text">
+          </p>
+          <table class="params">
+            <tr><td><span class="param">err</span></td><td>zzz</td></tr>
+            <tr><td class="returns">Returns:</td><td>zzz</td></tr>
+          </table>
 
         </div>
 
         <div id="opo_val_size" class="desc">
           <div class="title">opo_val_size()</div>
+          <div class="synopsis"></div>
+          <p class="desc-text">
+          </p>
+          <table class="params">
+            <tr><td><span class="param">err</span></td><td>zzz</td></tr>
+            <tr><td class="returns">Returns:</td><td>zzz</td></tr>
+          </table>
 
         </div>
 
         <div id="opo_val_type" class="desc">
           <div class="title">opo_val_type()</div>
+          <div class="synopsis"></div>
+          <p class="desc-text">
+          </p>
+          <table class="params">
+            <tr><td><span class="param">err</span></td><td>zzz</td></tr>
+            <tr><td class="returns">Returns:</td><td>zzz</td></tr>
+          </table>
 
         </div>
 
         <div id="opo_val_iterate" class="desc">
           <div class="title">opo_val_iterate()</div>
+          <div class="synopsis"></div>
+          <p class="desc-text">
+          </p>
+          <table class="params">
+            <tr><td><span class="param">err</span></td><td>zzz</td></tr>
+            <tr><td class="returns">Returns:</td><td>zzz</td></tr>
+          </table>
 
         </div>
 
         <div id="opo_val_get" class="desc">
           <div class="title">opo_val_get()</div>
+          <div class="synopsis"></div>
+          <p class="desc-text">
+          </p>
+          <table class="params">
+            <tr><td><span class="param">err</span></td><td>zzz</td></tr>
+            <tr><td class="returns">Returns:</td><td>zzz</td></tr>
+          </table>
 
         </div>
 
         <div id="opo_val_bool" class="desc">
           <div class="title">opo_val_bool()</div>
+          <div class="synopsis"></div>
+          <p class="desc-text">
+          </p>
+          <table class="params">
+            <tr><td><span class="param">err</span></td><td>zzz</td></tr>
+            <tr><td class="returns">Returns:</td><td>zzz</td></tr>
+          </table>
 
         </div>
 
         <div id="opo_val_int" class="desc">
           <div class="title">opo_val_int()</div>
+          <div class="synopsis"></div>
+          <p class="desc-text">
+          </p>
+          <table class="params">
+            <tr><td><span class="param">err</span></td><td>zzz</td></tr>
+            <tr><td class="returns">Returns:</td><td>zzz</td></tr>
+          </table>
 
         </div>
 
         <div id="opo_val_double" class="desc">
           <div class="title">opo_val_double()</div>
+          <div class="synopsis"></div>
+          <p class="desc-text">
+          </p>
+          <table class="params">
+            <tr><td><span class="param">err</span></td><td>zzz</td></tr>
+            <tr><td class="returns">Returns:</td><td>zzz</td></tr>
+          </table>
 
         </div>
 
         <div id="opo_val_string" class="desc">
           <div class="title">opo_val_string()</div>
+          <div class="synopsis"></div>
+          <p class="desc-text">
+          </p>
+          <table class="params">
+            <tr><td><span class="param">err</span></td><td>zzz</td></tr>
+            <tr><td class="returns">Returns:</td><td>zzz</td></tr>
+          </table>
 
         </div>
 
         <div id="opo_val_key" class="desc">
           <div class="title">opo_val_key()</div>
+          <div class="synopsis"></div>
+          <p class="desc-text">
+          </p>
+          <table class="params">
+            <tr><td><span class="param">err</span></td><td>zzz</td></tr>
+            <tr><td class="returns">Returns:</td><td>zzz</td></tr>
+          </table>
 
         </div>
 
         <div id="opo_val_uuid_str" class="desc">
           <div class="title">opo_val_uuid_str()</div>
+          <div class="synopsis"></div>
+          <p class="desc-text">
+          </p>
+          <table class="params">
+            <tr><td><span class="param">err</span></td><td>zzz</td></tr>
+            <tr><td class="returns">Returns:</td><td>zzz</td></tr>
+          </table>
 
         </div>
 
         <div id="opo_val_uuid" class="desc">
           <div class="title">opo_val_uuid()</div>
+          <div class="synopsis"></div>
+          <p class="desc-text">
+          </p>
+          <table class="params">
+            <tr><td><span class="param">err</span></td><td>zzz</td></tr>
+            <tr><td class="returns">Returns:</td><td>zzz</td></tr>
+          </table>
 
         </div>
 
         <div id="opo_val_time" class="desc">
           <div class="title">opo_val_time()</div>
+          <div class="synopsis"></div>
+          <p class="desc-text">
+          </p>
+          <table class="params">
+            <tr><td><span class="param">err</span></td><td>zzz</td></tr>
+            <tr><td class="returns">Returns:</td><td>zzz</td></tr>
+          </table>
 
         </div>
 
         <div id="opo_val_members" class="desc">
           <div class="title">opo_val_members()</div>
+          <div class="synopsis"></div>
+          <p class="desc-text">
+          </p>
+          <table class="params">
+            <tr><td><span class="param">err</span></td><td>zzz</td></tr>
+            <tr><td class="returns">Returns:</td><td>zzz</td></tr>
+          </table>
 
         </div>
 
         <div id="opo_val_next" class="desc">
           <div class="title">opo_val_next()</div>
+          <div class="synopsis"></div>
+          <p class="desc-text">
+          </p>
+          <table class="params">
+            <tr><td><span class="param">err</span></td><td>zzz</td></tr>
+            <tr><td class="returns">Returns:</td><td>zzz</td></tr>
+          </table>
 
         </div>
 
@@ -357,16 +734,37 @@
 
         <div id="opo_ojc_to_msg" class="desc">
           <div class="title">opo_ojc_to_msg()</div>
+          <div class="synopsis"></div>
+          <p class="desc-text">
+          </p>
+          <table class="params">
+            <tr><td><span class="param">err</span></td><td>zzz</td></tr>
+            <tr><td class="returns">Returns:</td><td>zzz</td></tr>
+          </table>
 
         </div>
 
         <div id="opo_msg_to_ojc" class="desc">
           <div class="title">opo_msg_to_ojc()</div>
+          <div class="synopsis"></div>
+          <p class="desc-text">
+          </p>
+          <table class="params">
+            <tr><td><span class="param">err</span></td><td>zzz</td></tr>
+            <tr><td class="returns">Returns:</td><td>zzz</td></tr>
+          </table>
 
         </div>
 
         <div id="opo_ojc_msg_size" class="desc">
           <div class="title">opo_ojc_msg_size()</div>
+          <div class="synopsis"></div>
+          <p class="desc-text">
+          </p>
+          <table class="params">
+            <tr><td><span class="param">err</span></td><td>zzz</td></tr>
+            <tr><td class="returns">Returns:</td><td>zzz</td></tr>
+          </table>
 
         </div>
 
