@@ -38,7 +38,7 @@ build_sample_msg(opoBuilder builder) {
     opo_builder_push_time(&err, builder, 1489504166123456789LL, NULL, 0);
     opo_builder_pop(&err, builder);
 
-    opo_builder_finish(&err, builder);
+    opo_builder_finish(builder);
     ut_same_int(OPO_ERR_OK, err.code, "error writing data. %s", err.msg);
 
     return OPO_ERR_OK;
@@ -89,7 +89,7 @@ builder_build_val_test() {
     opo_builder_push_string(&err, &builder, "string", -1, NULL, 0);
     opo_builder_push_uuid_string(&err, &builder, "123e4567-e89b-12d3-a456-426655440000", NULL, 0);
     opo_builder_push_time(&err, &builder, 1489504166123456789LL, NULL, 0);
-    opo_builder_finish(&err, &builder);
+    opo_builder_finish(&builder);
     
     opo_builder_init(&err, &builder, data, sizeof(data));
     opo_builder_push_object(&err, &builder, NULL, 0);
@@ -98,7 +98,7 @@ builder_build_val_test() {
     opo_builder_push_bool(&err, &builder, false, "no", -1);
     opo_builder_push_int(&err, &builder, 12345, "int", -1);
     opo_builder_push_val(&err, &builder, child, "array", -1);
-    opo_builder_finish(&err, &builder);
+    opo_builder_finish(&builder);
 
     char	buf[1024];
 

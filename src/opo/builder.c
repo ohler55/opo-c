@@ -184,7 +184,7 @@ opo_builder_cleanup(opoBuilder builder) {
 }
 
 opoErrCode
-opo_builder_finish(opoErr err, opoBuilder builder) {
+opo_builder_finish(opoBuilder builder) {
     uint8_t	*start;
 
     for (; builder->stack <= builder->top; builder->top--) {
@@ -203,6 +203,7 @@ opoVal
 opo_builder_take(opoBuilder builder) {
     uint8_t	*val = builder->head;
 
+    opo_builder_finish(builder);
     builder->head = NULL;
     builder->cur = NULL;
     builder->end = NULL;
