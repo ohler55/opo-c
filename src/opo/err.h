@@ -32,16 +32,13 @@ typedef enum {
     OPO_ERR_LAST
 } opoErrCode;
 
-// The struct used to report errors or status after a function returns. The
-// struct must be initialized before use as most calls that take an err
-// argument will return immediately if an error has already occurred.
 typedef struct _opoErr {
     int		code;
     char	msg[256];
 } *opoErr;
 
-extern int		opo_err_set(opoErr err, int code, const char *fmt, ...);
-extern int		opo_err_no(opoErr err, const char *fmt, ...);
+extern opoErrCode	opo_err_set(opoErr err, opoErrCode code, const char *fmt, ...);
+extern opoErrCode	opo_err_no(opoErr err, const char *fmt, ...);
 extern const char*	opo_err_str(opoErrCode code);
 extern void		opo_err_clear(opoErr err);
 

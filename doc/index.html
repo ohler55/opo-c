@@ -40,10 +40,11 @@
         <button class="item level2" onclick="displayDesc(event,'opoClient')">opoClient</button>
         <button class="item level3" onclick="displayDesc(event,'opoQueryCallback')">opoQueryCallback</button>
         <button class="item level3" onclick="displayDesc(event,'opoRef')">opoRef</button>
+        <button class="item level3" onclick="displayDesc(event,'opo_client_cancel')">opo_client_cancel()</button>
         <button class="item level3" onclick="displayDesc(event,'opo_client_close')">opo_client_close()</button>
         <button class="item level3" onclick="displayDesc(event,'opo_client_connect')">opo_client_connect()</button>
+        <button class="item level3" onclick="displayDesc(event,'opo_client_process')">opo_client_process()</button>
         <button class="item level3" onclick="displayDesc(event,'opo_client_query')">opo_client_query()</button>
-        <button class="item level3" onclick="displayDesc(event,'opo_client_query_wait')">opo_client_query_wait()</button>
 
         <button class="item level2" onclick="displayDesc(event,'opoErr')">opoErr</button>
         <button class="item level3" onclick="displayDesc(event,'OPO_ERR_INIT')">OPO_ERR_INIT</button>
@@ -505,282 +506,368 @@ typedef struct _opoBuilder {
 
         <div id="opoClient" class="desc">
           <div class="title">opoClient</div>
-          <div class="synopsis"></div>
+          <div class="synopsis">typedef struct _opoClient *opoClient;</div>
           <p class="desc-text">
+            The client is the connection handle for making requests to the OpO
+            database server. A client is creaed by connecting to the
+            server. After that queiries can be made until the client
+            conneciton is closed.
           </p>
-          <table class="params">
-            <tr><td><span class="param">err</span></td><td>zzz</td></tr>
-            <tr><td class="returns">Returns:</td><td>zzz</td></tr>
-          </table>
-
-        </div>
-
-        <div id="opoRef" class="desc">
-          <div class="title">opoRef</div>
-          <div class="synopsis"></div>
-          <p class="desc-text">
-          </p>
-          <table class="params">
-            <tr><td><span class="param">err</span></td><td>zzz</td></tr>
-            <tr><td class="returns">Returns:</td><td>zzz</td></tr>
-          </table>
-
         </div>
 
         <div id="opoQueryCallback" class="desc">
           <div class="title">opoQueryCallback</div>
-          <div class="synopsis"></div>
+          <div class="synopsis">typedef void (*opoQueryCallback)(opoRef ref, opoVal response, void *ctx)</div>
           <p class="desc-text">
+            Responses to asynchronous queries are delivered by calling the
+            callback function specified when the query is made.
           </p>
           <table class="params">
-            <tr><td><span class="param">err</span></td><td>zzz</td></tr>
-            <tr><td class="returns">Returns:</td><td>zzz</td></tr>
+            <tr><td><span class="param">ref</span></td><td>reference to the query</td></tr>
+            <tr><td><span class="param">response</span></td><td>response to the query</td></tr>
+            <tr><td><span class="param">ctx</span></td><td>context given when the query was made</td></tr>
           </table>
-
         </div>
 
-        <div id="opo_client_connect" class="desc">
-          <div class="title">opo_client_connect()</div>
-          <div class="synopsis"></div>
+        <div id="opoRef" class="desc">
+          <div class="title">opoRef</div>
+          <div class="synopsis">typedef uint64_t opoRef</div>
           <p class="desc-text">
+            When an asynchronous query is made a reference to the query is
+            returned. That reference included in the server response so that
+            the query can be matched to the response.
+          </p>
+        </div>
+
+        <div id="opo_client_cancel" class="desc">
+          <div class="title">opo_client_cancel()</div>
+          <div class="synopsis">bool opo_client_cancel(opoClient client, opoRef ref, bool call)</div>
+          <p class="desc-text">
+            Cancels the query associated with
+            the <span class="code">ref</span> if found. If
+            the <span class="code">call</span> argument is true then the
+            query callback is called with an error response indicating the
+            query was cancelled.
           </p>
           <table class="params">
-            <tr><td><span class="param">err</span></td><td>zzz</td></tr>
-            <tr><td class="returns">Returns:</td><td>zzz</td></tr>
+            <tr><td><span class="param">client</span></td><td>client managing the referenced query</td></tr>
+            <tr><td><span class="param">ref</span></td><td>referenced query</td></tr>
+            <tr><td><span class="param">call</span></td><td>flag indicating whether the callback should be called or not</td></tr>
+            <tr><td class="returns">Returns:</td><td>true if cancelled, false if not.</td></tr>
           </table>
-
         </div>
 
         <div id="opo_client_close" class="desc">
           <div class="title">opo_client_close()</div>
-          <div class="synopsis"></div>
+          <div class="synopsis">void opo_client_close(opoClient client)</div>
           <p class="desc-text">
+            Closes the connection to the server. Outstanding queries are
+            completed with error responses.
           </p>
           <table class="params">
-            <tr><td><span class="param">err</span></td><td>zzz</td></tr>
-            <tr><td class="returns">Returns:</td><td>zzz</td></tr>
+            <tr><td><span class="param">client</span></td><td>client to close</td></tr>
           </table>
+        </div>
 
+        <div id="opo_client_connect" class="desc">
+          <div class="title">opo_client_connect()</div>
+          <div class="synopsis">opoClient opo_client_connect(opoErr err, const char *host, int port)</div>
+          <p class="desc-text">
+            Connects to the server and creates a client that is returned to be
+            used for queries. On error the <span class="code">err</span> is
+            set and <span class="code">NULL</span> is returned.
+          </p>
+          <table class="params">
+            <tr><td><span class="param">err</span></td><td>pointer to an initialized <span class="code">opoErr</span> struct that will be set if an error occurs.</td></tr>
+            <tr><td><span class="param">host</span></td><td>server host name or address</td></tr>
+            <tr><td><span class="param">port</span></td><td>port the server is listening on</td></tr>
+            <tr><td class="returns">Returns:</td><td>a new client or <span class="code">NULL</span> on error.</td></tr>
+          </table>
+        </div>
+
+        <div id="opo_client_process" class="desc">
+          <div class="title">opo_client_process()</div>
+          <div class="synopsis">int opo_client_process(opoClient client, int max, double wait)</div>
+          <p class="desc-text">
+            Processes up the the specified <span class="code">max</span>
+            number of responses. If no response is ready to be processed in
+            the before the <span class="code">wait</span> time is exceeded the
+            call returns. The <span class="code">wait</span> is started after
+            the last handled response. This call is thread safe to allow
+            multiple servicing threads.
+          </p>
+          <table class="params">
+            <tr><td><span class="param">client</span></td><td>client to process responses</td></tr>
+            <tr><td><span class="param">max</span></td><td>maximum number of responses to process before returning</td></tr>
+            <tr><td><span class="param">wait</span></td><td>idle time in seconds before returning</td></tr>
+            <tr><td class="returns">Returns:</td><td>the number of responses processed</td></tr>
+          </table>
         </div>
 
         <div id="opo_client_query" class="desc">
           <div class="title">opo_client_query()</div>
-          <div class="synopsis"></div>
+          <div class="synopsis">opoRef opo_client_query(opoErr err,
+                        opoClient client,
+                        opoVal query,
+                        opoQueryCallback cb,
+                        void *ctx,
+                        double timeout)</div>
           <p class="desc-text">
+            Sends a query to the server and returns once the query has been
+            sent. The provided callback is called with the response. The
+            response callback is called when
+            the <span class="code">opo_client_process()</span> is called.
+          </p>
+          <p class="desc-text">
+            If <span class="code">timeout</span> greater than zero is
+            specified then an eror response is called if a response has not
+            been recieved from the server before the query times out.
           </p>
           <table class="params">
-            <tr><td><span class="param">err</span></td><td>zzz</td></tr>
-            <tr><td class="returns">Returns:</td><td>zzz</td></tr>
+            <tr><td><span class="param">err</span></td><td>pointer to an initialized <span class="code">opoErr</span> struct that will be set if an error occurs.</td></tr>
+            <tr><td><span class="param">client</span></td><td>client to send the query</td></tr>
+            <tr><td><span class="param">query</span></td><td><a href="http://opo.technology/pages/doc/tql/index.html">TQL</a> query</td></tr>
+            <tr><td><span class="param">cb</span></td><td>callback function to call with a response</td></tr>
+            <tr><td><span class="param">ctx</span></td><td>context that will be included in the callback</td></tr>
+            <tr><td><span class="param">timeout</span></td><td>timeout in seconds before the query is consided expired</td></tr>
+            <tr><td class="returns">Returns:</td><td>a reference to the query</td></tr>
           </table>
-
-        </div>
-
-        <div id="opo_client_query_wait" class="desc">
-          <div class="title">opo_client_query_wait()</div>
-          <div class="synopsis"></div>
-          <p class="desc-text">
-          </p>
-          <table class="params">
-            <tr><td><span class="param">err</span></td><td>zzz</td></tr>
-            <tr><td class="returns">Returns:</td><td>zzz</td></tr>
-          </table>
-
         </div>
 
         <div id="opoErr" class="desc">
           <div class="title">opoErr</div>
-          <div class="synopsis"></div>
+          <div class="synopsis">typedef struct _opoErr {
+    int		code;
+    char	msg[256];
+} *opoErr;
+</div>
           <p class="desc-text">
+            The struct used to report errors or status after a function
+            returns. The struct must be initialized before use as most calls
+            that take an <span class="code">err</span> argument will return
+            immediately if an error has already occurred.
           </p>
           <table class="params">
-            <tr><td><span class="param">err</span></td><td>zzz</td></tr>
-            <tr><td class="returns">Returns:</td><td>zzz</td></tr>
+            <tr><td><span class="param">code</span></td><td>error code</td></tr>
+            <tr><td><span class="param">msg</span></td><td>error message</td></tr>
           </table>
-
         </div>
 
         <div id="OPO_ERR_INIT" class="desc">
           <div class="title">OPO_ERR_INIT</div>
-          <div class="synopsis"></div>
+          <div class="synopsis">#define OPO_ERR_INIT { 0, { 0 } }</div>
           <p class="desc-text">
+            A static initializer for an <span class="code">opoErr</span>.
           </p>
-          <table class="params">
-            <tr><td><span class="param">err</span></td><td>zzz</td></tr>
-            <tr><td class="returns">Returns:</td><td>zzz</td></tr>
-          </table>
-
         </div>
 
         <div id="opoErrCode" class="desc">
           <div class="title">opoErrCode</div>
-          <div class="synopsis"></div>
+          <div class="synopsis">typedef enum {
+    OPO_ERR_OK		= 0,
+    OPO_ERR_MEMORY	= ENOMEM,
+    OPO_ERR_DENIED	= EACCES,
+    OPO_ERR_IMPL	= ENOSYS,
+    OPO_ERR_PARSE	= ELAST + 1,
+    OPO_ERR_READ,
+    OPO_ERR_WRITE,
+    OPO_ERR_OVERFLOW,
+    OPO_ERR_ARG,
+    OPO_ERR_NOT_FOUND,
+    OPO_ERR_THREAD,
+    OPO_ERR_NETWORK,
+    OPO_ERR_LOCK,
+    OPO_ERR_FREE,
+    OPO_ERR_IN_USE,
+    OPO_ERR_TOO_MANY,
+    OPO_ERR_TYPE,
+    OPO_ERR_LAST
+} opoErrCode;
+</div>
           <p class="desc-text">
+            The error codes for the <span class="code">opoErr</span>
+            struct. Not that errors in <span class="code">errno.h</span> can
+            also occur.
           </p>
-          <table class="params">
-            <tr><td><span class="param">err</span></td><td>zzz</td></tr>
-            <tr><td class="returns">Returns:</td><td>zzz</td></tr>
-          </table>
-
-        </div>
-
-        <div id="opo_err_set" class="desc">
-          <div class="title">opo_err_set()</div>
-          <div class="synopsis"></div>
-          <p class="desc-text">
-          </p>
-          <table class="params">
-            <tr><td><span class="param">err</span></td><td>zzz</td></tr>
-            <tr><td class="returns">Returns:</td><td>zzz</td></tr>
-          </table>
-
-        </div>
-
-        <div id="opo_err_no" class="desc">
-          <div class="title">opo_err_no()</div>
-          <div class="synopsis"></div>
-          <p class="desc-text">
-          </p>
-          <table class="params">
-            <tr><td><span class="param">err</span></td><td>zzz</td></tr>
-            <tr><td class="returns">Returns:</td><td>zzz</td></tr>
-          </table>
-
-        </div>
-
-        <div id="opo_err_str" class="desc">
-          <div class="title">opo_err_str()</div>
-          <div class="synopsis"></div>
-          <p class="desc-text">
-          </p>
-          <table class="params">
-            <tr><td><span class="param">err</span></td><td>zzz</td></tr>
-            <tr><td class="returns">Returns:</td><td>zzz</td></tr>
-          </table>
-
         </div>
 
         <div id="opo_err_clear" class="desc">
           <div class="title">opo_err_clear()</div>
-          <div class="synopsis"></div>
+          <div class="synopsis">void opo_err_clear(opoErr err)</div>
           <p class="desc-text">
+            Re-initializes an <span class="code">opoErr</span> struct. The
+            code is set to zero and the messages is cleared.
           </p>
           <table class="params">
-            <tr><td><span class="param">err</span></td><td>zzz</td></tr>
-            <tr><td class="returns">Returns:</td><td>zzz</td></tr>
+            <tr><td><span class="param">err</span></td><td>struct to re-initialize</td></tr>
           </table>
+        </div>
 
+        <div id="opo_err_no" class="desc">
+          <div class="title">opo_err_no()</div>
+          <div class="synopsis">opoErrCode opo_err_no(opoErr err, const char *fmt, ...)</div>
+          <p class="desc-text">
+            Sets the <span class="code">err-&gt;code</span> to
+            the <span class="code">errno</span> value and
+            uses <span class="code">printf</span> rules to fill in
+            the <span class="code">msg</span> element, limiting the size to
+            the size of the <span class="code">msg</span> size.
+          </p>
+          <table class="params">
+            <tr><td><span class="param">err</span></td><td>struct to modify</td></tr>
+            <tr><td><span class="param">fmt</span></td><td>printf format argument</td></tr>
+            <tr><td><span class="param">...</span></td><td>additional printf arguments</td></tr>
+            <tr><td class="returns">Returns:</td><td>the error code set</td></tr>
+          </table>
+        </div>
+
+        <div id="opo_err_set" class="desc">
+          <div class="title">opo_err_set()</div>
+          <div class="synopsis">opoErrCode opo_err_set(opoErr err, opoErrCode code, const char *fmt, ...)</div>
+          <p class="desc-text">
+            Sets the <span class="code">err-&gt;code</span> to
+            provided <span class="code">code</span> and
+            uses <span class="code">printf</span> rules to fill in
+            the <span class="code">msg</span> element, limiting the size to
+            the size of the <span class="code">msg</span> size.
+          </p>
+          <table class="params">
+            <tr><td><span class="param">err</span></td><td>struct to modify</td></tr>
+            <tr><td><span class="param">code</span></td><td>error code</td></tr>
+            <tr><td><span class="param">fmt</span></td><td>printf format argument</td></tr>
+            <tr><td><span class="param">...</span></td><td>additional printf arguments</td></tr>
+            <tr><td class="returns">Returns:</td><td>the error code set</td></tr>
+          </table>
+        </div>
+
+        <div id="opo_err_str" class="desc">
+          <div class="title">opo_err_str()</div>
+          <div class="synopsis">const char* opo_err_str(opoErrCode code)</div>
+          <p class="desc-text">
+            Returns the string associated with an error code.
+          </p>
+          <table class="params">
+            <tr><td class="returns">Returns:</td><td>descriptive string for the code.</td></tr>
+          </table>
         </div>
 
         <div id="opoVal" class="desc">
           <div class="title">opoVal</div>
-          <div class="synopsis"></div>
+          <div class="synopsis">typedef const uint8_t *opoVal;</div>
           <p class="desc-text">
+            An <span class="code">opoVal</span> a series of bytes that is the
+            encoded form of a JSON like tree structure. It adds support for
+            time as a 64 bit integer as nanoseconds from epoch as well as
+            UUIDs. It also allows multiple occurances of a key which somewhat
+            ambiquous in the JSON definition.
           </p>
-          <table class="params">
-            <tr><td><span class="param">err</span></td><td>zzz</td></tr>
-            <tr><td class="returns">Returns:</td><td>zzz</td></tr>
-          </table>
-
-        </div>
-
-        <div id="opoValType" class="desc">
-          <div class="title">opoValType</div>
-          <div class="synopsis"></div>
           <p class="desc-text">
+            The fact that a <span class="code">opoVal</span> is a series of
+            bytes is not important if the APIs are used. Where it does become
+            important is when sending, writing, or reading
+            a <span class="code">opoVal</span>. Since it is a contiguous
+            memory block it can be treated as such when readin and writing.
           </p>
-          <table class="params">
-            <tr><td><span class="param">err</span></td><td>zzz</td></tr>
-            <tr><td class="returns">Returns:</td><td>zzz</td></tr>
-          </table>
-
         </div>
 
         <div id="opoValCallbacks" class="desc">
           <div class="title">opoValCallbacks</div>
-          <div class="synopsis"></div>
+          <div class="synopsis">    typedef struct _opoValCallbacks {
+	bool	(*begin_object)(opoErr err, void *ctx);
+	bool	(*end_object)(opoErr err, void *ctx);
+	bool	(*key)(opoErr err, const char *key, int len, void *ctx);
+	bool	(*begin_array)(opoErr err, void *ctx);
+	bool	(*end_array)(opoErr err, void *ctx);
+	bool	(*null)(opoErr err, void *ctx);
+	bool	(*boolean)(opoErr err, bool b, void *ctx);
+	bool	(*fixnum)(opoErr err, int64_t num, void *ctx);
+	bool	(*decimal)(opoErr err, double num, void *ctx);
+	bool	(*string)(opoErr err, const char *str, int len, void *ctx);
+	bool	(*uuid)(opoErr err , uint64_t hi, uint64_t lo, void *ctx);
+	bool	(*uuid_str)(opoErr err, const char *str, void *ctx);
+	bool	(*time)(opoErr err, int64_t t, void *ctx);
+	bool	(*time_str)(opoErr err, const char *str, void *ctx);
+    } *opoValCallbacks;
+</div>
           <p class="desc-text">
+            When iterating over an <span class="code">opoVal</span>
+            the <span class="code">opoValCallback</span> is used to provide
+            the callback functions to the iterator. Each callback function
+            returns a boolean indicating whether iteration should continue or
+            not. A return of true indicates iteration should continue. If the
+            function is not set then it is not called. In the case of the UUID
+            and time functions, if the native, integer version are not set
+            then the string version is called if set. Only one will be called.
           </p>
           <table class="params">
-            <tr><td><span class="param">err</span></td><td>zzz</td></tr>
-            <tr><td class="returns">Returns:</td><td>zzz</td></tr>
+	    <tr><td><span class="param">begin_object</span></td><td>called when an object is startedn</td></tr>
+	    <tr><td><span class="param">end_object</span></td><td>called when an object ends</td></tr>
+	    <tr><td><span class="param">key</span></td><td>called when an object key is encountered</td></tr>
+	    <tr><td><span class="param">begin_array</span></td><td>called when an array starts</td></tr>
+	    <tr><td><span class="param">end_array</span></td><td>called when an array ends</td></tr>
+	    <tr><td><span class="param">null</span></td><td>called on null</td></tr>
+	    <tr><td><span class="param">boolean</span></td><td>called on a boolean</td></tr>
+	    <tr><td><span class="param">fixnum</span></td><td>called on an integer</td></tr>
+	    <tr><td><span class="param">decimal</span></td><td>called on a decimal</td></tr>
+	    <tr><td><span class="param">string</span></td><td>called on a string</td></tr>
+	    <tr><td><span class="param">uuid</span></td><td>called on a UUID</td></tr>
+	    <tr><td><span class="param">uuid_str</span></td><td>called if the <span class="code">uuid</span> element is <span class="code">NULL</span></td></tr>
+	    <tr><td><span class="param">time</span></td><td>called on time</td></tr>
+	    <tr><td><span class="param">time_str</span></td><td>called if the <span class="code">time</span> element is <span class="code">NULL</span>/td></tr>
           </table>
-
         </div>
 
-        <div id="opo_val_bsize" class="desc">
-          <div class="title">opo_val_bsize()</div>
-          <div class="synopsis"></div>
+        <div id="opoValType" class="desc">
+          <div class="title">opoValType</div>
+          <div class="synopsis">    typedef enum {
+	OPO_VAL_NONE	= (uint8_t)0,
+	OPO_VAL_NULL	= (uint8_t)'n',
+	OPO_VAL_BOOL	= (uint8_t)'b',
+	OPO_VAL_INT	= (uint8_t)'i',
+	OPO_VAL_STR	= (uint8_t)'s',
+	OPO_VAL_DEC	= (uint8_t)'d',
+	OPO_VAL_UUID	= (uint8_t)'u',
+	OPO_VAL_TIME	= (uint8_t)'t',
+	OPO_VAL_OBJ	= (uint8_t)'o',
+	OPO_VAL_ARRAY	= (uint8_t)'a',
+    } opoValType;
+</div>
           <p class="desc-text">
+            Like JSON each <span class="code">opoVal</span> has a type. These
+            types are defines by the <span class="code">opoValType</span>
+            enum. Each type has a different means of defining the length of
+            the value.
           </p>
           <table class="params">
-            <tr><td><span class="param">err</span></td><td>zzz</td></tr>
-            <tr><td class="returns">Returns:</td><td>zzz</td></tr>
+	    <tr><td><span class="param">OPO_VAL_NONE</span></td><td>no type, usually an error or unset</td></tr>
+	    <tr><td><span class="param">OPO_VAL_NULL</span></td><td>a JSON null</td></tr>
+	    <tr><td><span class="param">OPO_VAL_BOOL</span></td><td>a boolean, true or false</td></tr>
+	    <tr><td><span class="param">OPO_VAL_INT</span></td><td>an 64 bit integer</td></tr>
+	    <tr><td><span class="param">OPO_VAL_STR</span></td><td>a \0 teminated string</td></tr>
+	    <tr><td><span class="param">OPO_VAL_DEC</span></td><td>A decimal, float, or double</td></tr>
+	    <tr><td><span class="param">OPO_VAL_UUID</span></td><td>a UUID represented as two 64 bit unsigned integers</td></tr>
+	    <tr><td><span class="param">OPO_VAL_TIME</span></td><td>time as nanoseconds from epoch</td></tr>
+	    <tr><td><span class="param">OPO_VAL_OBJ</span></td><td>a JSON object, map, or hash</td></tr>
+	    <tr><td><span class="param">OPO_VAL_ARRAY</span></td><td>an array</td></tr>
           </table>
-
-        </div>
-
-        <div id="opo_val_size" class="desc">
-          <div class="title">opo_val_size()</div>
-          <div class="synopsis"></div>
-          <p class="desc-text">
-          </p>
-          <table class="params">
-            <tr><td><span class="param">err</span></td><td>zzz</td></tr>
-            <tr><td class="returns">Returns:</td><td>zzz</td></tr>
-          </table>
-
-        </div>
-
-        <div id="opo_val_type" class="desc">
-          <div class="title">opo_val_type()</div>
-          <div class="synopsis"></div>
-          <p class="desc-text">
-          </p>
-          <table class="params">
-            <tr><td><span class="param">err</span></td><td>zzz</td></tr>
-            <tr><td class="returns">Returns:</td><td>zzz</td></tr>
-          </table>
-
-        </div>
-
-        <div id="opo_val_iterate" class="desc">
-          <div class="title">opo_val_iterate()</div>
-          <div class="synopsis"></div>
-          <p class="desc-text">
-          </p>
-          <table class="params">
-            <tr><td><span class="param">err</span></td><td>zzz</td></tr>
-            <tr><td class="returns">Returns:</td><td>zzz</td></tr>
-          </table>
-
-        </div>
-
-        <div id="opo_val_get" class="desc">
-          <div class="title">opo_val_get()</div>
-          <div class="synopsis"></div>
-          <p class="desc-text">
-          </p>
-          <table class="params">
-            <tr><td><span class="param">err</span></td><td>zzz</td></tr>
-            <tr><td class="returns">Returns:</td><td>zzz</td></tr>
-          </table>
-
         </div>
 
         <div id="opo_val_bool" class="desc">
           <div class="title">opo_val_bool()</div>
-          <div class="synopsis"></div>
+          <div class="synopsis">bool opo_val_bool(opoErr err, opoVal val)</div>
           <p class="desc-text">
+            Gets a boolean from a <span class="code">opoVal</span> if it is a
+            boolean type. If not the <span class="code">err</span> is set.
           </p>
           <table class="params">
-            <tr><td><span class="param">err</span></td><td>zzz</td></tr>
-            <tr><td class="returns">Returns:</td><td>zzz</td></tr>
+            <tr><td><span class="param">err</span></td><td>pointer to an initialized <span class="code">opoErr</span> struct that will be set if an error occurs.</td></tr>
+            <tr><td><span class="param">val</span></td><td><span class="code">opoVal</span> to get the value from</td></tr>
+            <tr><td class="returns">Returns:</td><td>the value</td></tr>
           </table>
-
         </div>
 
-        <div id="opo_val_int" class="desc">
-          <div class="title">opo_val_int()</div>
+        <div id="opo_val_bsize" class="desc">
+          <div class="title">opo_val_bsize()</div>
           <div class="synopsis"></div>
           <p class="desc-text">
           </p>
@@ -803,8 +890,32 @@ typedef struct _opoBuilder {
 
         </div>
 
-        <div id="opo_val_string" class="desc">
-          <div class="title">opo_val_string()</div>
+        <div id="opo_val_get" class="desc">
+          <div class="title">opo_val_get()</div>
+          <div class="synopsis"></div>
+          <p class="desc-text">
+          </p>
+          <table class="params">
+            <tr><td><span class="param">err</span></td><td>zzz</td></tr>
+            <tr><td class="returns">Returns:</td><td>zzz</td></tr>
+          </table>
+
+        </div>
+
+        <div id="opo_val_int" class="desc">
+          <div class="title">opo_val_int()</div>
+          <div class="synopsis"></div>
+          <p class="desc-text">
+          </p>
+          <table class="params">
+            <tr><td><span class="param">err</span></td><td>zzz</td></tr>
+            <tr><td class="returns">Returns:</td><td>zzz</td></tr>
+          </table>
+
+        </div>
+
+        <div id="opo_val_iterate" class="desc">
+          <div class="title">opo_val_iterate()</div>
           <div class="synopsis"></div>
           <p class="desc-text">
           </p>
@@ -817,6 +928,91 @@ typedef struct _opoBuilder {
 
         <div id="opo_val_key" class="desc">
           <div class="title">opo_val_key()</div>
+          <div class="synopsis"></div>
+          <p class="desc-text">
+          </p>
+          <table class="params">
+            <tr><td><span class="param">err</span></td><td>zzz</td></tr>
+            <tr><td class="returns">Returns:</td><td>zzz</td></tr>
+          </table>
+
+        </div>
+
+        <div id="opo_val_member_count" class="desc">
+          <div class="title">opo_val_member_count()</div>
+          <div class="synopsis">int opo_val_member_count(opoErr err, opoVal val)</div>
+          <p class="desc-text">
+            Counts the number of direct children of the value specified.
+          </p>
+          <table class="params">
+            <tr><td><span class="param">err</span></td><td>Errors are reported using this argument. It must not be NULL.</td></tr>
+            <tr><td><span class="param">val</span></td><td>The value to count the members of. If not an array or object then the count will be zero.</td></tr>
+            <tr><td class="returns">Returns:</td><td>The number of direct members of the <span class="code">val</span> argument.</td></tr>
+          </table>
+        </div>
+
+        <div id="opo_val_members" class="desc">
+          <div class="title">opo_val_members()</div>
+          <div class="synopsis"></div>
+          <p class="desc-text">
+          </p>
+          <table class="params">
+            <tr><td><span class="param">err</span></td><td>zzz</td></tr>
+            <tr><td class="returns">Returns:</td><td>zzz</td></tr>
+          </table>
+
+        </div>
+
+        <div id="opo_val_next" class="desc">
+          <div class="title">opo_val_next()</div>
+          <div class="synopsis"></div>
+          <p class="desc-text">
+          </p>
+          <table class="params">
+            <tr><td><span class="param">err</span></td><td>zzz</td></tr>
+            <tr><td class="returns">Returns:</td><td>zzz</td></tr>
+          </table>
+
+        </div>
+
+        <div id="opo_val_size" class="desc">
+          <div class="title">opo_val_size()</div>
+          <div class="synopsis"></div>
+          <p class="desc-text">
+          </p>
+          <table class="params">
+            <tr><td><span class="param">err</span></td><td>zzz</td></tr>
+            <tr><td class="returns">Returns:</td><td>zzz</td></tr>
+          </table>
+
+        </div>
+
+        <div id="opo_val_string" class="desc">
+          <div class="title">opo_val_string()</div>
+          <div class="synopsis"></div>
+          <p class="desc-text">
+          </p>
+          <table class="params">
+            <tr><td><span class="param">err</span></td><td>zzz</td></tr>
+            <tr><td class="returns">Returns:</td><td>zzz</td></tr>
+          </table>
+
+        </div>
+
+        <div id="opo_val_time" class="desc">
+          <div class="title">opo_val_time()</div>
+          <div class="synopsis"></div>
+          <p class="desc-text">
+          </p>
+          <table class="params">
+            <tr><td><span class="param">err</span></td><td>zzz</td></tr>
+            <tr><td class="returns">Returns:</td><td>zzz</td></tr>
+          </table>
+
+        </div>
+
+        <div id="opo_val_type" class="desc">
+          <div class="title">opo_val_type()</div>
           <div class="synopsis"></div>
           <p class="desc-text">
           </p>
@@ -851,67 +1047,6 @@ typedef struct _opoBuilder {
 
         </div>
 
-        <div id="opo_val_time" class="desc">
-          <div class="title">opo_val_time()</div>
-          <div class="synopsis"></div>
-          <p class="desc-text">
-          </p>
-          <table class="params">
-            <tr><td><span class="param">err</span></td><td>zzz</td></tr>
-            <tr><td class="returns">Returns:</td><td>zzz</td></tr>
-          </table>
-
-        </div>
-
-        <div id="opo_val_members" class="desc">
-          <div class="title">opo_val_members()</div>
-          <div class="synopsis"></div>
-          <p class="desc-text">
-          </p>
-          <table class="params">
-            <tr><td><span class="param">err</span></td><td>zzz</td></tr>
-            <tr><td class="returns">Returns:</td><td>zzz</td></tr>
-          </table>
-
-        </div>
-
-        <div id="opo_val_next" class="desc">
-          <div class="title">opo_val_next()</div>
-          <div class="synopsis"></div>
-          <p class="desc-text">
-          </p>
-          <table class="params">
-            <tr><td><span class="param">err</span></td><td>zzz</td></tr>
-            <tr><td class="returns">Returns:</td><td>zzz</td></tr>
-          </table>
-
-        </div>
-
-        <div id="opo_val_member_count" class="desc">
-          <div class="title">opo_val_member_count()</div>
-          <div class="synopsis">int opo_val_member_count(opoErr err, opoVal val)</div>
-          <p class="desc-text">
-            Counts the number of direct children of the value specified.
-          </p>
-          <table class="params">
-            <tr><td><span class="param">err</span></td><td>Errors are reported using this argument. It must not be NULL.</td></tr>
-            <tr><td><span class="param">val</span></td><td>The value to count the members of. If not an array or object then the count will be zero.</td></tr>
-            <tr><td class="returns">Returns:</td><td>The number of direct members of the <span class="code">val</span> argument.</td></tr>
-          </table>
-        </div>
-
-        <div id="opo_ojc_to_msg" class="desc">
-          <div class="title">opo_ojc_to_msg()</div>
-          <div class="synopsis"></div>
-          <p class="desc-text">
-          </p>
-          <table class="params">
-            <tr><td><span class="param">err</span></td><td>zzz</td></tr>
-            <tr><td class="returns">Returns:</td><td>zzz</td></tr>
-          </table>
-
-        </div>
-
         <div id="opo_msg_to_ojc" class="desc">
           <div class="title">opo_msg_to_ojc()</div>
           <div class="synopsis"></div>
@@ -926,6 +1061,18 @@ typedef struct _opoBuilder {
 
         <div id="opo_ojc_msg_size" class="desc">
           <div class="title">opo_ojc_msg_size()</div>
+          <div class="synopsis"></div>
+          <p class="desc-text">
+          </p>
+          <table class="params">
+            <tr><td><span class="param">err</span></td><td>zzz</td></tr>
+            <tr><td class="returns">Returns:</td><td>zzz</td></tr>
+          </table>
+
+        </div>
+
+        <div id="opo_ojc_to_msg" class="desc">
+          <div class="title">opo_ojc_to_msg()</div>
           <div class="synopsis"></div>
           <p class="desc-text">
           </p>

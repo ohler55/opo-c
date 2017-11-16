@@ -38,7 +38,6 @@ extern "C" {
 	bool	(*boolean)(opoErr err, bool b, void *ctx);
 	bool	(*fixnum)(opoErr err, int64_t num, void *ctx);
 	bool	(*decimal)(opoErr err, double num, void *ctx);
-	bool	(*number)(opoErr err, const char *num, int len, void *ctx);
 	bool	(*string)(opoErr err, const char *str, int len, void *ctx);
 	bool	(*uuid)(opoErr err , uint64_t hi, uint64_t lo, void *ctx);
 	bool	(*uuid_str)(opoErr err, const char *str, void *ctx);

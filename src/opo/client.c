@@ -15,18 +15,22 @@ opo_client_connect(opoErr err, const char *host, int port) {
 void
 opo_client_close(opoClient client) {
     // TBD
-
 }
 
 opoRef
-opo_client_query(opoErr err, opoClient client, opoVal query, opoQueryCallback cb, void *ctx) {
+opo_client_query(opoErr err, opoClient client, opoVal query, opoQueryCallback cb, void *ctx, double timeout) {
     // TBD
     return 0;
 }
 
-opoVal
-opo_client_query_wait(opoErr err, opoClient client, opoVal query) {
+bool
+opo_client_cancel(opoClient client, opoRef ref, bool silent) {
+    // TBD
+    return false;
+}
+
+int
+opo_client_process(opoClient client, int max, double wait) {
     // TBD
     return 0;
 }
-

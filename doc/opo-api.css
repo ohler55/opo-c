@@ -97,9 +97,6 @@ a.opo {
     font-style: italic;
     padding: 2px 2px 2px 16px;
 }
-.indent {
-    margin-left: 16px;
-}
 .desc-pane {
     width: 100%;
     color: black;
@@ -127,8 +124,8 @@ a.opo {
     border: 1px solid #c0d0e0;
 }
 .desc-text {
-    margin: 16px 0px 8px 8px;
-    padding: 8px;
+    margin: 8px 0px 8px 8px;
+    padding: 4px;
 }
 table.params {
     margin: 0px 0px 0px 16px;

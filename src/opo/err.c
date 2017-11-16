@@ -6,8 +6,8 @@
 
 #include "err.h"
 
-int
-opo_err_set(opoErr err, int code, const char *fmt, ...) {
+opoErrCode
+opo_err_set(opoErr err, opoErrCode code, const char *fmt, ...) {
     va_list	ap;
 
     va_start(ap, fmt);
@@ -18,7 +18,7 @@ opo_err_set(opoErr err, int code, const char *fmt, ...) {
     return err->code;
 }
 
-int
+opoErrCode
 opo_err_no(opoErr err, const char *fmt, ...) {
     int	cnt = 0;
     
