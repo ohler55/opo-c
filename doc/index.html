@@ -862,80 +862,101 @@ typedef struct _opoBuilder {
           <table class="params">
             <tr><td><span class="param">err</span></td><td>pointer to an initialized <span class="code">opoErr</span> struct that will be set if an error occurs.</td></tr>
             <tr><td><span class="param">val</span></td><td><span class="code">opoVal</span> to get the value from</td></tr>
-            <tr><td class="returns">Returns:</td><td>the value</td></tr>
+            <tr><td class="returns">Returns:</td><td>the value.</td></tr>
           </table>
         </div>
 
         <div id="opo_val_bsize" class="desc">
           <div class="title">opo_val_bsize()</div>
-          <div class="synopsis"></div>
+          <div class="synopsis">size_t opo_val_bsize(opoVal val)</div>
           <p class="desc-text">
+            Returns the size in bytes of a completed <span class="code">opoVal</span>.
           </p>
           <table class="params">
-            <tr><td><span class="param">err</span></td><td>zzz</td></tr>
-            <tr><td class="returns">Returns:</td><td>zzz</td></tr>
+            <tr><td><span class="param">val</span></td><td><span class="code">opoVal</span> to get the byte size of</td></tr>
+            <tr><td class="returns">Returns:</td><td>the value size.</td></tr>
           </table>
-
         </div>
 
         <div id="opo_val_double" class="desc">
           <div class="title">opo_val_double()</div>
-          <div class="synopsis"></div>
+          <div class="synopsis">double opo_val_double(opoErr err, opoVal val)</div>
           <p class="desc-text">
+            Gets a double from a <span class="code">opoVal</span> if it is a
+            decimal type. If not the <span class="code">err</span> is set.
           </p>
           <table class="params">
-            <tr><td><span class="param">err</span></td><td>zzz</td></tr>
-            <tr><td class="returns">Returns:</td><td>zzz</td></tr>
+            <tr><td><span class="param">err</span></td><td>pointer to an initialized <span class="code">opoErr</span> struct that will be set if an error occurs.</td></tr>
+            <tr><td><span class="param">val</span></td><td><span class="code">opoVal</span> to get the value from</td></tr>
+            <tr><td class="returns">Returns:</td><td>the value.</td></tr>
           </table>
-
         </div>
 
         <div id="opo_val_get" class="desc">
           <div class="title">opo_val_get()</div>
-          <div class="synopsis"></div>
+          <div class="synopsis">opoVal opo_val_get(opoVal val, const char *path)</div>
           <p class="desc-text">
+            Gets a member from an object or
+            array <span class="code">opoVal</span>. The function will walk the
+            path until either there is no match or the end of the path is
+            reached. A path member that can be an index can be used for array
+            elements.
           </p>
           <table class="params">
-            <tr><td><span class="param">err</span></td><td>zzz</td></tr>
-            <tr><td class="returns">Returns:</td><td>zzz</td></tr>
+            <tr><td><span class="param">val</span></td><td><span class="code">opoVal</span> to get the value from</td></tr>
+            <tr><td class="returns">Returns:</td><td>the <span class="code">opoVal</span> at the end of the path or <span class="code">NULL</span>.</td></tr>
           </table>
-
         </div>
 
         <div id="opo_val_int" class="desc">
           <div class="title">opo_val_int()</div>
-          <div class="synopsis"></div>
+          <div class="synopsis">int64_t opo_val_int(opoErr err, opoVal val)</div>
           <p class="desc-text">
+            Gets an integer from a <span class="code">opoVal</span> if it is
+            an integer type. If not the <span class="code">err</span> is set.
           </p>
           <table class="params">
-            <tr><td><span class="param">err</span></td><td>zzz</td></tr>
-            <tr><td class="returns">Returns:</td><td>zzz</td></tr>
+            <tr><td><span class="param">err</span></td><td>pointer to an initialized <span class="code">opoErr</span> struct that will be set if an error occurs.</td></tr>
+            <tr><td><span class="param">val</span></td><td><span class="code">opoVal</span> to get the value from</td></tr>
+            <tr><td class="returns">Returns:</td><td>the value.</td></tr>
           </table>
-
         </div>
 
         <div id="opo_val_iterate" class="desc">
           <div class="title">opo_val_iterate()</div>
-          <div class="synopsis"></div>
+          <div class="synopsis">opoErrCode opo_val_iterate(opoErr err, opoVal val, opoValCallbacks callbacks, void *ctx)</div>
           <p class="desc-text">
+            Iterates over a <span class="code">opoVal</span> tree following
+            each branch and calling the appropriate function in
+            the <span class="code">callbacks</span> struct. The return value
+            is the last non <span class="code">OPO_ERR_OK</span> value from
+            the callbacks or <span class="code">OPO_ERR_OK</span> if no error
+            was set.
           </p>
           <table class="params">
-            <tr><td><span class="param">err</span></td><td>zzz</td></tr>
-            <tr><td class="returns">Returns:</td><td>zzz</td></tr>
+            <tr><td><span class="param">err</span></td><td>pointer to an initialized <span class="code">opoErr</span> struct that will be set if an error occurs.</td></tr>
+            <tr><td><span class="param">val</span></td><td><span class="code">opoVal</span> to iterate over</td></tr>
+            <tr><td><span class="param">ctx</span></td><td>context to pass to the callbacks</td></tr>
+            <tr><td class="returns">Returns:</td><td>the value of <span class="code">err-&gt;code</span>.</td></tr>
           </table>
-
         </div>
 
         <div id="opo_val_key" class="desc">
           <div class="title">opo_val_key()</div>
-          <div class="synopsis"></div>
+          <div class="synopsis">const char* opo_val_key(opoErr err, opoVal key, int *lenp)</div>
           <p class="desc-text">
+            Returns the value of a key as a string if
+            the <span class="code">key</span> argument is a key in an
+            object. If the <span class="code">lenp</span> pointer is
+            not <span class="code">NULL</span> then the length of the key
+            string is set.
           </p>
           <table class="params">
-            <tr><td><span class="param">err</span></td><td>zzz</td></tr>
-            <tr><td class="returns">Returns:</td><td>zzz</td></tr>
+            <tr><td><span class="param">err</span></td><td>pointer to an initialized <span class="code">opoErr</span> struct that will be set if an error occurs.</td></tr>
+            <tr><td><span class="param">val</span></td><td><span class="code">opoVal</span> to get the value from</td></tr>
+            <tr><td><span class="param">lenp</span></td><td>pointer to an integer what will be set to the length</td></tr>
+            <tr><td class="returns">Returns:</td><td>the key string.</td></tr>
           </table>
-
         </div>
 
         <div id="opo_val_member_count" class="desc">
@@ -946,141 +967,176 @@ typedef struct _opoBuilder {
           </p>
           <table class="params">
             <tr><td><span class="param">err</span></td><td>Errors are reported using this argument. It must not be NULL.</td></tr>
-            <tr><td><span class="param">val</span></td><td>The value to count the members of. If not an array or object then the count will be zero.</td></tr>
+            <tr><td><span class="param">val</span></td><td>the value to count the members of. If not an array or object then the count will be zero.</td></tr>
             <tr><td class="returns">Returns:</td><td>The number of direct members of the <span class="code">val</span> argument.</td></tr>
           </table>
         </div>
 
         <div id="opo_val_members" class="desc">
           <div class="title">opo_val_members()</div>
-          <div class="synopsis"></div>
+          <div class="synopsis">opoVal opo_val_members(opoErr err, opoVal val)</div>
           <p class="desc-text">
+            Returns the first child member of
+            a <span class="code">opoVal</span> that is either an object or
+            array. Since all the children are a block of bytes
+            a <span class="code">for</span> look can be used where the
+            terminating condition is exceeding the bsize of
+            the <span class="code">val</span> and
+            calling <span class="code">opo_val_next()</span> for each
+            subsequent member.
           </p>
           <table class="params">
-            <tr><td><span class="param">err</span></td><td>zzz</td></tr>
-            <tr><td class="returns">Returns:</td><td>zzz</td></tr>
+            <tr><td><span class="param">err</span></td><td>pointer to an initialized <span class="code">opoErr</span> struct that will be set if an error occurs.</td></tr>
+            <tr><td><span class="param">val</span></td><td><span class="code">opoVal</span> to get the members of</td></tr>
+            <tr><td class="returns">Returns:</td><td>the first member.</td></tr>
           </table>
-
         </div>
 
         <div id="opo_val_next" class="desc">
           <div class="title">opo_val_next()</div>
-          <div class="synopsis"></div>
+          <div class="synopsis">opoVal opo_val_next(opoVal val)</div>
           <p class="desc-text">
+            Return the next <span class="code">opoVal</span> following the specified <span class="code">val</span>.
           </p>
           <table class="params">
-            <tr><td><span class="param">err</span></td><td>zzz</td></tr>
-            <tr><td class="returns">Returns:</td><td>zzz</td></tr>
+            <tr><td><span class="param">val</span></td><td><span class="code">opoVal</span> to get following value from</td></tr>
+            <tr><td class="returns">Returns:</td><td>the follwoing or next <span class="code">opoVal</span>.</td></tr>
           </table>
-
         </div>
 
         <div id="opo_val_size" class="desc">
           <div class="title">opo_val_size()</div>
-          <div class="synopsis"></div>
+          <div class="synopsis">size_t	opo_val_size(opoVal val)</div>
           <p class="desc-text">
+            Returns the size of the value contained in
+            the <span class="code">opoVal</span>. For example, a string value
+            would return the length of the string. An array value would return
+            the number of members in the array.
           </p>
           <table class="params">
-            <tr><td><span class="param">err</span></td><td>zzz</td></tr>
-            <tr><td class="returns">Returns:</td><td>zzz</td></tr>
+            <tr><td><span class="param">val</span></td><td><span class="code">opoVal</span> to get the size of</td></tr>
+            <tr><td class="returns">Returns:</td><td>size of the value.</td></tr>
           </table>
-
         </div>
 
         <div id="opo_val_string" class="desc">
           <div class="title">opo_val_string()</div>
-          <div class="synopsis"></div>
+          <div class="synopsis">const char* opo_val_string(opoErr err, opoVal val, int *lenp)</div>
           <p class="desc-text">
+            Gets a string from a <span class="code">opoVal</span> if it is a
+            string type. If not the <span class="code">err</span> is set.  If
+            the <span class="code">lenp</span> pointer is
+            not <span class="code">NULL</span> then the length of the string
+            is set.
           </p>
           <table class="params">
-            <tr><td><span class="param">err</span></td><td>zzz</td></tr>
-            <tr><td class="returns">Returns:</td><td>zzz</td></tr>
+            <tr><td><span class="param">err</span></td><td>pointer to an initialized <span class="code">opoErr</span> struct that will be set if an error occurs.</td></tr>
+            <tr><td><span class="param">val</span></td><td><span class="code">opoVal</span> to get the value from</td></tr>
+            <tr><td><span class="param">lenp</span></td><td>pointer to an integer what will be set to the length</td></tr>
+            <tr><td class="returns">Returns:</td><td>the value.</td></tr>
           </table>
-
         </div>
 
         <div id="opo_val_time" class="desc">
           <div class="title">opo_val_time()</div>
-          <div class="synopsis"></div>
+          <div class="synopsis">int64_t opo_val_time(opoErr err, opoVal val)</div>
           <p class="desc-text">
+            Gets a time value from a <span class="code">opoVal</span> if it is
+            a time type. If not the <span class="code">err</span> is set. The
+            time is in nanoseconds from epoch.
           </p>
           <table class="params">
-            <tr><td><span class="param">err</span></td><td>zzz</td></tr>
-            <tr><td class="returns">Returns:</td><td>zzz</td></tr>
+            <tr><td><span class="param">err</span></td><td>pointer to an initialized <span class="code">opoErr</span> struct that will be set if an error occurs.</td></tr>
+            <tr><td><span class="param">val</span></td><td><span class="code">opoVal</span> to get the value from</td></tr>
+            <tr><td class="returns">Returns:</td><td>the value.</td></tr>
           </table>
-
         </div>
 
         <div id="opo_val_type" class="desc">
           <div class="title">opo_val_type()</div>
-          <div class="synopsis"></div>
+          <div class="synopsis">opoValType opo_val_type(opoVal val)</div>
           <p class="desc-text">
+            Returns the <span class="code">val</span> type.
           </p>
           <table class="params">
-            <tr><td><span class="param">err</span></td><td>zzz</td></tr>
-            <tr><td class="returns">Returns:</td><td>zzz</td></tr>
+            <tr><td><span class="param">val</span></td><td><span class="code">opoVal</span> to get the type of</td></tr>
+            <tr><td class="returns">Returns:</td><td>the type.</td></tr>
           </table>
-
-        </div>
-
-        <div id="opo_val_uuid_str" class="desc">
-          <div class="title">opo_val_uuid_str()</div>
-          <div class="synopsis"></div>
-          <p class="desc-text">
-          </p>
-          <table class="params">
-            <tr><td><span class="param">err</span></td><td>zzz</td></tr>
-            <tr><td class="returns">Returns:</td><td>zzz</td></tr>
-          </table>
-
         </div>
 
         <div id="opo_val_uuid" class="desc">
           <div class="title">opo_val_uuid()</div>
-          <div class="synopsis"></div>
+          <div class="synopsis">void opo_val_uuid(opoErr err, opoVal val, uint64_t *hip, uint64_t *lop)</div>
           <p class="desc-text">
+            Gets a UUID value from a <span class="code">opoVal</span> if it is
+            a uuid type. If not the <span class="code">err</span> is set. A
+            UUID can be thought of as a 128 bit number or as a high and low 64
+            bit pair. This function allows the extraction of those high and
+            low unsigned integers from the <span class="code">val</span>.
           </p>
           <table class="params">
-            <tr><td><span class="param">err</span></td><td>zzz</td></tr>
-            <tr><td class="returns">Returns:</td><td>zzz</td></tr>
+            <tr><td><span class="param">err</span></td><td>pointer to an initialized <span class="code">opoErr</span> struct that will be set if an error occurs.</td></tr>
+            <tr><td><span class="param">val</span></td><td><span class="code">opoVal</span> to get the value from</td></tr>
+            <tr><td><span class="param">hip</span></td><td>pointer to the slot for the high half</td></tr>
+            <tr><td><span class="param">lop</span></td><td>pointer to the slot for the low half</td></tr>
           </table>
+        </div>
 
+        <div id="opo_val_uuid_str" class="desc">
+          <div class="title">opo_val_uuid_str()</div>
+          <div class="synopsis">void opo_val_uuid_str(opoErr err, opoVal val, char *str)</div>
+          <p class="desc-text">
+            Gets a UUID value from a <span class="code">opoVal</span> if it is
+            a uuid type. If not the <span class="code">err</span> is set. The
+            <span class="code">str</span> argument must be at least 37
+            character long to allow the UUID to be copied to the buffer along
+            with a terminator character.
+          </p>
+          <table class="params">
+            <tr><td><span class="param">err</span></td><td>pointer to an initialized <span class="code">opoErr</span> struct that will be set if an error occurs.</td></tr>
+            <tr><td><span class="param">val</span></td><td><span class="code">opoVal</span> to get the value from</td></tr>
+            <tr><td><span class="param">str</span></td><td>buffer to write the UUID to</td></tr>
+          </table>
         </div>
 
         <div id="opo_msg_to_ojc" class="desc">
           <div class="title">opo_msg_to_ojc()</div>
-          <div class="synopsis"></div>
+          <div class="synopsis">ojcVal opo_msg_to_ojc(opoErr err, const opoVal msg)</div>
           <p class="desc-text">
+            Encodes an <span class="code">opoVal</span> to an OjC value.
           </p>
           <table class="params">
-            <tr><td><span class="param">err</span></td><td>zzz</td></tr>
-            <tr><td class="returns">Returns:</td><td>zzz</td></tr>
+            <tr><td><span class="param">err</span></td><td>pointer to an initialized <span class="code">opoErr</span> struct that will be set if an error occurs.</td></tr>
+            <tr><td><span class="param">msg</span></td><td><span class="code">opoVal</span>message to convert to an OjC value</td></tr>
+            <tr><td class="returns">Returns:</td><td>the converted message.</td></tr>
           </table>
-
         </div>
 
         <div id="opo_ojc_msg_size" class="desc">
           <div class="title">opo_ojc_msg_size()</div>
-          <div class="synopsis"></div>
+          <div class="synopsis">size_t opo_ojc_msg_size(ojcVal val)</div>
           <p class="desc-text">
+            Calculates the size of a buffer needed to encode an OjC value into
+            a <span class="code">opoVal</span>.
           </p>
           <table class="params">
-            <tr><td><span class="param">err</span></td><td>zzz</td></tr>
-            <tr><td class="returns">Returns:</td><td>zzz</td></tr>
+            <tr><td><span class="param">val</span></td><td><span class="code">ojcVal</span> value to calculate the needed size from</td></tr>
+            <tr><td class="returns">Returns:</td><td>the size needed.</td></tr>
           </table>
-
         </div>
 
         <div id="opo_ojc_to_msg" class="desc">
           <div class="title">opo_ojc_to_msg()</div>
-          <div class="synopsis"></div>
+          <div class="synopsis">opoVal opo_ojc_to_msg(opoErr err, ojcVal val)</div>
           <p class="desc-text">
+            Encode an OjC value to a <span class="code">opoVal</span>. The
+            caller is responsible for freeing the returned value.
           </p>
           <table class="params">
-            <tr><td><span class="param">err</span></td><td>zzz</td></tr>
-            <tr><td class="returns">Returns:</td><td>zzz</td></tr>
+            <tr><td><span class="param">err</span></td><td>pointer to an initialized <span class="code">opoErr</span> struct that will be set if an error occurs.</td></tr>
+            <tr><td><span class="param">val</span></td><td>value to encode</td></tr>
+            <tr><td class="returns">Returns:</td><td>an allocated The <span class="code">opoVal</span>.</td></tr>
           </table>
-
         </div>
 
       </div>
