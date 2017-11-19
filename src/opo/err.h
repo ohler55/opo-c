@@ -1,7 +1,7 @@
 // Copyright 2015, 2016, 2017 by Peter Ohler, All Rights Reserved
 
-#ifndef __OPO_ERR_H__
-#define __OPO_ERR_H__
+#ifndef __OPOC_ERR_H__
+#define __OPOC_ERR_H__
 
 #include <errno.h>
 
@@ -42,4 +42,4 @@ extern opoErrCode	opo_err_no(opoErr err, const char *fmt, ...);
 extern const char*	opo_err_str(opoErrCode code);
 extern void		opo_err_clear(opoErr err);
 
-#endif /* __OPO_ERR_H__ */
+#endif /* __OPOC_ERR_H__ */

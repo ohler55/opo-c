@@ -1,7 +1,7 @@
 // Copyright 2017 by Peter Ohler, All Rights Reserved
 
-#ifndef __OPO_INTERNAL_H__
-#define __OPO_INTERNAL_H__
+#ifndef __OPOC_INTERNAL_H__
+#define __OPOC_INTERNAL_H__
 
 #ifdef __cplusplus
 extern "C" {
@@ -32,4 +32,4 @@ extern "C" {
 #ifdef __cplusplus
 }
 #endif
-#endif /* __OPO_INTERNAL_H__ */
+#endif /* __OPOC_INTERNAL_H__ */

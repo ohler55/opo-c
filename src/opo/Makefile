@@ -15,8 +15,8 @@ SRCS=$(wildcard *.c)
 HEADERS=$(wildcard *.h)
 OBJS=$(SRCS:.c=.o)
 
-PUB_HEADERS=opo.h err.h val.h builder.h
-TARGET=$(LIB_DIR)/libopo.a
+PUB_HEADERS=opo.h err.h val.h builder.h client.h
+TARGET=$(LIB_DIR)/libopoc.a
 
 # external
 LIB_DIRS=-L../../../ojc/lib

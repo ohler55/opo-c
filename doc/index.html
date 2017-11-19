@@ -38,6 +38,7 @@
         <button class="item level3" onclick="displayDesc(event,'opo_builder_take')">opo_builder_take()</button>
 
         <button class="item level2" onclick="displayDesc(event,'opoClient')">opoClient</button>
+        <button class="item level3" onclick="displayDesc(event,'opoClientOptions')">opoClientOptions</button>
         <button class="item level3" onclick="displayDesc(event,'opoQueryCallback')">opoQueryCallback</button>
         <button class="item level3" onclick="displayDesc(event,'opoRef')">opoRef</button>
         <button class="item level3" onclick="displayDesc(event,'opo_client_cancel')">opo_client_cancel()</button>
@@ -159,7 +160,10 @@ typedef struct _opoBuilder {
 
         <div id="opo_builder_init" class="desc">
           <div class="title">opo_builder_init()</div>
-          <div class="synopsis">opoErrCode opo_builder_init(opoErr err, opoBuilder builder, uint8_t *buf, size_t size)</div>
+          <div class="synopsis">opoErrCode opo_builder_init(opoErr     err,
+                            opoBuilder builder,
+                            uint8_t    *buf,
+                            size_t     size)</div>
           <p class="desc-text">
             Initialize a <span class="code">struct_opoBuilder</span> with the
             buffer specified. If the <span class="code">buf</span> argument
@@ -210,7 +214,10 @@ typedef struct _opoBuilder {
 
         <div id="opo_builder_push_array" class="desc">
           <div class="title">opo_builder_push_array()</div>
-          <div class="synopsis">opoErrCode opo_builder_push_array(opoErr err, opoBuilder builder, const char *key, int klen)</div>
+          <div class="synopsis">opoErrCode opo_builder_push_array(opoErr     err,
+                                  opoBuilder builder,
+                                  const char *key,
+                                  int        klen)</div>
           <p class="desc-text">
             Start an array. If pushing to an array the key should
             be <span class="code">NULL</span>. If pushing to an object the key
@@ -236,11 +243,11 @@ typedef struct _opoBuilder {
 
         <div id="opo_builder_push_bool" class="desc">
           <div class="title">opo_builder_push_bool()</div>
-          <div class="synopsis">opoErrCode opo_builder_push_bool(opoErr err,
+          <div class="synopsis">opoErrCode opo_builder_push_bool(opoErr     err,
                                  opoBuilder builder,
-                                 bool value,
+                                 bool       value,
                                  const char *key,
-                                 int klen)</div>
+                                 int        klen)</div>
           <p class="desc-text">
             Push the value onto the message.
           </p>
@@ -264,11 +271,11 @@ typedef struct _opoBuilder {
 
         <div id="opo_builder_push_double" class="desc">
           <div class="title">opo_builder_push_double()</div>
-          <div class="synopsis">opoErrCode opo_builder_push_double(opoErr err,
+          <div class="synopsis">opoErrCode opo_builder_push_double(opoErr     err,
                                    opoBuilder builder,
-                                   double value,
+                                   double     value,
                                    const char *key,
-                                   int klen)</div>
+                                   int        klen)</div>
           <p class="desc-text">
             Push the value onto the message.
           </p>
@@ -292,11 +299,11 @@ typedef struct _opoBuilder {
 
         <div id="opo_builder_push_int" class="desc">
           <div class="title">opo_builder_push_int()</div>
-          <div class="synopsis">opoErrCode opo_builder_push_int(opoErr err,
+          <div class="synopsis">opoErrCode opo_builder_push_int(opoErr     err,
                                 opoBuilder builder,
-                                int64_t value,
+                                int64_t    value,
                                 const char *key,
-                                int klen)</div>
+                                int        klen)</div>
           <p class="desc-text">
             Push the value onto the message.
           </p>
@@ -320,7 +327,10 @@ typedef struct _opoBuilder {
 
         <div id="opo_builder_push_null" class="desc">
           <div class="title">opo_builder_push_null()</div>
-          <div class="synopsis">opoErrCode opo_builder_push_null(opoErr err, opoBuilder builder, const char *key, int klen)</div>
+          <div class="synopsis">opoErrCode opo_builder_push_null(opoErr     err,
+                                 opoBuilder builder,
+                                 const char *key,
+                                 int        klen)</div>
           <p class="desc-text">
             Push a null onto the message.
           </p>
@@ -343,7 +353,10 @@ typedef struct _opoBuilder {
 
         <div id="opo_builder_push_object" class="desc">
           <div class="title">opo_builder_push_object()</div>
-          <div class="synopsis">opoErrCode opo_builder_push_object(opoErr err, opoBuilder builder, const char *key, int klen)</div>
+          <div class="synopsis">opoErrCode opo_builder_push_object(opoErr     err,
+                                   opoBuilder builder, 
+                                   const char *key,
+                                   int        klen)</div>
           <p class="desc-text">
             Start a new object and push onto the message.
           </p>
@@ -366,12 +379,12 @@ typedef struct _opoBuilder {
 
         <div id="opo_builder_push_string" class="desc">
           <div class="title">opo_builder_push_string()</div>
-          <div class="synopsis">opoErrCode opo_builder_push_string(opoErr err,
+          <div class="synopsis">opoErrCode opo_builder_push_string(opoErr     err,
                                    opoBuilder builder,
                                    const char *value,
-                                   int len,
+                                   int        len,
                                    const char *key,
-                                   int klen)</div>
+                                   int        klen)</div>
           <p class="desc-text">
             Push the value string onto the
             message. The <span class="code">len</span> is either the length of
@@ -400,11 +413,11 @@ typedef struct _opoBuilder {
 
         <div id="opo_builder_push_time" class="desc">
           <div class="title">opo_builder_push_time()</div>
-          <div class="synopsis">opoErrCode opo_builder_push_time(opoErr err,
+          <div class="synopsis">opoErrCode opo_builder_push_time(opoErr     err,
                                  opoBuilder builder,
-                                 int64_t value,
+                                 int64_t    value,
                                  const char *key,
-                                 int klen)</div>
+                                 int        klen)</div>
           <p class="desc-text">
             Push the value onto the message. The time value should be the
             number of nanoseconds from epoch or Unix time to the nanosecond.
@@ -429,12 +442,12 @@ typedef struct _opoBuilder {
 
         <div id="opo_builder_push_uuid" class="desc">
           <div class="title">opo_builder_push_uuid()</div>
-          <div class="synopsis">opoErrCode opo_builder_push_uuid(opoErr err,
+          <div class="synopsis">opoErrCode opo_builder_push_uuid(opoErr     err,
                                  opoBuilder builder,
-                                 uint64_t hi,
-                                 uint64_t lo,
+                                 uint64_t   hi,
+                                 uint64_t   lo,
                                  const char *key,
-                                 int klen)</div>
+                                 int        klen)</div>
           <p class="desc-text">
             Push the value onto the message. The UUID is composed of a high
             and low value unsigned 64 bit integers.
@@ -460,11 +473,11 @@ typedef struct _opoBuilder {
 
         <div id="opo_builder_push_uuid_string" class="desc">
           <div class="title">opo_builder_push_uuid_string()</div>
-          <div class="synopsis">opoErrCode opo_builder_push_uuid_string(opoErr err,
+          <div class="synopsis">opoErrCode opo_builder_push_uuid_string(opoErr     err,
                                         opoBuilder builder,
                                         const char *value,
                                         const char *key,
-                                        int klen)</div>
+                                        int        klen)</div>
           <p class="desc-text">
             Push the value onto the message. The UUID should be a 36 character
             string following the standard UUID format,
@@ -513,6 +526,20 @@ typedef struct _opoBuilder {
             server. After that queiries can be made until the client
             conneciton is closed.
           </p>
+        </div>
+
+        <div id="opoClientOptions" class="desc">
+          <div class="title">opoClientOptions</div>
+          <div class="synopsis">typedef struct _opoClientOptions {
+    double timeout;
+} *opoClientOptions;
+</div>
+          <p class="desc-text">
+            Options for a client connection.
+          </p>
+          <table class="params">
+            <tr><td><span class="param">timeout</span></td><td>timeout in seconds for all queries</td></tr>
+          </table>
         </div>
 
         <div id="opoQueryCallback" class="desc">
@@ -571,7 +598,10 @@ typedef struct _opoBuilder {
 
         <div id="opo_client_connect" class="desc">
           <div class="title">opo_client_connect()</div>
-          <div class="synopsis">opoClient opo_client_connect(opoErr err, const char *host, int port)</div>
+          <div class="synopsis">opoClient opo_client_connect(opoErr           err,
+                             const char       *host,
+                             int              port,
+                             opoClientOptions options)</div>
           <p class="desc-text">
             Connects to the server and creates a client that is returned to be
             used for queries. On error the <span class="code">err</span> is
@@ -581,6 +611,7 @@ typedef struct _opoBuilder {
             <tr><td><span class="param">err</span></td><td>pointer to an initialized <span class="code">opoErr</span> struct that will be set if an error occurs.</td></tr>
             <tr><td><span class="param">host</span></td><td>server host name or address</td></tr>
             <tr><td><span class="param">port</span></td><td>port the server is listening on</td></tr>
+            <tr><td><span class="param">options</span></td><td>options or <span class="code">NULL</span> for the defaults</td></tr>
             <tr><td class="returns">Returns:</td><td>a new client or <span class="code">NULL</span> on error.</td></tr>
           </table>
         </div>
@@ -606,22 +637,16 @@ typedef struct _opoBuilder {
 
         <div id="opo_client_query" class="desc">
           <div class="title">opo_client_query()</div>
-          <div class="synopsis">opoRef opo_client_query(opoErr err,
-                        opoClient client,
-                        opoVal query,
+          <div class="synopsis">opoRef opo_client_query(opoErr           err,
+                        opoClient        client,
+                        opoVal           query,
                         opoQueryCallback cb,
-                        void *ctx,
-                        double timeout)</div>
+                        void             *ctx)</div>
           <p class="desc-text">
             Sends a query to the server and returns once the query has been
             sent. The provided callback is called with the response. The
             response callback is called when
             the <span class="code">opo_client_process()</span> is called.
-          </p>
-          <p class="desc-text">
-            If <span class="code">timeout</span> greater than zero is
-            specified then an eror response is called if a response has not
-            been recieved from the server before the query times out.
           </p>
           <table class="params">
             <tr><td><span class="param">err</span></td><td>pointer to an initialized <span class="code">opoErr</span> struct that will be set if an error occurs.</td></tr>
@@ -629,7 +654,6 @@ typedef struct _opoBuilder {
             <tr><td><span class="param">query</span></td><td><a href="http://opo.technology/pages/doc/tql/index.html">TQL</a> query</td></tr>
             <tr><td><span class="param">cb</span></td><td>callback function to call with a response</td></tr>
             <tr><td><span class="param">ctx</span></td><td>context that will be included in the callback</td></tr>
-            <tr><td><span class="param">timeout</span></td><td>timeout in seconds before the query is consided expired</td></tr>
             <tr><td class="returns">Returns:</td><td>a reference to the query</td></tr>
           </table>
         </div>
@@ -924,7 +948,10 @@ typedef struct _opoBuilder {
 
         <div id="opo_val_iterate" class="desc">
           <div class="title">opo_val_iterate()</div>
-          <div class="synopsis">opoErrCode opo_val_iterate(opoErr err, opoVal val, opoValCallbacks callbacks, void *ctx)</div>
+          <div class="synopsis">opoErrCode opo_val_iterate(opoErr          err,
+                           opoVal          val,
+                           opoValCallbacks callbacks,
+                           void            *ctx)</div>
           <p class="desc-text">
             Iterates over a <span class="code">opoVal</span> tree following
             each branch and calling the appropriate function in

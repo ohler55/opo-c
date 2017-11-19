@@ -20,7 +20,7 @@ typedef struct _Jlen {
 
 extern int	build_sample_msg(opoBuilder builder); // defined in builder_test.c
 
-void
+static void
 ojc_msg_size_test() {
     ojcVal		val;
     struct _ojcErr	err;
@@ -58,7 +58,7 @@ E9 64 04 31 2E 32 33 73  06 73 74 72 69 6E 67 00   .d.1.23s .string.\n\
 75 12 3E 45 67 E8 9B 12  D3 A4 56 42 66 55 44 00   u.>Eg... ..VBfUD.\n\
 00 54 14 AB C8 25 B9 40  C9 15                     .T...%.@ ..\n";
 
-void
+static void
 ojc_to_msg_test() {
     struct _ojcErr	err = OJC_ERR_INIT;
     ojcVal		val = ojc_parse_str(&err, "{\n\
@@ -89,7 +89,7 @@ ojc_to_msg_test() {
     free((uint8_t*)msg);
 }
 
-void
+static void
 msg_to_ojc_test() {
     struct _opoBuilder	builder;
     struct _opoErr	err = OPO_ERR_INIT;

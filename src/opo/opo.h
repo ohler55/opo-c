@@ -1,7 +1,7 @@
 // Copyright 2017 by Peter Ohler, All Rights Reserved
 
-#ifndef __OPO_OPO_H__
-#define __OPO_OPO_H__
+#ifndef __OPOC_OPO_H__
+#define __OPOC_OPO_H__
 
 #ifdef __cplusplus
 extern "C" {
@@ -23,4 +23,4 @@ extern "C" {
 #ifdef __cplusplus
 }
 #endif
-#endif /* __OPO_OPO_H__ */
+#endif /* __OPOC_OPO_H__ */
