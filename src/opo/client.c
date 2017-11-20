@@ -1,7 +1,7 @@
 // Copyright 2017 by Peter Ohler, All Rights Reserved
 
 //#include <errno.h>
-//#include <fcntl.h>
+#include <fcntl.h>
 #include <netdb.h>
 #include <netinet/tcp.h>
 #include <poll.h>
@@ -9,7 +9,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/socket.h>
+#include <sys/time.h>
 #include <sys/types.h>
+#include <time.h>
 #include <unistd.h>
 
 #include "client.h"
@@ -18,6 +20,16 @@ struct _opoClient {
     int		sock;
     double	timeout;
 };
+
+double
+dtime() {
+    struct timeval	tv;
+    struct timezone	tz;
+
+    gettimeofday(&tv, &tz);
+
+    return (double)tv.tv_sec + (double)tv.tv_usec / 1000000.0;
+}
 
 // Returns addrinfo for a host[:port] string with the default port of 80.
 static struct addrinfo*
@@ -53,12 +65,21 @@ opo_client_connect(opoErr err, const char *host, int port, opoClientOptions opti
 	return NULL;
     }
     setsockopt(sock, IPPROTO_TCP, TCP_NODELAY, &optval, sizeof(optval));
+    //setsockopt(sock, SOL_SOCKET, SO_KEEPALIVE, &optval, sizeof(optval));
+    fcntl(sock, F_SETFL, O_NONBLOCK);
 
-    if (0 > connect(sock, res->ai_addr, res->ai_addrlen)) {
-	opo_err_no(err, "error connecting socket to %s:%d", host, port);
-	close(sock);
-	return NULL;
+    int	foo = 100;
+    while (0 > connect(sock, res->ai_addr, res->ai_addrlen)) {
+	usleep(1000);
+	if (0 < foo--) {
+	    continue;
+	} else {
+	    opo_err_no(err, "error connecting socket to %s:%d", host, port);
+	    close(sock);
+	    return NULL;
+	}
     }
+
     opoClient	client = (opoClient)malloc(sizeof(struct _opoClient));
 
     if (NULL == client) {
@@ -103,6 +124,22 @@ opo_client_cancel(opoClient client, opoRef ref, bool silent) {
 
 int
 opo_client_process(opoClient client, int max, double wait) {
+    ssize_t	cnt;
+    uint8_t	buf[4096];
+    double	giveup = dtime() + wait;
+
+    while (dtime() < giveup) {
+	if (0 > (cnt = recv(client->sock, buf, sizeof(buf), 0))) {
+	    if (EAGAIN == errno) {
+		usleep(1000);
+		continue;
+	    }
+	} else if (0 < cnt) {
+	    break;
+	}
+
+    }
+    printf("*** recv %ld\n", cnt);
     // TBD
     return 0;
 }

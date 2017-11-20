@@ -78,6 +78,7 @@
         <span class="cat">functions</span>
         <button class="item level2" onclick="displayDesc(event,'opo_msg_to_ojc')">opo_msg_to_ojc()</button>
         <button class="item level2" onclick="displayDesc(event,'opo_ojc_msg_size')">opo_ojc_msg_size()</button>
+        <button class="item level2" onclick="displayDesc(event,'opo_ojc_fill_msg')">opo_ojc_fill_msg()</button>
         <button class="item level2" onclick="displayDesc(event,'opo_ojc_to_msg')">opo_ojc_to_msg()</button>
 
       </div>
@@ -1096,7 +1097,7 @@ typedef struct _opoBuilder {
           <div class="synopsis">void opo_val_uuid(opoErr err, opoVal val, uint64_t *hip, uint64_t *lop)</div>
           <p class="desc-text">
             Gets a UUID value from a <span class="code">opoVal</span> if it is
-            a uuid type. If not the <span class="code">err</span> is set. A
+            a UUID type. If not the <span class="code">err</span> is set. A
             UUID can be thought of as a 128 bit number or as a high and low 64
             bit pair. This function allows the extraction of those high and
             low unsigned integers from the <span class="code">val</span>.
@@ -1114,7 +1115,7 @@ typedef struct _opoBuilder {
           <div class="synopsis">void opo_val_uuid_str(opoErr err, opoVal val, char *str)</div>
           <p class="desc-text">
             Gets a UUID value from a <span class="code">opoVal</span> if it is
-            a uuid type. If not the <span class="code">err</span> is set. The
+            a UUID type. If not the <span class="code">err</span> is set. The
             <span class="code">str</span> argument must be at least 37
             character long to allow the UUID to be copied to the buffer along
             with a terminator character.
@@ -1149,6 +1150,20 @@ typedef struct _opoBuilder {
           <table class="params">
             <tr><td><span class="param">val</span></td><td><span class="code">ojcVal</span> value to calculate the needed size from</td></tr>
             <tr><td class="returns">Returns:</td><td>the size needed.</td></tr>
+          </table>
+        </div>
+
+        <div id="opo_ojc_fill_msg" class="desc">
+          <div class="title">opo_ojc_fill_msg()</div>
+          <div class="synopsis">opoVal opo_ojc_fill_msg(ojcVal val, uint8_t *buf)</div>
+          <p class="desc-text">
+            Encode an OjC value to a <span class="code">opoVal</span> that is
+            the <span class="code">buf</span> argument. The buffer must be
+            large enough to hold the encoded value.
+          </p>
+          <table class="params">
+            <tr><td><span class="param">val</span></td><td>value to encode</td></tr>
+            <tr><td><span class="param">buf</span></td><td>buffer to fill with the encoded value</td></tr>
           </table>
         </div>
 

@@ -500,6 +500,11 @@ opo_ojc_msg_size(ojcVal val) {
     return wire_size(val);
 }
 
+void
+opo_ojc_fill_msg(ojcVal val, uint8_t *buf) {
+    wire_fill(val, buf);
+}
+
 opoVal
 opo_ojc_to_msg(opoErr err, ojcVal val) {
     if (NULL == val) {
