@@ -1,8 +1,14 @@
 
 
-- remove from ojc
+- implement reconnect
+- implement queue
 
-- client.[ch]
+- doc
+ - options
+  - pending_max
+  - status_callback
+   - void (*cb)(opoClient client, bool connected, opoErrCode, const char *msg)
+
 
 - docs
  - html

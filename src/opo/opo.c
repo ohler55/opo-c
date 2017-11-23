@@ -493,16 +493,17 @@ push_parse_value(opoErr err, ParseCtx pc, ojcVal val) {
 }
 
 size_t
-opo_ojc_msg_size(ojcVal val) {
-    if (NULL == val) {
+opo_ojc_msg_size(ojcVal msg) {
+    if (NULL == msg) {
 	return 0;
     }
-    return wire_size(val);
+    return wire_size(msg) + 8;
 }
 
 void
 opo_ojc_fill_msg(ojcVal val, uint8_t *buf) {
-    wire_fill(val, buf);
+    memset(buf, 0, 8);
+    wire_fill(val, buf + 8);
 }
 
 opoVal
@@ -511,28 +512,30 @@ opo_ojc_to_msg(opoErr err, ojcVal val) {
 	return NULL;
     }
     size_t	size = wire_size(val);
-    uint8_t	*w = (uint8_t*)malloc(size);
+    uint8_t	*w = (uint8_t*)malloc(size + 8);
 
     if (NULL == w) {
 	opo_err_set(err, OPO_ERR_MEMORY, "failed to allocate memory for a message %ld bytes long", size);
     } else {
-	wire_fill(val, w);
+	memset(w, 0, 8);
+	wire_fill(val, w + 8);
     }
-    return (opoVal)w;
+    return (opoMsg)w;
 }
 
 // Did not use the callbacks as that adds 10% to 20% over this more direct
 // approach.
 ojcVal
 opo_msg_to_ojc(opoErr err, opoVal msg) {
-    const uint8_t	*end = msg + opo_val_bsize(msg);
+    const uint8_t	*end = msg + opo_msg_bsize(msg);
     struct _ParseCtx	ctx;
 
     memset(&ctx, 0, sizeof(ctx));
     ctx.top = NULL;
     ctx.cur = ctx.stack - 1;
     ctx.end = ctx.stack + sizeof(ctx.stack) / sizeof(*ctx.stack);
-    
+
+    msg += 8; // move past msg ID
     while (msg < end) {
 	if (ctx.stack <= ctx.cur && ctx.cur->end <= msg) {
 	    ctx.cur--;
@@ -704,4 +707,3 @@ opo_msg_to_ojc(opoErr err, opoVal msg) {
     }
     return ctx.top;
 }
-

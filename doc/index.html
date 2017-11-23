@@ -503,7 +503,7 @@ typedef struct _opoBuilder {
 
         <div id="opo_builder_take" class="desc">
           <div class="title">opo_builder_take()</div>
-          <div class="synopsis">opoVal opo_builder_take(opoBuilder builder)</div>
+          <div class="synopsis">opoMsg opo_builder_take(opoBuilder builder)</div>
           <p class="desc-text">
             Returns the current message. Releasing ownership to the caller
             which take responsibility of freeing the message when no longer
@@ -648,6 +648,11 @@ typedef struct _opoBuilder {
             sent. The provided callback is called with the response. The
             response callback is called when
             the <span class="code">opo_client_process()</span> is called.
+          </p>
+          <p class="desc-text">
+            Queries callbacks always occur in the order they were sent from a
+            single client. Different client callbacks may be called in
+            different order than the order they were called in.
           </p>
           <table class="params">
             <tr><td><span class="param">err</span></td><td>pointer to an initialized <span class="code">opoErr</span> struct that will be set if an error occurs.</td></tr>

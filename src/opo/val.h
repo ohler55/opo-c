@@ -14,6 +14,7 @@ extern "C" {
 #include "err.h"
 
     typedef const uint8_t	*opoVal;
+    typedef const uint8_t	*opoMsg;
 
     typedef enum {
 	OPO_VAL_NONE	= (uint8_t)0,
@@ -64,6 +65,13 @@ extern "C" {
     extern opoVal	opo_val_members(opoErr err, opoVal val);
     extern opoVal	opo_val_next(opoVal val);
     extern int		opo_val_member_count(opoErr err, opoVal val);
+
+    extern uint64_t	opo_msg_id(opoMsg msg);
+    extern void		opo_msg_set_id(uint8_t *msg, uint64_t id);
+    extern size_t	opo_msg_bsize(opoMsg msg);
+    static inline opoVal opo_msg_val(opoMsg msg) {
+	return msg + 8;
+    }
 
 #ifdef __cplusplus
 }

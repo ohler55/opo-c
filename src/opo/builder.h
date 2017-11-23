@@ -28,7 +28,7 @@ extern "C" {
     extern void		opo_builder_cleanup(opoBuilder builder);
     extern opoErrCode	opo_builder_finish(opoBuilder builder);
     extern size_t	opo_builder_length(opoBuilder builder);
-    extern opoVal	opo_builder_take(opoBuilder builder);
+    extern opoMsg	opo_builder_take(opoBuilder builder);
 
     extern opoErrCode	opo_builder_push_object(opoErr err, opoBuilder builder, const char *key, int klen);
     extern opoErrCode	opo_builder_push_array(opoErr err, opoBuilder builder, const char *key, int klen);

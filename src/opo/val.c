@@ -747,3 +747,29 @@ opo_val_member_count(opoErr err, opoVal val) {
     }
     return cnt;
 }
+
+size_t
+opo_msg_bsize(opoMsg msg) {
+    return opo_val_bsize(msg + 8) + 8;
+}
+
+uint64_t
+opo_msg_id(opoMsg msg) {
+    uint64_t	id;
+    
+    read_uint64(msg, &id);
+
+    return id;
+}
+
+void
+opo_msg_set_id(uint8_t *msg, uint64_t id) {
+    *msg++ = (uint8_t)(id >> 56);
+    *msg++ = (uint8_t)(0x00000000000000ff & (id >> 48));
+    *msg++ = (uint8_t)(0x00000000000000ff & (id >> 40));
+    *msg++ = (uint8_t)(0x00000000000000ff & (id >> 32));
+    *msg++ = (uint8_t)(0x00000000000000ff & (id >> 24));
+    *msg++ = (uint8_t)(0x00000000000000ff & (id >> 16));
+    *msg++ = (uint8_t)(0x00000000000000ff & (id >> 8));
+    *msg = (uint8_t)(0x00000000000000ff & id);
+}

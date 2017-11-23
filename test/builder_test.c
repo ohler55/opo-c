@@ -12,12 +12,13 @@
 #include "ut.h"
 
 static const char	*expect_sample_dump = "\
-7B 00 00 00 55 6B 03 6E  69 6C 00 5A 6B 03 79 65   {...Uk.n il.Zk.ye\n\
-73 00 74 6B 02 6E 6F 00  66 6B 03 69 6E 74 00 32   s.tk.no. fk.int.2\n\
-30 39 6B 05 61 72 72 61  79 00 5B 00 00 00 2B 69   09k.arra y.[...+i\n\
-E9 64 04 31 2E 32 33 73  06 73 74 72 69 6E 67 00   .d.1.23s .string.\n\
-75 12 3E 45 67 E8 9B 12  D3 A4 56 42 66 55 44 00   u.>Eg... ..VBfUD.\n\
-00 54 14 AB C8 25 B9 40  C9 15                     .T...%.@ ..\n";
+00 00 00 00 00 00 00 00  7B 00 00 00 55 6B 03 6E   ........ {...Uk.n\n\
+69 6C 00 5A 6B 03 79 65  73 00 74 6B 02 6E 6F 00   il.Zk.ye s.tk.no.\n\
+66 6B 03 69 6E 74 00 32  30 39 6B 05 61 72 72 61   fk.int.2 09k.arra\n\
+79 00 5B 00 00 00 2B 69  E9 64 04 31 2E 32 33 73   y.[...+i .d.1.23s\n\
+06 73 74 72 69 6E 67 00  75 12 3E 45 67 E8 9B 12   .string. u.>Eg...\n\
+D3 A4 56 42 66 55 44 00  00 54 14 AB C8 25 B9 40   ..VBfUD. .T...%.@\n\
+C9 15                                              ..\n";
 
 int
 build_sample_msg(opoBuilder builder) {
@@ -30,7 +31,6 @@ build_sample_msg(opoBuilder builder) {
     opo_builder_push_bool(&err, builder, false, "no", -1);
     opo_builder_push_int(&err, builder, 12345, "int", -1);
     opo_builder_push_array(&err, builder, "array", -1);
-    
     opo_builder_push_int(&err, builder, -23, NULL, 0);
     opo_builder_push_double(&err, builder, 1.23, NULL, 0);
     opo_builder_push_string(&err, builder, "string", -1, NULL, 0);
@@ -39,6 +39,7 @@ build_sample_msg(opoBuilder builder) {
     opo_builder_pop(&err, builder);
 
     opo_builder_finish(builder);
+
     ut_same_int(OPO_ERR_OK, err.code, "error writing data. %s", err.msg);
 
     return OPO_ERR_OK;
@@ -97,7 +98,7 @@ builder_build_val_test() {
     opo_builder_push_bool(&err, &builder, true, "yes", -1);
     opo_builder_push_bool(&err, &builder, false, "no", -1);
     opo_builder_push_int(&err, &builder, 12345, "int", -1);
-    opo_builder_push_val(&err, &builder, child, "array", -1);
+    opo_builder_push_val(&err, &builder, opo_msg_val(child), "array", -1);
     opo_builder_finish(&builder);
 
     char	buf[1024];

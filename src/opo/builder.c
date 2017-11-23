@@ -169,7 +169,8 @@ opo_builder_init(opoErr err, opoBuilder builder, uint8_t *buf, size_t size) {
 	builder->own = false;
     }
     builder->end = builder->head + size;
-    builder->cur = builder->head;
+    builder->cur = builder->head + 8; // past message ID
+    memset(builder->head, 0, 8);      // message ID
     memset(builder->stack, 0, sizeof(builder->stack));
     builder->top = builder->stack - 1;
     
@@ -201,20 +202,29 @@ opo_builder_length(opoBuilder builder) {
 
 opoVal
 opo_builder_take(opoBuilder builder) {
-    uint8_t	*val = builder->head;
+    uint8_t	*msg;
 
     opo_builder_finish(builder);
+    if (builder->own) {
+	msg = builder->head;
+    } else {
+	size_t	size = opo_msg_bsize(builder->head);
+
+	if (NULL != (msg = (uint8_t*)malloc(size))) {
+	    memcpy(msg, builder->head, size);
+	}
+    }
     builder->head = NULL;
     builder->cur = NULL;
     builder->end = NULL;
     
-    return val;
+    return msg;
 }
 
 static opoErrCode
 check_key(opoErr err, opoBuilder builder, const char *key, int klen) {
     if (builder->top < builder->stack) {
-	if (builder->head < builder->cur) {
+	if (builder->head + 8 < builder->cur) {
 	    return opo_err_set(err, OPO_ERR_OVERFLOW, "only one element can be in a builder");
 	}
 	if (NULL != key) {

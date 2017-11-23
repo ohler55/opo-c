@@ -29,6 +29,7 @@ typedef enum {
     OPO_ERR_IN_USE,
     OPO_ERR_TOO_MANY,
     OPO_ERR_TYPE,
+    OPO_ERR_LOST,
     OPO_ERR_LAST
 } opoErrCode;
 
