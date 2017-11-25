@@ -27,7 +27,7 @@ dtime() {
 static void
 connect_test() {
     struct _opoErr	err = OPO_ERR_INIT;
-    opoClient		client = opo_client_connect(&err, "localhost", 6364, NULL);
+    opoClient		client = opo_client_connect(&err, "127.0.0.1", 6364, NULL);
 
     ut_same_int(OPO_ERR_OK, err.code, "error connecting. %s", err.msg);
 
@@ -80,7 +80,8 @@ build_query(uint8_t *query, size_t qsize, int64_t rid) {
     opo_builder_push_string(&err, &builder, "Foo", 3, NULL, -1);
     opo_builder_pop(&err, &builder);
 #else
-    opo_builder_push_int(&err, &builder, (int64_t)0x000000000000050bULL, "where", -1);
+    //opo_builder_push_int(&err, &builder, (int64_t)0x000000000000050bULL, "where", -1);
+    opo_builder_push_int(&err, &builder, (int64_t)0x000000000000030bULL, "where", -1);
     //opo_builder_push_int(&err, &builder, (int64_t)0x000000000000000bULL, "where", -1);
 #endif
     opo_builder_push_string(&err, &builder, "$", 1, "select", -1);
@@ -100,7 +101,8 @@ query_test() {
 	.pending_max = 4096,
 	.status_callback = status_callback,
     };
-    opoClient	client = opo_client_connect(&err, "localhost", 6364, &options);
+    //opoClient	client = opo_client_connect(&err, "localhost", 6364, &options);
+    opoClient	client = opo_client_connect(&err, "127.0.0.1", 6364, &options);
 
     ut_same_int(OPO_ERR_OK, err.code, "error connecting. %s", err.msg);
 

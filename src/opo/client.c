@@ -245,7 +245,6 @@ recv_loop(void *ctx) {
     ssize_t		cnt;
     size_t		size;
 
-    client->active = true;
     while (client->active) {
 	pa->fd = client->sock;
 	pa->events = POLLIN;
@@ -373,6 +372,9 @@ opo_client_connect(opoErr err, const char *host, int port, opoClientOptions opti
     double	giveup = dtime() + 2.0;
 
     while (0 > connect(sock, res->ai_addr, res->ai_addrlen)) {
+	if (EISCONN == errno) {
+	    break;
+	}
 	if (giveup < dtime()) {
 	    opo_err_no(err, "error connecting socket to %s:%d", host, port);
 	    close(sock);
@@ -422,7 +424,9 @@ opo_client_connect(opoErr err, const char *host, int port, opoClientOptions opti
 	    client->rsock = fd[0];
 	    client->wsock = fd[1];
 	}
+	client->active = true; // outside the thread create to avoid race condition on immediate close
 	if (0 != (stat = pthread_create(&client->recv_thread, NULL, recv_loop, client))) {
+	    client->active = false;
 	    opo_err_set(err, stat, "failed create receiving thread. %s", strerror(stat));
 	}
     }
