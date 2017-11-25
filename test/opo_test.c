@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <sys/time.h>
 #include <unistd.h>
 #include <ctype.h>
 #include <math.h>
@@ -19,6 +20,15 @@ typedef struct _Jlen {
 } *Jlen;
 
 extern int	build_sample_msg(opoBuilder builder); // defined in builder_test.c
+
+static double
+dtime() {
+    struct timeval	tv;
+
+    gettimeofday(&tv, NULL);
+
+    return (double)tv.tv_sec + (double)tv.tv_usec / 1000000.0;
+}
 
 static void
 ojc_msg_size_test() {
@@ -123,9 +133,72 @@ msg_to_ojc_test() {
 }", buf.head, "JSON did not match");
 }
 
+static void
+bench_msg_to_ojc_test() {
+    struct _opoBuilder	builder;
+    struct _opoErr	err = OPO_ERR_INIT;
+    uint8_t		data[1024];
+    
+    opo_builder_init(&err, &builder, data, sizeof(data));
+    build_sample_msg(&builder);
+
+    int		iter = 100000;
+    ojcVal	val;
+    double	dt;
+    double	start = dtime();
+
+    for (int i = iter; 0 < i; i--) {
+	if (NULL != (val = opo_msg_to_ojc(&err, builder.head))) {
+	    ojc_destroy(val);
+	} else {
+	    ut_same_int(OPO_ERR_OK, err.code, "error transforming. %s", err.msg);
+	}
+    }
+    dt = dtime() - start;
+    printf("--- opo_msg_to_ojc rate: %d in %0.3f secs  %d transforms/sec\n", iter, dt, (int)((double)iter / dt));
+}
+
+static void
+bench_ojc_to_msg_test() {
+    struct _ojcErr	err = OJC_ERR_INIT;
+    ojcVal		val = ojc_parse_str(&err, "{\n\
+  \"nil\":null,\n\
+  \"yes\":true,\n\
+  \"no\":false,\n\
+  \"int\":12345,\n\
+  \"array\":[\n\
+    -23,\n\
+    1.23,\n\
+    \"string\",\n\
+    \"123e4567-e89b-12d3-a456-426655440000\",\n\
+    \"2017-03-14T15:09:26.123456789Z\"\n\
+  ]\n\
+}", 0, 0);
+
+    ut_same_int(OJC_OK, err.code, "error parsing JSON. %s", err.msg);
+
+    struct _opoErr	oerr = OPO_ERR_INIT;
+    opoVal		msg;
+    int			iter = 100000;
+    double		dt;
+    double		start = dtime();
+
+    for (int i = iter; 0 < i; i--) {
+	if (NULL != (msg = opo_ojc_to_msg(&oerr, val))) {
+	    free((uint8_t*)msg);
+	} else {
+	    ut_same_int(OPO_ERR_OK, err.code, "error transforming. %s", err.msg);
+	}
+    }
+    dt = dtime() - start;
+    printf("--- opo_ojc_to_msg rate: %d in %0.3f secs  %d transforms/sec\n", iter, dt, (int)((double)iter / dt));
+}
+
 void
 append_opo_tests(utTest tests) {
     ut_appenda(tests, "opo.ojc_msg_size", ojc_msg_size_test, NULL);
     ut_appenda(tests, "opo.ojc_to_msg", ojc_to_msg_test, NULL);
     ut_appenda(tests, "opo.msg_to_ojc", msg_to_ojc_test, NULL);
+    ut_appenda(tests, "opo.bench.msg_to_ojc", bench_msg_to_ojc_test, NULL);
+    ut_appenda(tests, "opo.bench.ojc_to_msg", bench_ojc_to_msg_test, NULL);
 }

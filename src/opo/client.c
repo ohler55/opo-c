@@ -329,7 +329,7 @@ recv_loop(void *ctx) {
 	if (0 != (pa->revents & (POLLERR | POLLHUP | POLLNVAL))) {
 	    if (0 == bcnt && NULL == msg) {
 		if (NULL != client->status_callback) {
-		    client->status_callback(client, false, OPO_ERR_OK, "closed");
+		    client->status_callback(client, false, OPO_ERR_OK, "connection closed");
 		}
 		client->sock = 0;
 	    } else if (0 != (pa->revents & (POLLHUP | POLLNVAL))) {
@@ -429,6 +429,9 @@ opo_client_connect(opoErr err, const char *host, int port, opoClientOptions opti
 	    client->active = false;
 	    opo_err_set(err, stat, "failed create receiving thread. %s", strerror(stat));
 	}
+	if (0 < client->sock && NULL != client->status_callback) {
+	    status_callback(client, true, OPO_ERR_OK, "connected to %s:%d", host, port);
+	}
     }
     return client;
 }
@@ -437,9 +440,13 @@ void
 opo_client_close(opoClient client) {
     // TBD clear out waiting
     client->active = false;
+
     // TBD push empty on queue
     if (0 < client->sock) {
 	close(client->sock);
+    }
+    if (NULL != client->status_callback) {
+	client->status_callback(client, false, OPO_ERR_OK, "connection closed");
     }
     pthread_join(client->recv_thread, NULL);
     free(client->q);

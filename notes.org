@@ -5,7 +5,6 @@
    - could be network or tql
    - test with different size returns but same query (feval.c)
 
-- call status callback on connect
 - use poll on client pending
 
 - first merge

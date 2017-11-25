@@ -23,7 +23,6 @@ dtime() {
     return (double)tv.tv_sec + (double)tv.tv_usec / 1000000.0;
 }
 
-
 static void
 connect_test() {
     struct _opoErr	err = OPO_ERR_INIT;
@@ -90,7 +89,7 @@ build_query(uint8_t *query, size_t qsize, int64_t rid) {
 
 static void
 status_callback(opoClient client, bool connected, opoErrCode code, const char *msg) {
-    printf("*** %s\n", msg);
+    printf("--- %s\n", msg);
 }
 
 static void
