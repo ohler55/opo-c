@@ -36,17 +36,15 @@ connect_test() {
 
 static void
 query_cb(opoRef ref, opoVal response, void *ctx) {
-    int	*cntp = (int*)ctx;
-
-    opoVal	top = opo_msg_val(response);
-    opoVal	cval = opo_val_get(top, "code");
+    int			*cntp = (int*)ctx;
+    opoVal		top = opo_msg_val(response);
+    opoVal		cval = opo_val_get(top, "code");
     struct _opoErr	err = OPO_ERR_INIT;
     int64_t		code = opo_val_int(&err, cval);
 
     if (0 != code) {
 	printf("*** code not zero\n");
     }
-
 #if 0
     struct _opoErr	oe = OPO_ERR_INIT;
     ojcVal		v = opo_msg_to_ojc(&oe, response);
@@ -75,6 +73,7 @@ build_query(uint8_t *query, size_t qsize, int64_t rid) {
     opo_builder_push_object(&err, &builder, NULL, -1);
     opo_builder_push_int(&err, &builder, rid, "rid", -1);
 #if 0
+    opo_builder_push_int(&err, &builder, 1, "limit", -1);
     opo_builder_push_array(&err, &builder, "where", -1);
     opo_builder_push_string(&err, &builder, "EQ", 2, NULL, -1);
     opo_builder_push_string(&err, &builder, "kind", 4, NULL, -1);
@@ -101,7 +100,7 @@ query_test() {
 	.pending_max = 4096,
 	.status_callback = status_callback,
     };
-    opoClient		client = opo_client_connect(&err, "localhost", 6364, &options);
+    opoClient	client = opo_client_connect(&err, "localhost", 6364, &options);
 
     ut_same_int(OPO_ERR_OK, err.code, "error connecting. %s", err.msg);
 
@@ -121,6 +120,7 @@ query_test() {
 	}
 	usleep(1000);
     }
+    cnt--;
     int		iter = 100000;
     double	dt = dtime() + 5.0; // used as timeout first
     double	start = dtime();
@@ -134,11 +134,10 @@ query_test() {
     }
     // Wait for all to complete
 
-    while (cnt <= iter && dtime() < dt) {
+    while (cnt < iter && dtime() < dt) {
 	usleep(100);
     }
     dt = dtime() - start;
-    cnt--;
     printf("--- query rate: %d in %0.3f secs  %d queries/sec\n", cnt, dt, (int)((double)cnt / dt));
 
     pthread_join(thread, NULL);

@@ -1,37 +1,41 @@
 
+- opo
+ - optimize with fast tql or ftql.[ch]
+  - seems bottleneck is network, larger returns slow things down
+   - could be network or tql
+   - test with different size returns but same query (feval.c)
 
-- implement reconnect
-- implement queue
+- call status callback on connect
+- use poll on client pending
+
+- first merge
 
 - doc
  - options
   - pending_max
   - status_callback
    - void (*cb)(opoClient client, bool connected, opoErrCode, const char *msg)
+ - update docs for new functions and changes in args
+
+- benchmarks with latency
+ - large array for start and then delta after a match
+
+- merge benchmark branch
 
 
-- docs
- - html
- - index
- - typedefs (structs, enums, macros)
- - global variables
- - functions
- - examples
- - script to form index and doc stubs
+ docs
+ - introduction (how client works, structure of docs by types)
+ - install (separate page)
+ - guides
+  - basic async
+  - sync
+   - process one at a time
+   - wrap as send, process, return
 
- - left size list/index
-  - introduction (how client works, structure of docs by types)
-  - install (separate page)
-  - guides
-   - basic
-   - async
-   - ...
-  - API
-   - typedefs
-   - opoMsg (show page struct _opoMsg)
-    - opo_msg_init()
-    - ...
-   - opoVal
-  
- - each pulls up page on right side
- - could use one long page with a refs
+- release after opo
+ - can merge earlier though
+
+- plan
+ - implement reconnect
+ - doc
+  - implement open and close or topic

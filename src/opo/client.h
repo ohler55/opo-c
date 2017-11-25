@@ -26,7 +26,6 @@ extern "C" {
     extern opoClient	opo_client_connect(opoErr err, const char *host, int port, opoClientOptions options);
     extern void		opo_client_close(opoClient client);
     extern opoRef	opo_client_query(opoErr err, opoClient client, opoVal query, opoQueryCallback cb, void *ctx);
-    extern bool		opo_client_cancel(opoClient client, opoRef ref, bool silent);
     extern int		opo_client_process(opoClient client, int max, double wait);
 
     extern int		opo_client_pending_count(opoClient client);

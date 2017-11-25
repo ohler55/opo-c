@@ -48,7 +48,7 @@ struct _opoClient {
     int			sock;
     double		timeout;
     pthread_t		recv_thread;
-    uint64_t		next_id;
+    atomic_ullong	next_id;
     opoStatusCallback	status_callback;
 
     Query		q;
@@ -107,30 +107,6 @@ status_callback(opoClient client, bool connected, opoErrCode code, const char *f
     va_end(ap);
 }
 
-// Find the pending query with the id by starting with on_dec and work towards
-// the tail.
-static Query
-pending_find(opoClient client, uint64_t id) {
-    Query	q = client->on_deck;
-    bool	looped = false;
-
-    do {
-	if (q->id == id) {
-	    return q;
-	}
-	q++;
-	if (client->end <= q) {
-	    if (looped) { // safety check in case the tail was missed
-		break;
-	    }
-	    q = client->q;
-	    looped = true;
-	}
-    } while (q != client->tail);
-
-    return NULL;
-}
-
 static Query
 take_next_ready(opoClient client, double timeout) {
     while (atomic_flag_test_and_set(&client->head_lock)) {
@@ -185,40 +161,60 @@ get_addr_info(opoErr err, const char *host, int port) {
     return res;
 }
 
+// Find the pending query with the id by starting with on_dec and work towards
+// the tail.
+static Query
+pending_find(opoClient client, uint64_t id) {
+    Query	q = client->on_deck;
+    bool	looped = false;
+
+    do {
+	if (q->id == id) {
+	    return q;
+	}
+	q++;
+	if (client->end <= q) {
+	    if (looped) { // safety check in case the tail was missed
+		break;
+	    }
+	    q = client->q;
+	    looped = true;
+	}
+    } while (q != client->tail);
+
+    return NULL;
+}
+
 static void
 processs_msg(opoClient client, opoMsg msg) {
     uint64_t	id = opo_msg_id(msg);
-    Query	q = pending_find(client, id);
+    Query	q = client->on_deck;;
 
-/*
-    printf("*** pending %d  ready %d  head %ld on_deck %ld  tail %ld\n",
-	   opo_client_pending_count(client),
-	   opo_client_ready_count(client),
-	   client->head - client->q, client->on_deck - client->q, client->tail - client->q);
-*/
-    if (NULL == q) {
-	status_callback(client, true, OPO_ERR_NOT_FOUND, "Pending query %llu not found.", (unsigned long long)id);
-	free((uint8_t*)msg);
-	return;
-    }
-    while (q != client->on_deck) {
-	if (NULL != client->on_deck->cb) {
-	    uint8_t		lost_msg[1024];
-	    struct _opoBuilder	b;
-	    struct _opoErr	err = OPO_ERR_INIT;
-	    
-	    opo_builder_init(&err, &b, lost_msg, sizeof(lost_msg));
-	    opo_builder_push_object(&err, &b, NULL, 0);
-	    opo_builder_push_int(&err, &b, OPO_ERR_LOST, "code", 4);
-	    opo_builder_push_string(&err, &b, "no response", -1, "error", 5);
-	    opo_builder_finish(&b);
-	    opo_msg_set_id(b.head, id);
-	    client->on_deck->resp = opo_builder_take(&b);
-	    query_set_state(client->on_deck, Q_READY);
+    if (id != client->on_deck->id) {
+	if (NULL == (q = pending_find(client, id))) {
+	    status_callback(client, true, OPO_ERR_NOT_FOUND, "Pending query %llu not found.", (unsigned long long)id);
+	    free((uint8_t*)msg);
+	    return;
 	}
-	client->on_deck++;
-	if (client->end <= client->on_deck) {
-	    client->on_deck = client->q;
+	while (q != client->on_deck) {
+	    if (NULL != client->on_deck->cb) {
+		uint8_t		lost_msg[1024];
+		struct _opoBuilder	b;
+		struct _opoErr	err = OPO_ERR_INIT;
+	    
+		opo_builder_init(&err, &b, lost_msg, sizeof(lost_msg));
+		opo_builder_push_object(&err, &b, NULL, 0);
+		opo_builder_push_int(&err, &b, OPO_ERR_LOST, "code", 4);
+		opo_builder_push_string(&err, &b, "no response", -1, "error", 5);
+		opo_builder_finish(&b);
+		opo_msg_set_id(b.head, id);
+		client->on_deck->resp = opo_builder_take(&b);
+		query_set_state(client->on_deck, Q_READY);
+	    }
+	    client->on_deck++;
+	    if (client->end <= client->on_deck) {
+		client->on_deck = client->q;
+	    }
 	}
     }
     if (Q_SENT != atomic_load(&q->state)) {
@@ -480,8 +476,7 @@ opo_client_query(opoErr err, opoClient client, opoVal query, opoQueryCallback cb
     }
     Query	q = client->tail;
 
-    q->id = client->next_id;
-    client->next_id++;
+    q->id = atomic_fetch_add(&client->next_id, 1);
     q->cb = cb;
     q->ctx = ctx;
     q->when = dtime();
@@ -500,12 +495,6 @@ opo_client_query(opoErr err, opoClient client, opoVal query, opoQueryCallback cb
     return q->id;
 }
 
-bool
-opo_client_cancel(opoClient client, opoRef ref, bool silent) {
-    // TBD take off queue or rather mark as cancelled
-    return false;
-}
-
 int
 opo_client_process(opoClient client, int max, double wait) {
     Query	q;
@@ -516,10 +505,10 @@ opo_client_process(opoClient client, int max, double wait) {
 	    if (NULL != q->cb) {
 		q->cb(q->id, q->resp, q->ctx);
 	    }
-	    query_set_state(q, Q_CLEAR);
 	    free((uint8_t*)q->resp);
 	    q->id = 0;
 	    q->resp = NULL;
+	    query_set_state(q, Q_CLEAR); // must be last modification to query
 	    cnt++;
 	} else if (0.0 <= wait) {
 	    break;
