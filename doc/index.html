@@ -131,8 +131,48 @@
         <div id="Guides" class="desc">
           <div class="title">Guides</div>
           <p class="desc-text">
-            The unit test are the best source of usage so far. More in the future.
+            An insert is shown below. The unit tests are the best source of
+            usage otherwise.
           </p>
+          <div class="synopsis">#define OPO_MSG_MAX_DEPTH  512
+#include <opo/opo.h>
+#include <opo/client.h>
+#include <opo/builder.h>
+
+static void
+add_cb(opoRef ref, opoVal response, void *ctx) {
+    opoVal		top = opo_msg_val(response);
+    opoVal		rval = 
+
+    struct _opoErr	err = OPO_ERR_INIT;
+    if (OPO_ERR_OK != opo_val_int(&err, opo_val_get(opo_msg_val(response), "code"))) {
+	printf("error response\n");
+    } else {
+	printf("got it!\n");
+    }
+}
+
+static void
+create_record(opoClient client) {
+    int			cnt;
+    uint8_t		query[1024];
+    struct _opoErr	err = OPO_ERR_INIT;
+    struct _opoBuilder	builder;
+
+    opo_builder_init(&err, &builder, query, sizeof(query));
+    opo_builder_push_object(&err, &builder, NULL, -1);
+    opo_builder_push_object(&err, &builder, "insert", -1);
+    opo_builder_push_string(&err, &builder, "Test", -1, "kind", -1);
+    opo_builder_push_int(&err, &builder, i, "num", -1);
+    opo_builder_push_string(&err, &builder, "something", -1, "str", -1);
+    opo_builder_finish(&builder);
+
+    opo_client_query(&err, client, query, add_cb, &ref);
+    if (1 != opo_client_process(client, 1, 1.0)) {
+	printf("query failed\n");
+    }
+}
+          </div>
         </div>
 
         <div id="opoBuilder" class="desc">

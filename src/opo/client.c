@@ -62,7 +62,7 @@ struct _opoClient {
     atomic_flag		tail_lock;
     atomic_flag		take_lock;
 
-    atomic_int		wait_state;
+    atomic_int		waiting;
     int			rsock;
     int			wsock;
 };
@@ -107,6 +107,38 @@ status_callback(opoClient client, bool connected, opoErrCode code, const char *f
     va_end(ap);
 }
 
+static void
+wait_for_ready(opoClient client, double timeout) {
+    if (0 == client->rsock) {
+	dsleep(timeout);
+	return;
+    }
+    atomic_fetch_add(&client->waiting, 1);
+
+    struct pollfd	pa;
+    
+    pa.fd = client->rsock;
+    pa.events = POLLIN;
+    pa.revents = 0;
+    if (1 == poll(&pa, 1, (int)(timeout / 1000.0))) {
+	if (0 != (pa.revents & POLLIN)) {
+	    char	buf[8];
+	    
+	    while (0 < read(client->rsock, buf, sizeof(buf))) {
+	    }
+	}
+    }
+    atomic_fetch_sub(&client->waiting, 1);
+}
+
+static void
+wake_ready(opoClient client) {
+    if (0 == client->wsock || 0 >= atomic_load(&client->waiting)) {
+	return;
+    }
+    if (write(client->wsock, ".", 1)) {}
+}
+
 static Query
 take_next_ready(opoClient client, double timeout) {
     while (atomic_flag_test_and_set(&client->head_lock)) {
@@ -121,8 +153,7 @@ take_next_ready(opoClient client, double timeout) {
 		    atomic_flag_clear(&client->head_lock);
 		    return NULL;
 		}
-		// TBD use poll
-		dsleep(RETRY_SECS);
+		wait_for_ready(client, 0.01);
 	    }
 	} else {
 	    atomic_flag_clear(&client->head_lock);
@@ -228,8 +259,7 @@ processs_msg(opoClient client, opoMsg msg) {
     if (client->end <= client->on_deck) {
 	client->on_deck = client->q;
     }
-    // TBD write to wsock to wake up if needed
-    //  when waking up just read one byte so the net thread has a chance
+    wake_ready(client);
 }
 
 void*
@@ -328,7 +358,7 @@ recv_loop(void *ctx) {
 	}
 	if (0 != (pa->revents & (POLLERR | POLLHUP | POLLNVAL))) {
 	    if (0 == bcnt && NULL == msg) {
-		if (NULL != client->status_callback) {
+		if (client->active && NULL != client->status_callback) {
 		    client->status_callback(client, false, OPO_ERR_OK, "connection closed");
 		}
 		client->sock = 0;
@@ -414,7 +444,7 @@ opo_client_connect(opoErr err, const char *host, int port, opoClientOptions opti
 	atomic_flag_clear(&client->head_lock);
 	atomic_flag_clear(&client->tail_lock);
 	atomic_flag_clear(&client->take_lock);
-	atomic_init(&client->wait_state, NOT_WAITING);
+	atomic_init(&client->waiting, 0);
 
 	int	fd[2];
 
@@ -438,10 +468,7 @@ opo_client_connect(opoErr err, const char *host, int port, opoClientOptions opti
 
 void
 opo_client_close(opoClient client) {
-    // TBD clear out waiting
     client->active = false;
-
-    // TBD push empty on queue
     if (0 < client->sock) {
 	close(client->sock);
     }
@@ -525,7 +552,7 @@ opo_client_process(opoClient client, int max, double wait) {
 	    break;
 	}
     }
-    return 0;
+    return cnt;
 }
 
 int
@@ -537,32 +564,3 @@ int
 opo_client_ready_count(opoClient client) {
     return (int)((client->on_deck + client->pending_max - client->head) % client->pending_max);
 }
-#if 0
-// TBD
-int
-opo_pending_listen(opoPending p) {
-    if (0 == client->rsock) {
-	int	fd[2];
-
-	if (0 == pipe(fd)) {
-	    fcntl(fd[0], F_SETFL, O_NONBLOCK);
-	    fcntl(fd[1], F_SETFL, O_NONBLOCK);
-	    client->rsock = fd[0];
-	    client->wsock = fd[1];
-	}
-    }
-    atomic_store(&client->wait_state, WAITING);
-    
-    return client->rsock;
-}
-
-void
-opo_pending_release(opoPending p) {
-    char	buf[8];
-
-    // clear pipe
-    while (0 < read(client->rsock, buf, sizeof(buf))) {
-    }
-    atomic_store(&client->wait_state, NOT_WAITING);
-}
-#endif
