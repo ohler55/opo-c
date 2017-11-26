@@ -1,0 +1,154 @@
+.style {
+    padding: 0px;
+}
+body {
+    -webkit-text-size-adjust: none;
+    background: #f0f8ff;
+    margin: 0px;
+    padding: 0px;
+    width: 100%;
+    font-family: 'HelveticaNeue', 'Helvetica Neue', 'Arial', sans-serif;
+    text-align: left;
+}
+.bold {
+    font-weight: bold;
+}
+a.normal {
+    color: white;
+    text-decoration: none;
+}
+a.selected {
+    color: white;
+    text-decoration: none;
+}
+a.opo {
+    font-style: italic;
+    font-weight: bold;
+}
+
+.header {
+    color: white;
+    width: 100%;
+    background-color: black;
+    font-family: 'HelveticaNeue-Bold', 'Helvetica Neue', 'Arial', sans-serif;
+}
+.small-header {
+    font-size: 36px;
+    font-style: italic;
+    font-weight: normal;
+    color: #ff8;
+}
+.headtitle {
+    padding: 0px 8px 8px 16px;
+    font-size: 72px;
+    font-style: italic;
+    font-weight: bold;
+}
+.page {
+    display: flex;
+    flex-direction: row;
+}
+.index {
+    width: 300px;
+    border: solid 1px #888;
+    padding: 8px 0px;
+    color: white;
+    background-color: black;
+    font-family: 'HelveticaNeue-Bold', 'Helvetica Neue', 'Arial', sans-serif;
+    font-size: 14px;
+}
+.item {
+    width: 100%;
+    display: block;
+    padding: 2px;
+    margin: 0px;
+    color: white;
+    text-align: left;
+    background-color: black;
+    text-decoration: none;
+    border: 0px;
+    font-family: 'HelveticaNeue-Bold', 'Helvetica Neue', 'Arial', sans-serif;
+    font-size: 14px;
+}
+.item:hover {
+    background-color: #666;
+    color: #ff8;
+}
+.level1 {
+    padding: 2px 2px 2px 16px;
+}
+.level2 {
+    padding: 2px 2px 2px 32px;
+}
+.level3 {
+    padding: 2px 2px 2px 48px;
+}
+.selected {
+    background-color: #bdf;
+    color: black;
+}
+.selected:hover {
+    background-color: #68a;
+    color: #dd7;
+}
+.cat {
+    color: #ace;
+    display: block;
+    font-style: italic;
+    padding: 2px 2px 2px 16px;
+}
+.desc-pane {
+    width: 100%;
+    color: black;
+    font-family: 'HelveticaNeue', 'Helvetica Neue', 'Arial', sans-serif;
+    font-size: 16px;
+}
+.desc {
+    display: block;
+    padding: 16px;
+    color: black;
+    font-family: 'HelveticaNeue', 'Helvetica Neue', 'Arial', sans-serif;
+}
+.title {
+    display: block;
+    font-size: 24px;
+    font-weight: bold;
+}
+.synopsis {
+    display: block;
+    font-family: monospace;
+    font-size: 16px;
+    white-space: pre;
+    margin: 16px 0px 8px 8px;
+    padding: 8px;
+    background: #eee;
+    border: 1px solid #c0d0e0;
+}
+.desc-text {
+    margin: 8px 0px 8px 8px;
+    padding: 4px;
+    font-weight: normal;
+}
+table.params {
+    margin: 0px 0px 0px 16px;
+}
+.params td {
+    padding: 4px;
+    #margin: 4px;
+}
+.param {
+    font-family: monospace;
+    font-size: 16px;
+    padding: 4px;
+    white-space: pre;
+    background: #eee;
+    border: 1px solid #c0d0e0;
+}
+.returns {
+    font-weight: bold;
+    height: 60px;
+}
+.code {
+    font-family: monospace;
+    font-size: 16px;
+}

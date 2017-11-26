@@ -1,0 +1,1367 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<html>
+  <head>
+    <title>OpO Client API</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <link rel="stylesheet" type="text/css" media="screen,print" href="opo-api.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+  </head>
+  <body onload="displayDesc(event,'Introduction')">
+    <div class="header">
+      <div class="headtitle">
+        <a href="http://opo.technology/index.html" class="normal">OpO</a> <span class="small-header">Client APIs v1.0.0</span>
+      </div>
+    </div>
+    <div class="page">
+      <div class="index">
+        <button class="item level1" onclick="displayDesc(event,'Introduction')">Introduction</button>
+        <button class="item level1" onclick="displayDesc(event,'Install')">Install</button>
+        <button class="item level1" onclick="displayDesc(event,'Guides')">Guides</button>
+        <span class="cat">Types</span>
+
+        <button class="item level2" onclick="displayDesc(event,'opoBuilder')">opoBuilder</button>
+        <button class="item level3" onclick="displayDesc(event,'opo_builder_cleanup')">opo_builder_cleanup()</button>
+        <button class="item level3" onclick="displayDesc(event,'opo_builder_finish')">opo_builder_finish()</button>
+        <button class="item level3" onclick="displayDesc(event,'opo_builder_init')">opo_builder_init()</button>
+        <button class="item level3" onclick="displayDesc(event,'opo_builder_length')">opo_builder_length()</button>
+        <button class="item level3" onclick="displayDesc(event,'opo_builder_pop')">opo_builder_pop()</button>
+        <button class="item level3" onclick="displayDesc(event,'opo_builder_push_array')">opo_builder_push_array()</button>
+        <button class="item level3" onclick="displayDesc(event,'opo_builder_push_bool')">opo_builder_push_bool()</button>
+        <button class="item level3" onclick="displayDesc(event,'opo_builder_push_double')">opo_builder_push_double()</button>
+        <button class="item level3" onclick="displayDesc(event,'opo_builder_push_int')">opo_builder_push_int()</button>
+        <button class="item level3" onclick="displayDesc(event,'opo_builder_push_null')">opo_builder_push_null()</button>
+        <button class="item level3" onclick="displayDesc(event,'opo_builder_push_object')">opo_builder_push_object()</button>
+        <button class="item level3" onclick="displayDesc(event,'opo_builder_push_string')">opo_builder_push_string()</button>
+        <button class="item level3" onclick="displayDesc(event,'opo_builder_push_time')">opo_builder_push_time()</button>
+        <button class="item level3" onclick="displayDesc(event,'opo_builder_push_uuid')">opo_builder_push_uuid()</button>
+        <button class="item level3" onclick="displayDesc(event,'opo_builder_push_uuid_string')">opo_builder_push_uuid_string()</button>
+        <button class="item level3" onclick="displayDesc(event,'opo_builder_take')">opo_builder_take()</button>
+
+        <button class="item level2" onclick="displayDesc(event,'opoClient')">opoClient</button>
+        <button class="item level3" onclick="displayDesc(event,'opoClientOptions')">opoClientOptions</button>
+        <button class="item level3" onclick="displayDesc(event,'opoQueryCallback')">opoQueryCallback</button>
+        <button class="item level3" onclick="displayDesc(event,'opoRef')">opoRef</button>
+        <button class="item level3" onclick="displayDesc(event,'opo_client_close')">opo_client_close()</button>
+        <button class="item level3" onclick="displayDesc(event,'opo_client_connect')">opo_client_connect()</button>
+        <button class="item level3" onclick="displayDesc(event,'opo_client_pending_count')">opo_client_pending_count()</button>
+        <button class="item level3" onclick="displayDesc(event,'opo_client_process')">opo_client_process()</button>
+        <button class="item level3" onclick="displayDesc(event,'opo_client_query')">opo_client_query()</button>
+        <button class="item level3" onclick="displayDesc(event,'opo_client_ready_count')">opo_client_ready_count()</button>
+
+        <button class="item level2" onclick="displayDesc(event,'opoErr')">opoErr</button>
+        <button class="item level3" onclick="displayDesc(event,'OPO_ERR_INIT')">OPO_ERR_INIT</button>
+        <button class="item level3" onclick="displayDesc(event,'opoErrCode')">opoErrCode</button>
+        <button class="item level3" onclick="displayDesc(event,'opo_err_clear')">opo_err_clear()</button>
+        <button class="item level3" onclick="displayDesc(event,'opo_err_no')">opo_err_no()</button>
+        <button class="item level3" onclick="displayDesc(event,'opo_err_set')">opo_err_set()</button>
+        <button class="item level3" onclick="displayDesc(event,'opo_err_str')">opo_err_str()</button>
+
+        <button class="item level2" onclick="displayDesc(event,'opoMsg')">opoMsg</button>
+        <button class="item level3" onclick="displayDesc(event,'opo_msg_bsize')">opo_msg_bsize</button>
+        <button class="item level3" onclick="displayDesc(event,'opo_msg_id')">opo_msg_id</button>
+        <button class="item level3" onclick="displayDesc(event,'opo_msg_set_id')">opo_msg_set_id</button>
+        <button class="item level3" onclick="displayDesc(event,'opo_msg_val')">opo_msg_val</button>
+
+        <button class="item level2" onclick="displayDesc(event,'opoVal')">opoVal</button>
+        <button class="item level3" onclick="displayDesc(event,'opoValCallbacks')">opoValCallbacks</button>
+        <button class="item level3" onclick="displayDesc(event,'opoValType')">opoValType</button>
+        <button class="item level3" onclick="displayDesc(event,'opo_val_bool')">opo_val_bool()</button>
+        <button class="item level3" onclick="displayDesc(event,'opo_val_bsize')">opo_val_bsize()</button>
+        <button class="item level3" onclick="displayDesc(event,'opo_val_double')">opo_val_double()</button>
+        <button class="item level3" onclick="displayDesc(event,'opo_val_get')">opo_val_get()</button>
+        <button class="item level3" onclick="displayDesc(event,'opo_val_int')">opo_val_int()</button>
+        <button class="item level3" onclick="displayDesc(event,'opo_val_iterate')">opo_val_iterate()</button>
+        <button class="item level3" onclick="displayDesc(event,'opo_val_key')">opo_val_key()</button>
+        <button class="item level3" onclick="displayDesc(event,'opo_val_member_count')">opo_val_member_count()</button>
+        <button class="item level3" onclick="displayDesc(event,'opo_val_members')">opo_val_members()</button>
+        <button class="item level3" onclick="displayDesc(event,'opo_val_next')">opo_val_next()</button>
+        <button class="item level3" onclick="displayDesc(event,'opo_val_size')">opo_val_size()</button>
+        <button class="item level3" onclick="displayDesc(event,'opo_val_string')">opo_val_string()</button>
+        <button class="item level3" onclick="displayDesc(event,'opo_val_time')">opo_val_time()</button>
+        <button class="item level3" onclick="displayDesc(event,'opo_val_type')">opo_val_type()</button>
+        <button class="item level3" onclick="displayDesc(event,'opo_val_uuid')">opo_val_uuid()</button>
+        <button class="item level3" onclick="displayDesc(event,'opo_val_uuid_str')">opo_val_uuid_str()</button>
+
+        <span class="cat">functions</span>
+        <button class="item level2" onclick="displayDesc(event,'opo_msg_to_ojc')">opo_msg_to_ojc()</button>
+        <button class="item level2" onclick="displayDesc(event,'opo_ojc_msg_size')">opo_ojc_msg_size()</button>
+        <button class="item level2" onclick="displayDesc(event,'opo_ojc_fill_msg')">opo_ojc_fill_msg()</button>
+        <button class="item level2" onclick="displayDesc(event,'opo_ojc_to_msg')">opo_ojc_to_msg()</button>
+
+      </div>
+
+      <div class="desc-pane">
+        <div id="Introduction" class="desc">
+          <div class="title">Introduction</div>
+          <p class="desc-text">
+            <a href="http://opo.technology">OpO</a> is a fast triple store that
+            is ideally suited for storing JSON documents. It has an HTTP API as
+            well as more direct API. The OpO Client is a C client that provides
+            access to that API.
+          </p>
+          <p class="desc-text">
+            The OpO Client provides basic connect, query, and close
+            functions. The queries
+            are <a href="pages/doc/tql/index.html">TQL<a> JSON. They can be
+            constructed with
+            the <a href="https://github.com/ohler55/ojc">OjC</a> library or
+            more efficiently with the opoBuilder. All queries are made
+            asynchronously but can be made synchronous with a simple wrapper
+            function that makes use of the opo_client_process() function.
+          </p>
+          <p class="desc-text">
+            While query responses are asynchronous, processing of the
+            responses is controlled by the caller with the
+            opo_client_process() function. In the unit test a simple thread is
+            created that continually processes responses but the call can be
+            made one at a time for more control over response handling.
+          </p>
+        </div>
+
+        <div id="Install" class="desc">
+          <div class="title">Install</div>
+          <p class="desc-text">
+            For the initial release, build (type make) then copy libopoc and the headers in
+            the include directory to a convenient place that will be picked up
+            by the build. You could even leave the project in place and link
+            directly to the repo.
+          </p>
+        </div>
+
+        <div id="Guides" class="desc">
+          <div class="title">Guides</div>
+          <p class="desc-text">
+            An insert is shown below. The unit tests are the best source of
+            usage otherwise.
+          </p>
+          <div class="synopsis">#define OPO_MSG_MAX_DEPTH  512
+#include <opo/opo.h>
+#include <opo/client.h>
+#include <opo/builder.h>
+
+static void
+add_cb(opoRef ref, opoVal response, void *ctx) {
+    opoVal		top = opo_msg_val(response);
+    opoVal		rval = 
+
+    struct _opoErr	err = OPO_ERR_INIT;
+    if (OPO_ERR_OK != opo_val_int(&err, opo_val_get(opo_msg_val(response), "code"))) {
+	printf("error response\n");
+    } else {
+	printf("got it!\n");
+    }
+}
+
+static void
+create_record(opoClient client) {
+    int			cnt;
+    uint8_t		query[1024];
+    struct _opoErr	err = OPO_ERR_INIT;
+    struct _opoBuilder	builder;
+
+    opo_builder_init(&err, &builder, query, sizeof(query));
+    opo_builder_push_object(&err, &builder, NULL, -1);
+    opo_builder_push_object(&err, &builder, "insert", -1);
+    opo_builder_push_string(&err, &builder, "Test", -1, "kind", -1);
+    opo_builder_push_int(&err, &builder, i, "num", -1);
+    opo_builder_push_string(&err, &builder, "something", -1, "str", -1);
+    opo_builder_finish(&builder);
+
+    opo_client_query(&err, client, query, add_cb, &ref);
+    if (1 != opo_client_process(client, 1, 1.0)) {
+	printf("query failed\n");
+    }
+}
+          </div>
+        </div>
+
+        <div id="opoBuilder" class="desc">
+          <div class="title">opoBuilder</div>
+          <div class="synopsis">#define OPO_MSG_MAX_DEPTH  512
+
+typedef struct _opoBuilder {
+    uint8_t *head;
+    uint8_t *end;
+    uint8_t *cur;
+    bool    own;
+    bool    *top;
+    bool    stack[OPO_MSG_MAX_DEPTH];
+} *opoBuilder;
+</div>
+          <p class="desc-text">
+            The builder is used to build a binary message that is an
+            opoVal. It is meant to be fast and achieves that by making the
+            message construction a single pass or linear build. The structure
+            members are public but only the <span class="code">.head</span>
+            should be accessed and then only for reading.
+          </p>
+          <p class="desc-text">
+            The normal use of the builder is to initialize the builder and
+            then make multiple calls to push values into the message. Finally
+            calling the <span class="code">opo_builder_finish()</span>
+            function to properly complete the message.
+          </p>
+          <table class="params">
+            <tr><td><span class="param">head</span></td><td>the current start or head of the messages being built</td></tr>
+            <tr><td><span class="param">end</span></td><td>the current allocatd end of the message buffer</td></tr>
+            <tr><td><span class="param">cur</span></td><td>the current message end</td></tr>
+            <tr><td><span class="param">own</span></td><td>a flag indicating the builder owns the message buffer</td></tr>
+            <tr><td><span class="param">top</span></td><td>a pointer to the current top of the stack where the latest object or array is</td></tr>
+            <tr><td><span class="param">stack</span></td><td>stack used to keep track of objets and array while building</td></tr>
+          </table>
+        </div>
+
+        <div id="opo_builder_cleanup" class="desc">
+          <div class="title">opo_builder_cleanup()</div>
+          <div class="synopsis">void opo_builder_cleanup(opoBuilder builder)</div>
+          <p class="desc-text">
+            Cleans up any memory allocated by the builder. The builder itself is not freed.
+          </p>
+          <table class="params">
+            <tr><td><span class="param">builder</span></td><td>builder to cleanup</td></tr>
+          </table>
+        </div>
+
+        <div id="opo_builder_finish" class="desc">
+          <div class="title">opo_builder_finish()</div>
+          <div class="synopsis">opoErrCode opo_builder_finish(opoBuilder builder)</div>
+          <p class="desc-text">
+            Completes the message being built. It also pops any open array and
+            objects if they have not already been closed.
+          </p>
+          <table class="params">
+            <tr><td><span class="param">builder</span></td><td>builder to complete and finish the message it is building.</td></tr>
+            <tr><td class="returns">Returns:</td><td>the error code.</td></tr>
+          </table>
+        </div>
+
+        <div id="opo_builder_init" class="desc">
+          <div class="title">opo_builder_init()</div>
+          <div class="synopsis">opoErrCode opo_builder_init(opoErr     err,
+                            opoBuilder builder,
+                            uint8_t    *buf,
+                            size_t     size)</div>
+          <p class="desc-text">
+            Initialize a <span class="code">struct_opoBuilder</span> with the
+            buffer specified. If the <span class="code">buf</span> argument
+            is <span class="code">NULL</span> the a buffer is allocated with
+            the size specified or with a minimum size. If
+            the <span class="code">buf</span> argument is
+            not <span class="code">NULL</span> then that buffer is unless the
+            message grows too large and a new buffer is allocated. This is
+            indicated by the <span class="code">.own</span> member of the
+            builder. There should be no need to check as long as
+            the <span class="code">opo_builder_take()</span> function is used.
+          </p>
+          <table class="params">
+            <tr><td><span class="param">err</span></td><td>pointer to an initialized <span class="code">opoErr</span> struct that will be set if an error occurs.</td></tr>
+            <tr><td><span class="param">builder</span></td><td>builder to initialize</td></tr>
+            <tr><td><span class="param">buf</span></td><td>buffer to use initialy</td></tr>
+            <tr><td><span class="param">size</span></td><td>the size of the initial buffer or the initial size to allocate if the <span class="code">buf</span> is <span class="code">NULL</span></td></tr>
+            <tr><td class="returns">Returns:</td><td>the error status code.</td></tr>
+          </table>
+        </div>
+
+        <div id="opo_builder_length" class="desc">
+          <div class="title">opo_builder_length()</div>
+          <div class="synopsis">size_t opo_builder_length(opoBuilder builder)</div>
+          <p class="desc-text">
+            Returns the current message length.
+          </p>
+          <table class="params">
+            <tr><td><span class="param">builder</span></td><td>builder to get the message length from.</td></tr>
+            <tr><td class="returns">Returns:</td><td>the current message length</td></tr>
+          </table>
+        </div>
+
+        <div id="opo_builder_pop" class="desc">
+          <div class="title">opo_builder_pop()</div>
+          <div class="synopsis">opoErrCode opo_builder_pop(opoErr err, opoBuilder builder)</div>
+          <p class="desc-text">
+            Closes an object or array. This is similar to typing a '}'
+            character in JSON. An error will occur if there is no object or
+            array open.
+          </p>
+          <table class="params">
+            <tr><td><span class="param">err</span></td><td>pointer to an initialized <span class="code">opoErr</span> struct that will be set if an error occurs.</td></tr>
+            <tr><td><span class="param">builder</span></td><td>builder to pop a level.</td></tr>
+            <tr><td class="returns">Returns:</td><td>the error status code.</td></tr>
+          </table>
+        </div>
+
+        <div id="opo_builder_push_array" class="desc">
+          <div class="title">opo_builder_push_array()</div>
+          <div class="synopsis">opoErrCode opo_builder_push_array(opoErr     err,
+                                  opoBuilder builder,
+                                  const char *key,
+                                  int        klen)</div>
+          <p class="desc-text">
+            Start an array. If pushing to an array the key should
+            be <span class="code">NULL</span>. If pushing to an object the key
+            must point to the string to be used as the
+            key.
+          </p>
+          <p class="desc-text">
+            The <span class="code">klen</span> can be the actual length
+            of the key or if the key is terminated with
+            a <span class="code">'\0'</span> character
+            the <span class="code">klen</span> can be zero or below and
+            the <span class="code">strlen()</span> function will be called to
+            calculate the length.
+          </p>
+          <table class="params">
+            <tr><td><span class="param">err</span></td><td>pointer to an initialized <span class="code">opoErr</span> struct that will be set if an error occurs.</td></tr>
+            <tr><td><span class="param">builder</span></td><td>builder to push the value to.</td></tr>
+            <tr><td><span class="param">key</span></td><td>key string</td></tr>
+            <tr><td><span class="param">klen</span></td><td>length of the key string</td></tr>
+            <tr><td class="returns">Returns:</td><td>the error status code.</td></tr>
+          </table>
+        </div>
+
+        <div id="opo_builder_push_bool" class="desc">
+          <div class="title">opo_builder_push_bool()</div>
+          <div class="synopsis">opoErrCode opo_builder_push_bool(opoErr     err,
+                                 opoBuilder builder,
+                                 bool       value,
+                                 const char *key,
+                                 int        klen)</div>
+          <p class="desc-text">
+            Push the value onto the message.
+          </p>
+          <p class="desc-text">
+            The <span class="code">klen</span> can be the actual length
+            of the key or if the key is terminated with
+            a <span class="code">'\0'</span> character
+            the <span class="code">klen</span> can be zero or below and
+            the <span class="code">strlen()</span> function will be called to
+            calculate the length.
+          </p>
+          <table class="params">
+            <tr><td><span class="param">err</span></td><td>pointer to an initialized <span class="code">opoErr</span> struct that will be set if an error occurs.</td></tr>
+            <tr><td><span class="param">builder</span></td><td>builder to push the value to.</td></tr>
+            <tr><td><span class="param">value</span></td><td>value to push</td></tr>
+            <tr><td><span class="param">key</span></td><td>key string</td></tr>
+            <tr><td><span class="param">klen</span></td><td>length of the key string</td></tr>
+            <tr><td class="returns">Returns:</td><td>the error status code.</td></tr>
+          </table>
+        </div>
+
+        <div id="opo_builder_push_double" class="desc">
+          <div class="title">opo_builder_push_double()</div>
+          <div class="synopsis">opoErrCode opo_builder_push_double(opoErr     err,
+                                   opoBuilder builder,
+                                   double     value,
+                                   const char *key,
+                                   int        klen)</div>
+          <p class="desc-text">
+            Push the value onto the message.
+          </p>
+          <p class="desc-text">
+            The <span class="code">klen</span> can be the actual length
+            of the key or if the key is terminated with
+            a <span class="code">'\0'</span> character
+            the <span class="code">klen</span> can be zero or below and
+            the <span class="code">strlen()</span> function will be called to
+            calculate the length.
+          </p>
+          <table class="params">
+            <tr><td><span class="param">err</span></td><td>pointer to an initialized <span class="code">opoErr</span> struct that will be set if an error occurs.</td></tr>
+            <tr><td><span class="param">builder</span></td><td>builder to push the value to.</td></tr>
+            <tr><td><span class="param">value</span></td><td>value to push</td></tr>
+            <tr><td><span class="param">key</span></td><td>key string</td></tr>
+            <tr><td><span class="param">klen</span></td><td>length of the key string</td></tr>
+            <tr><td class="returns">Returns:</td><td>the error status code.</td></tr>
+          </table>
+        </div>
+
+        <div id="opo_builder_push_int" class="desc">
+          <div class="title">opo_builder_push_int()</div>
+          <div class="synopsis">opoErrCode opo_builder_push_int(opoErr     err,
+                                opoBuilder builder,
+                                int64_t    value,
+                                const char *key,
+                                int        klen)</div>
+          <p class="desc-text">
+            Push the value onto the message.
+          </p>
+          <p class="desc-text">
+            The <span class="code">klen</span> can be the actual length
+            of the key or if the key is terminated with
+            a <span class="code">'\0'</span> character
+            the <span class="code">klen</span> can be zero or below and
+            the <span class="code">strlen()</span> function will be called to
+            calculate the length.
+          </p>
+          <table class="params">
+            <tr><td><span class="param">err</span></td><td>pointer to an initialized <span class="code">opoErr</span> struct that will be set if an error occurs.</td></tr>
+            <tr><td><span class="param">builder</span></td><td>builder to push the value to.</td></tr>
+            <tr><td><span class="param">value</span></td><td>value to push</td></tr>
+            <tr><td><span class="param">key</span></td><td>key string</td></tr>
+            <tr><td><span class="param">klen</span></td><td>length of the key string</td></tr>
+            <tr><td class="returns">Returns:</td><td>the error status code.</td></tr>
+          </table>
+        </div>
+
+        <div id="opo_builder_push_null" class="desc">
+          <div class="title">opo_builder_push_null()</div>
+          <div class="synopsis">opoErrCode opo_builder_push_null(opoErr     err,
+                                 opoBuilder builder,
+                                 const char *key,
+                                 int        klen)</div>
+          <p class="desc-text">
+            Push a null onto the message.
+          </p>
+          <p class="desc-text">
+            The <span class="code">klen</span> can be the actual length
+            of the key or if the key is terminated with
+            a <span class="code">'\0'</span> character
+            the <span class="code">klen</span> can be zero or below and
+            the <span class="code">strlen()</span> function will be called to
+            calculate the length.
+          </p>
+          <table class="params">
+            <tr><td><span class="param">err</span></td><td>pointer to an initialized <span class="code">opoErr</span> struct that will be set if an error occurs.</td></tr>
+            <tr><td><span class="param">builder</span></td><td>builder to push the value to.</td></tr>
+            <tr><td><span class="param">key</span></td><td>key string</td></tr>
+            <tr><td><span class="param">klen</span></td><td>length of the key string</td></tr>
+            <tr><td class="returns">Returns:</td><td>the error status code.</td></tr>
+          </table>
+        </div>
+
+        <div id="opo_builder_push_object" class="desc">
+          <div class="title">opo_builder_push_object()</div>
+          <div class="synopsis">opoErrCode opo_builder_push_object(opoErr     err,
+                                   opoBuilder builder, 
+                                   const char *key,
+                                   int        klen)</div>
+          <p class="desc-text">
+            Start a new object and push onto the message.
+          </p>
+          <p class="desc-text">
+            The <span class="code">klen</span> can be the actual length
+            of the key or if the key is terminated with
+            a <span class="code">'\0'</span> character
+            the <span class="code">klen</span> can be zero or below and
+            the <span class="code">strlen()</span> function will be called to
+            calculate the length.
+          </p>
+          <table class="params">
+            <tr><td><span class="param">err</span></td><td>pointer to an initialized <span class="code">opoErr</span> struct that will be set if an error occurs.</td></tr>
+            <tr><td><span class="param">builder</span></td><td>builder to push the value to.</td></tr>
+            <tr><td><span class="param">key</span></td><td>key string</td></tr>
+            <tr><td><span class="param">klen</span></td><td>length of the key string</td></tr>
+            <tr><td class="returns">Returns:</td><td>the error status code.</td></tr>
+          </table>
+        </div>
+
+        <div id="opo_builder_push_string" class="desc">
+          <div class="title">opo_builder_push_string()</div>
+          <div class="synopsis">opoErrCode opo_builder_push_string(opoErr     err,
+                                   opoBuilder builder,
+                                   const char *value,
+                                   int        len,
+                                   const char *key,
+                                   int        klen)</div>
+          <p class="desc-text">
+            Push the value string onto the
+            message. The <span class="code">len</span> is either the length of
+            the string or zero or less indicating the length should be
+            calculated by calling <span class="code">strlen()</span> on the
+            value string.
+          </p>
+          <p class="desc-text">
+            The <span class="code">klen</span> can be the actual length
+            of the key or if the key is terminated with
+            a <span class="code">'\0'</span> character
+            the <span class="code">klen</span> can be zero or below and
+            the <span class="code">strlen()</span> function will be called to
+            calculate the length.
+          </p>
+          <table class="params">
+            <tr><td><span class="param">err</span></td><td>pointer to an initialized <span class="code">opoErr</span> struct that will be set if an error occurs.</td></tr>
+            <tr><td><span class="param">builder</span></td><td>builder to push the value to.</td></tr>
+            <tr><td><span class="param">value</span></td><td>string to push</td></tr>
+            <tr><td><span class="param">len</span></td><td>length of the value string to push</td></tr>
+            <tr><td><span class="param">key</span></td><td>key string</td></tr>
+            <tr><td><span class="param">klen</span></td><td>length of the key string</td></tr>
+            <tr><td class="returns">Returns:</td><td>the error status code.</td></tr>
+          </table>
+        </div>
+
+        <div id="opo_builder_push_time" class="desc">
+          <div class="title">opo_builder_push_time()</div>
+          <div class="synopsis">opoErrCode opo_builder_push_time(opoErr     err,
+                                 opoBuilder builder,
+                                 int64_t    value,
+                                 const char *key,
+                                 int        klen)</div>
+          <p class="desc-text">
+            Push the value onto the message. The time value should be the
+            number of nanoseconds from epoch or Unix time to the nanosecond.
+          </p>
+          <p class="desc-text">
+            The <span class="code">klen</span> can be the actual length
+            of the key or if the key is terminated with
+            a <span class="code">'\0'</span> character
+            the <span class="code">klen</span> can be zero or below and
+            the <span class="code">strlen()</span> function will be called to
+            calculate the length.
+          </p>
+          <table class="params">
+            <tr><td><span class="param">err</span></td><td>pointer to an initialized <span class="code">opoErr</span> struct that will be set if an error occurs.</td></tr>
+            <tr><td><span class="param">builder</span></td><td>builder to push the value to.</td></tr>
+            <tr><td><span class="param">value</span></td><td>value to push</td></tr>
+            <tr><td><span class="param">key</span></td><td>key string</td></tr>
+            <tr><td><span class="param">klen</span></td><td>length of the key string</td></tr>
+            <tr><td class="returns">Returns:</td><td>the error status code.</td></tr>
+          </table>
+        </div>
+
+        <div id="opo_builder_push_uuid" class="desc">
+          <div class="title">opo_builder_push_uuid()</div>
+          <div class="synopsis">opoErrCode opo_builder_push_uuid(opoErr     err,
+                                 opoBuilder builder,
+                                 uint64_t   hi,
+                                 uint64_t   lo,
+                                 const char *key,
+                                 int        klen)</div>
+          <p class="desc-text">
+            Push the value onto the message. The UUID is composed of a high
+            and low value unsigned 64 bit integers.
+          </p>
+          <p class="desc-text">
+            The <span class="code">klen</span> can be the actual length
+            of the key or if the key is terminated with
+            a <span class="code">'\0'</span> character
+            the <span class="code">klen</span> can be zero or below and
+            the <span class="code">strlen()</span> function will be called to
+            calculate the length.
+          </p>
+          <table class="params">
+            <tr><td><span class="param">err</span></td><td>pointer to an initialized <span class="code">opoErr</span> struct that will be set if an error occurs.</td></tr>
+            <tr><td><span class="param">builder</span></td><td>builder to push the value to.</td></tr>
+            <tr><td><span class="param">hi</span></td><td>the high 64 bit integer part of the value to push</td></tr>
+            <tr><td><span class="param">lo</span></td><td>the low 64 bit integer part of the value to push</td></tr>
+            <tr><td><span class="param">key</span></td><td>key string</td></tr>
+            <tr><td><span class="param">klen</span></td><td>length of the key string</td></tr>
+            <tr><td class="returns">Returns:</td><td>the error status code.</td></tr>
+          </table>
+        </div>
+
+        <div id="opo_builder_push_uuid_string" class="desc">
+          <div class="title">opo_builder_push_uuid_string()</div>
+          <div class="synopsis">opoErrCode opo_builder_push_uuid_string(opoErr     err,
+                                        opoBuilder builder,
+                                        const char *value,
+                                        const char *key,
+                                        int        klen)</div>
+          <p class="desc-text">
+            Push the value onto the message. The UUID should be a 36 character
+            string following the standard UUID format,
+          </p>
+          <p class="desc-text">
+            The <span class="code">klen</span> can be the actual length
+            of the key or if the key is terminated with
+            a <span class="code">'\0'</span> character
+            the <span class="code">klen</span> can be zero or below and
+            the <span class="code">strlen()</span> function will be called to
+            calculate the length.
+          </p>
+          <table class="params">
+            <tr><td><span class="param">err</span></td><td>pointer to an initialized <span class="code">opoErr</span> struct that will be set if an error occurs.</td></tr>
+            <tr><td><span class="param">builder</span></td><td>builder to push the value to.</td></tr>
+            <tr><td><span class="param">value</span></td><td>the value to push</td></tr>
+            <tr><td><span class="param">key</span></td><td>key string</td></tr>
+            <tr><td><span class="param">klen</span></td><td>length of the key string</td></tr>
+            <tr><td class="returns">Returns:</td><td>the error status code.</td></tr>
+          </table>
+        </div>
+
+        <div id="opo_builder_take" class="desc">
+          <div class="title">opo_builder_take()</div>
+          <div class="synopsis">opoMsg opo_builder_take(opoBuilder builder)</div>
+          <p class="desc-text">
+            Returns the current message. Releasing ownership to the caller
+            which take responsibility of freeing the message when no longer
+            needed. Note that if a buffer was provided that may be returned so
+            either check the ownerwhip of the buffer before taking or compare
+            to the original before calling free. The message will be
+            'finished' before being given on this call.
+          </p>
+          <table class="params">
+            <tr><td><span class="param">builder</span></td><td>builder to take the message from.</td></tr>
+            <tr><td class="returns">Returns:</td><td>a completed message.</td></tr>
+          </table>
+        </div>
+
+        <div id="opoClient" class="desc">
+          <div class="title">opoClient</div>
+          <div class="synopsis">typedef struct _opoClient *opoClient;</div>
+          <p class="desc-text">
+            The client is the connection handle for making requests to the OpO
+            database server. A client is creaed by connecting to the
+            server. After that queiries can be made until the client
+            conneciton is closed.
+          </p>
+        </div>
+
+        <div id="opoClientOptions" class="desc">
+          <div class="title">opoClientOptions</div>
+          <div class="synopsis">typedef struct _opoClientOptions {
+    double            timeout;
+    int               pending_max;
+    opoStatusCallback status_callback;
+} *opoClientOptions;
+</div>
+          <p class="desc-text">
+            Options for a client connection.
+          </p>
+          <table class="params">
+            <tr><td><span class="param">timeout</span></td><td>timeout in seconds for all queries</td></tr>
+            <tr><td><span class="param">pending_max</span></td><td>maximum pending queries</td></tr>
+            <tr><td><span class="param">status_callback</span></td><td>callback for status change</td></tr>
+          </table>
+        </div>
+
+        <div id="opoQueryCallback" class="desc">
+          <div class="title">opoQueryCallback</div>
+          <div class="synopsis">typedef void (*opoQueryCallback)(opoRef ref, opoVal response, void *ctx)</div>
+          <p class="desc-text">
+            Responses to asynchronous queries are delivered by calling the
+            callback function specified when the query is made.
+          </p>
+          <table class="params">
+            <tr><td><span class="param">ref</span></td><td>reference to the query</td></tr>
+            <tr><td><span class="param">response</span></td><td>response to the query</td></tr>
+            <tr><td><span class="param">ctx</span></td><td>context given when the query was made</td></tr>
+          </table>
+        </div>
+
+        <div id="opoStatusCallback" class="desc">
+          <div class="title">opoStatusCallback</div>
+          <div class="synopsis">typedef void (*opoStatusCallback)(opoClient client, bool connected, opoErrCode code, const char *msg)</div>
+          <p class="desc-text">
+            Called on status changes such as connect, closed, or errors.
+          </p>
+          <table class="params">
+            <tr><td><span class="param">client</span></td><td>client to get status from</td></tr>
+            <tr><td><span class="param">connected</span></td><td>whether the client is connected or not</td></tr>
+            <tr><td><span class="param">code</span></td><td>error code if there was an error</td></tr>
+            <tr><td><span class="param">msg</span></td><td>error message or information about the status</td></tr>
+          </table>
+        </div>
+
+        <div id="opoRef" class="desc">
+          <div class="title">opoRef</div>
+          <div class="synopsis">typedef uint64_t opoRef</div>
+          <p class="desc-text">
+            When an asynchronous query is made a reference to the query is
+            returned. That reference included in the server response so that
+            the query can be matched to the response.
+          </p>
+        </div>
+
+        <div id="opo_client_close" class="desc">
+          <div class="title">opo_client_close()</div>
+          <div class="synopsis">void opo_client_close(opoClient client)</div>
+          <p class="desc-text">
+            Closes the connection to the server. Outstanding queries are
+            completed with error responses.
+          </p>
+          <table class="params">
+            <tr><td><span class="param">client</span></td><td>client to close</td></tr>
+          </table>
+        </div>
+
+        <div id="opo_client_connect" class="desc">
+          <div class="title">opo_client_connect()</div>
+          <div class="synopsis">opoClient opo_client_connect(opoErr           err,
+                             const char       *host,
+                             int              port,
+                             opoClientOptions options)</div>
+          <p class="desc-text">
+            Connects to the server and creates a client that is returned to be
+            used for queries. On error the <span class="code">err</span> is
+            set and <span class="code">NULL</span> is returned.
+          </p>
+          <table class="params">
+            <tr><td><span class="param">err</span></td><td>pointer to an initialized <span class="code">opoErr</span> struct that will be set if an error occurs.</td></tr>
+            <tr><td><span class="param">host</span></td><td>server host name or address</td></tr>
+            <tr><td><span class="param">port</span></td><td>port the server is listening on</td></tr>
+            <tr><td><span class="param">options</span></td><td>options or <span class="code">NULL</span> for the defaults</td></tr>
+            <tr><td class="returns">Returns:</td><td>a new client or <span class="code">NULL</span> on error.</td></tr>
+          </table>
+        </div>
+
+        <div id="opo_client_pending_count" class="desc">
+          <div class="title">opo_client_pending_count()</div>
+          <div class="synopsis">int opo_client_pending_count(opoClient client)</div>
+          <p class="desc-text">
+            Returns the current number of pending queries. Note this can
+            change rapidly as responses arrive.
+          </p>
+          <table class="params">
+            <tr><td><span class="param">client</span></td><td>client to get the count from</td></tr>
+            <tr><td class="returns">Returns:</td><td>the number of queries waiting from responses</td></tr>
+          </table>
+        </div>
+
+        <div id="opo_client_process" class="desc">
+          <div class="title">opo_client_process()</div>
+          <div class="synopsis">int opo_client_process(opoClient client, int max, double wait)</div>
+          <p class="desc-text">
+            Processes up the the specified <span class="code">max</span>
+            number of responses. If no response is ready to be processed in
+            the before the <span class="code">wait</span> time is exceeded the
+            call returns. The <span class="code">wait</span> is started after
+            the last handled response. This call is thread safe to allow
+            multiple servicing threads.
+          </p>
+          <table class="params">
+            <tr><td><span class="param">client</span></td><td>client to process responses</td></tr>
+            <tr><td><span class="param">max</span></td><td>maximum number of responses to process before returning</td></tr>
+            <tr><td><span class="param">wait</span></td><td>idle time in seconds before returning</td></tr>
+            <tr><td class="returns">Returns:</td><td>the number of responses processed</td></tr>
+          </table>
+        </div>
+
+        <div id="opo_client_query" class="desc">
+          <div class="title">opo_client_query()</div>
+          <div class="synopsis">opoRef opo_client_query(opoErr           err,
+                        opoClient        client,
+                        opoVal           query,
+                        opoQueryCallback cb,
+                        void             *ctx)</div>
+          <p class="desc-text">
+            Sends a query to the server and returns once the query has been
+            sent. The provided callback is called with the response. The
+            response callback is called when
+            the <span class="code">opo_client_process()</span> is called.
+          </p>
+          <p class="desc-text">
+            Queries callbacks always occur in the order they were sent from a
+            single client. Different client callbacks may be called in
+            different order than the order they were called in.
+          </p>
+          <table class="params">
+            <tr><td><span class="param">err</span></td><td>pointer to an initialized <span class="code">opoErr</span> struct that will be set if an error occurs.</td></tr>
+            <tr><td><span class="param">client</span></td><td>client to send the query</td></tr>
+            <tr><td><span class="param">query</span></td><td><a href="http://opo.technology/pages/doc/tql/index.html">TQL</a> query</td></tr>
+            <tr><td><span class="param">cb</span></td><td>callback function to call with a response</td></tr>
+            <tr><td><span class="param">ctx</span></td><td>context that will be included in the callback</td></tr>
+            <tr><td class="returns">Returns:</td><td>a reference to the query</td></tr>
+          </table>
+        </div>
+
+        <div id="opo_client_ready_count" class="desc">
+          <div class="title">opo_client_ready_count()</div>
+          <div class="synopsis">int opo_client_ready_count(opoClient client)</div>
+          <p class="desc-text">
+            Returns the current number of responses ready for processing. Note
+            this can change rapidly as responses arrive.
+          </p>
+          <table class="params">
+            <tr><td><span class="param">client</span></td><td>client to get the count from</td></tr>
+            <tr><td class="returns">Returns:</td><td>the number of responses ready to be processed</td></tr>
+          </table>
+        </div>
+
+        <div id="opoErr" class="desc">
+          <div class="title">opoErr</div>
+          <div class="synopsis">typedef struct _opoErr {
+    int		code;
+    char	msg[256];
+} *opoErr;
+</div>
+          <p class="desc-text">
+            The struct used to report errors or status after a function
+            returns. The struct must be initialized before use as most calls
+            that take an <span class="code">err</span> argument will return
+            immediately if an error has already occurred.
+          </p>
+          <table class="params">
+            <tr><td><span class="param">code</span></td><td>error code</td></tr>
+            <tr><td><span class="param">msg</span></td><td>error message</td></tr>
+          </table>
+        </div>
+
+        <div id="OPO_ERR_INIT" class="desc">
+          <div class="title">OPO_ERR_INIT</div>
+          <div class="synopsis">#define OPO_ERR_INIT { 0, { 0 } }</div>
+          <p class="desc-text">
+            A static initializer for an <span class="code">opoErr</span>.
+          </p>
+        </div>
+
+        <div id="opoErrCode" class="desc">
+          <div class="title">opoErrCode</div>
+          <div class="synopsis">typedef enum {
+    OPO_ERR_OK		= 0,
+    OPO_ERR_MEMORY	= ENOMEM,
+    OPO_ERR_DENIED	= EACCES,
+    OPO_ERR_IMPL	= ENOSYS,
+    OPO_ERR_PARSE	= ELAST + 1,
+    OPO_ERR_READ,
+    OPO_ERR_WRITE,
+    OPO_ERR_OVERFLOW,
+    OPO_ERR_ARG,
+    OPO_ERR_NOT_FOUND,
+    OPO_ERR_THREAD,
+    OPO_ERR_NETWORK,
+    OPO_ERR_LOCK,
+    OPO_ERR_FREE,
+    OPO_ERR_IN_USE,
+    OPO_ERR_TOO_MANY,
+    OPO_ERR_TYPE,
+    OPO_ERR_LAST
+} opoErrCode;
+</div>
+          <p class="desc-text">
+            The error codes for the <span class="code">opoErr</span>
+            struct. Not that errors in <span class="code">errno.h</span> can
+            also occur.
+          </p>
+        </div>
+
+        <div id="opo_err_clear" class="desc">
+          <div class="title">opo_err_clear()</div>
+          <div class="synopsis">void opo_err_clear(opoErr err)</div>
+          <p class="desc-text">
+            Re-initializes an <span class="code">opoErr</span> struct. The
+            code is set to zero and the messages is cleared.
+          </p>
+          <table class="params">
+            <tr><td><span class="param">err</span></td><td>struct to re-initialize</td></tr>
+          </table>
+        </div>
+
+        <div id="opo_err_no" class="desc">
+          <div class="title">opo_err_no()</div>
+          <div class="synopsis">opoErrCode opo_err_no(opoErr err, const char *fmt, ...)</div>
+          <p class="desc-text">
+            Sets the <span class="code">err-&gt;code</span> to
+            the <span class="code">errno</span> value and
+            uses <span class="code">printf</span> rules to fill in
+            the <span class="code">msg</span> element, limiting the size to
+            the size of the <span class="code">msg</span> size.
+          </p>
+          <table class="params">
+            <tr><td><span class="param">err</span></td><td>struct to modify</td></tr>
+            <tr><td><span class="param">fmt</span></td><td>printf format argument</td></tr>
+            <tr><td><span class="param">...</span></td><td>additional printf arguments</td></tr>
+            <tr><td class="returns">Returns:</td><td>the error code set</td></tr>
+          </table>
+        </div>
+
+        <div id="opo_err_set" class="desc">
+          <div class="title">opo_err_set()</div>
+          <div class="synopsis">opoErrCode opo_err_set(opoErr err, opoErrCode code, const char *fmt, ...)</div>
+          <p class="desc-text">
+            Sets the <span class="code">err-&gt;code</span> to
+            provided <span class="code">code</span> and
+            uses <span class="code">printf</span> rules to fill in
+            the <span class="code">msg</span> element, limiting the size to
+            the size of the <span class="code">msg</span> size.
+          </p>
+          <table class="params">
+            <tr><td><span class="param">err</span></td><td>struct to modify</td></tr>
+            <tr><td><span class="param">code</span></td><td>error code</td></tr>
+            <tr><td><span class="param">fmt</span></td><td>printf format argument</td></tr>
+            <tr><td><span class="param">...</span></td><td>additional printf arguments</td></tr>
+            <tr><td class="returns">Returns:</td><td>the error code set</td></tr>
+          </table>
+        </div>
+
+        <div id="opo_err_str" class="desc">
+          <div class="title">opo_err_str()</div>
+          <div class="synopsis">const char* opo_err_str(opoErrCode code)</div>
+          <p class="desc-text">
+            Returns the string associated with an error code.
+          </p>
+          <table class="params">
+            <tr><td class="returns">Returns:</td><td>descriptive string for the code.</td></tr>
+          </table>
+        </div>
+
+        <div id="opoMsg" class="desc">
+          <div class="title">opoMsg</div>
+          <div class="synopsis">typedef const uint8_t *opoMsg;</div>
+          <p class="desc-text">
+            An <span class="code">opoMsg</span> a series of bytes that is the
+            encoded form of a JSON like tree structure. It consists of 8 bytes
+            at the start for a 64 bit unsigned integer that is the message
+            identifier followed by an <span class="code">opoVal</span>.
+          </p>
+        </div>
+
+        <div id="opo_msg_bsize" class="desc">
+          <div class="title">opo_msg_bsize()</div>
+          <div class="synopsis">size_t opo_msg_bsize(opoMsg msg)</div>
+          <p class="desc-text">
+            Returns the byte size of the message.
+          </p>
+          <table class="params">
+            <tr><td><span class="param">msg</span></td><td><span class="code">opoMsg</span> to the size of</td></tr>
+            <tr><td class="returns">Returns:</td><td>the bytes size.</td></tr>
+          </table>
+        </div>
+
+        <div id="opo_msg_id" class="desc">
+          <div class="title">opo_msg_id()</div>
+          <div class="synopsis">uint64_t opo_msg_id(opoMsg msg)</div>
+          <p class="desc-text">
+            Gets the ID of the <span class="code">opoMsg</span>.
+          </p>
+          <table class="params">
+            <tr><td><span class="param">msg</span></td><td><span class="code">opoMsg</span> to get ID from</td></tr>
+            <tr><td class="returns">Returns:</td><td>the ID.</td></tr>
+          </table>
+        </div>
+
+        <div id="opo_msg_set_id" class="desc">
+          <div class="title">opo_msg_set_id()</div>
+          <div class="synopsis">void opo_msg_set_id(uint8_t *msg, uint64_t id)</div>
+          <p class="desc-text">
+            Sets the ID of the message.
+          </p>
+          <table class="params">
+            <tr><td><span class="param">msg</span></td><td><span class="code">opoMsg</span> as a byte array to the ID on</td></tr>
+            <tr><td><span class="param">id</span></td><td>ID to set on the message</td></tr>
+          </table>
+        </div>
+
+        <div id="opo_msg_val" class="desc">
+          <div class="title">opo_msg_val()</div>
+          <div class="synopsis">opoVal opo_msg_val(opoMsg msg)</div>
+          <p class="desc-text">
+            Returns the <span class="code">opoVal</span> of the <span class="code">opoMsg</span>.
+          </p>
+          <table class="params">
+            <tr><td><span class="param">msg</span></td><td><span class="code">opoMsg</span> to get the value from</td></tr>
+            <tr><td class="returns">Returns:</td><td>the value.</td></tr>
+          </table>
+        </div>
+
+        <div id="opoVal" class="desc">
+          <div class="title">opoVal</div>
+          <div class="synopsis">typedef const uint8_t *opoVal;</div>
+          <p class="desc-text">
+            An <span class="code">opoVal</span> a series of bytes that is the
+            encoded form of a JSON like tree structure. It adds support for
+            time as a 64 bit integer as nanoseconds from epoch as well as
+            UUIDs. It also allows multiple occurances of a key which somewhat
+            ambiquous in the JSON definition.
+          </p>
+          <p class="desc-text">
+            The fact that a <span class="code">opoVal</span> is a series of
+            bytes is not important if the APIs are used. Where it does become
+            important is when sending, writing, or reading
+            a <span class="code">opoVal</span>. Since it is a contiguous
+            memory block it can be treated as such when readin and writing.
+          </p>
+        </div>
+
+        <div id="opoValCallbacks" class="desc">
+          <div class="title">opoValCallbacks</div>
+          <div class="synopsis">    typedef struct _opoValCallbacks {
+	bool	(*begin_object)(opoErr err, void *ctx);
+	bool	(*end_object)(opoErr err, void *ctx);
+	bool	(*key)(opoErr err, const char *key, int len, void *ctx);
+	bool	(*begin_array)(opoErr err, void *ctx);
+	bool	(*end_array)(opoErr err, void *ctx);
+	bool	(*null)(opoErr err, void *ctx);
+	bool	(*boolean)(opoErr err, bool b, void *ctx);
+	bool	(*fixnum)(opoErr err, int64_t num, void *ctx);
+	bool	(*decimal)(opoErr err, double num, void *ctx);
+	bool	(*string)(opoErr err, const char *str, int len, void *ctx);
+	bool	(*uuid)(opoErr err , uint64_t hi, uint64_t lo, void *ctx);
+	bool	(*uuid_str)(opoErr err, const char *str, void *ctx);
+	bool	(*time)(opoErr err, int64_t t, void *ctx);
+	bool	(*time_str)(opoErr err, const char *str, void *ctx);
+    } *opoValCallbacks;
+</div>
+          <p class="desc-text">
+            When iterating over an <span class="code">opoVal</span>
+            the <span class="code">opoValCallback</span> is used to provide
+            the callback functions to the iterator. Each callback function
+            returns a boolean indicating whether iteration should continue or
+            not. A return of true indicates iteration should continue. If the
+            function is not set then it is not called. In the case of the UUID
+            and time functions, if the native, integer version are not set
+            then the string version is called if set. Only one will be called.
+          </p>
+          <table class="params">
+	    <tr><td><span class="param">begin_object</span></td><td>called when an object is startedn</td></tr>
+	    <tr><td><span class="param">end_object</span></td><td>called when an object ends</td></tr>
+	    <tr><td><span class="param">key</span></td><td>called when an object key is encountered</td></tr>
+	    <tr><td><span class="param">begin_array</span></td><td>called when an array starts</td></tr>
+	    <tr><td><span class="param">end_array</span></td><td>called when an array ends</td></tr>
+	    <tr><td><span class="param">null</span></td><td>called on null</td></tr>
+	    <tr><td><span class="param">boolean</span></td><td>called on a boolean</td></tr>
+	    <tr><td><span class="param">fixnum</span></td><td>called on an integer</td></tr>
+	    <tr><td><span class="param">decimal</span></td><td>called on a decimal</td></tr>
+	    <tr><td><span class="param">string</span></td><td>called on a string</td></tr>
+	    <tr><td><span class="param">uuid</span></td><td>called on a UUID</td></tr>
+	    <tr><td><span class="param">uuid_str</span></td><td>called if the <span class="code">uuid</span> element is <span class="code">NULL</span></td></tr>
+	    <tr><td><span class="param">time</span></td><td>called on time</td></tr>
+	    <tr><td><span class="param">time_str</span></td><td>called if the <span class="code">time</span> element is <span class="code">NULL</span>/td></tr>
+          </table>
+        </div>
+
+        <div id="opoValType" class="desc">
+          <div class="title">opoValType</div>
+          <div class="synopsis">    typedef enum {
+	OPO_VAL_NONE	= (uint8_t)0,
+	OPO_VAL_NULL	= (uint8_t)'n',
+	OPO_VAL_BOOL	= (uint8_t)'b',
+	OPO_VAL_INT	= (uint8_t)'i',
+	OPO_VAL_STR	= (uint8_t)'s',
+	OPO_VAL_DEC	= (uint8_t)'d',
+	OPO_VAL_UUID	= (uint8_t)'u',
+	OPO_VAL_TIME	= (uint8_t)'t',
+	OPO_VAL_OBJ	= (uint8_t)'o',
+	OPO_VAL_ARRAY	= (uint8_t)'a',
+    } opoValType;
+</div>
+          <p class="desc-text">
+            Like JSON each <span class="code">opoVal</span> has a type. These
+            types are defines by the <span class="code">opoValType</span>
+            enum. Each type has a different means of defining the length of
+            the value.
+          </p>
+          <table class="params">
+	    <tr><td><span class="param">OPO_VAL_NONE</span></td><td>no type, usually an error or unset</td></tr>
+	    <tr><td><span class="param">OPO_VAL_NULL</span></td><td>a JSON null</td></tr>
+	    <tr><td><span class="param">OPO_VAL_BOOL</span></td><td>a boolean, true or false</td></tr>
+	    <tr><td><span class="param">OPO_VAL_INT</span></td><td>an 64 bit integer</td></tr>
+	    <tr><td><span class="param">OPO_VAL_STR</span></td><td>a \0 teminated string</td></tr>
+	    <tr><td><span class="param">OPO_VAL_DEC</span></td><td>A decimal, float, or double</td></tr>
+	    <tr><td><span class="param">OPO_VAL_UUID</span></td><td>a UUID represented as two 64 bit unsigned integers</td></tr>
+	    <tr><td><span class="param">OPO_VAL_TIME</span></td><td>time as nanoseconds from epoch</td></tr>
+	    <tr><td><span class="param">OPO_VAL_OBJ</span></td><td>a JSON object, map, or hash</td></tr>
+	    <tr><td><span class="param">OPO_VAL_ARRAY</span></td><td>an array</td></tr>
+          </table>
+        </div>
+
+        <div id="opo_val_bool" class="desc">
+          <div class="title">opo_val_bool()</div>
+          <div class="synopsis">bool opo_val_bool(opoErr err, opoVal val)</div>
+          <p class="desc-text">
+            Gets a boolean from a <span class="code">opoVal</span> if it is a
+            boolean type. If not the <span class="code">err</span> is set.
+          </p>
+          <table class="params">
+            <tr><td><span class="param">err</span></td><td>pointer to an initialized <span class="code">opoErr</span> struct that will be set if an error occurs.</td></tr>
+            <tr><td><span class="param">val</span></td><td><span class="code">opoVal</span> to get the value from</td></tr>
+            <tr><td class="returns">Returns:</td><td>the value.</td></tr>
+          </table>
+        </div>
+
+        <div id="opo_val_bsize" class="desc">
+          <div class="title">opo_val_bsize()</div>
+          <div class="synopsis">size_t opo_val_bsize(opoVal val)</div>
+          <p class="desc-text">
+            Returns the size in bytes of a completed <span class="code">opoVal</span>.
+          </p>
+          <table class="params">
+            <tr><td><span class="param">val</span></td><td><span class="code">opoVal</span> to get the byte size of</td></tr>
+            <tr><td class="returns">Returns:</td><td>the value size.</td></tr>
+          </table>
+        </div>
+
+        <div id="opo_val_double" class="desc">
+          <div class="title">opo_val_double()</div>
+          <div class="synopsis">double opo_val_double(opoErr err, opoVal val)</div>
+          <p class="desc-text">
+            Gets a double from a <span class="code">opoVal</span> if it is a
+            decimal type. If not the <span class="code">err</span> is set.
+          </p>
+          <table class="params">
+            <tr><td><span class="param">err</span></td><td>pointer to an initialized <span class="code">opoErr</span> struct that will be set if an error occurs.</td></tr>
+            <tr><td><span class="param">val</span></td><td><span class="code">opoVal</span> to get the value from</td></tr>
+            <tr><td class="returns">Returns:</td><td>the value.</td></tr>
+          </table>
+        </div>
+
+        <div id="opo_val_get" class="desc">
+          <div class="title">opo_val_get()</div>
+          <div class="synopsis">opoVal opo_val_get(opoVal val, const char *path)</div>
+          <p class="desc-text">
+            Gets a member from an object or
+            array <span class="code">opoVal</span>. The function will walk the
+            path until either there is no match or the end of the path is
+            reached. A path member that can be an index can be used for array
+            elements.
+          </p>
+          <table class="params">
+            <tr><td><span class="param">val</span></td><td><span class="code">opoVal</span> to get the value from</td></tr>
+            <tr><td class="returns">Returns:</td><td>the <span class="code">opoVal</span> at the end of the path or <span class="code">NULL</span>.</td></tr>
+          </table>
+        </div>
+
+        <div id="opo_val_int" class="desc">
+          <div class="title">opo_val_int()</div>
+          <div class="synopsis">int64_t opo_val_int(opoErr err, opoVal val)</div>
+          <p class="desc-text">
+            Gets an integer from a <span class="code">opoVal</span> if it is
+            an integer type. If not the <span class="code">err</span> is set.
+          </p>
+          <table class="params">
+            <tr><td><span class="param">err</span></td><td>pointer to an initialized <span class="code">opoErr</span> struct that will be set if an error occurs.</td></tr>
+            <tr><td><span class="param">val</span></td><td><span class="code">opoVal</span> to get the value from</td></tr>
+            <tr><td class="returns">Returns:</td><td>the value.</td></tr>
+          </table>
+        </div>
+
+        <div id="opo_val_iterate" class="desc">
+          <div class="title">opo_val_iterate()</div>
+          <div class="synopsis">opoErrCode opo_val_iterate(opoErr          err,
+                           opoVal          val,
+                           opoValCallbacks callbacks,
+                           void            *ctx)</div>
+          <p class="desc-text">
+            Iterates over a <span class="code">opoVal</span> tree following
+            each branch and calling the appropriate function in
+            the <span class="code">callbacks</span> struct. The return value
+            is the last non <span class="code">OPO_ERR_OK</span> value from
+            the callbacks or <span class="code">OPO_ERR_OK</span> if no error
+            was set.
+          </p>
+          <table class="params">
+            <tr><td><span class="param">err</span></td><td>pointer to an initialized <span class="code">opoErr</span> struct that will be set if an error occurs.</td></tr>
+            <tr><td><span class="param">val</span></td><td><span class="code">opoVal</span> to iterate over</td></tr>
+            <tr><td><span class="param">ctx</span></td><td>context to pass to the callbacks</td></tr>
+            <tr><td class="returns">Returns:</td><td>the value of <span class="code">err-&gt;code</span>.</td></tr>
+          </table>
+        </div>
+
+        <div id="opo_val_key" class="desc">
+          <div class="title">opo_val_key()</div>
+          <div class="synopsis">const char* opo_val_key(opoErr err, opoVal key, int *lenp)</div>
+          <p class="desc-text">
+            Returns the value of a key as a string if
+            the <span class="code">key</span> argument is a key in an
+            object. If the <span class="code">lenp</span> pointer is
+            not <span class="code">NULL</span> then the length of the key
+            string is set.
+          </p>
+          <table class="params">
+            <tr><td><span class="param">err</span></td><td>pointer to an initialized <span class="code">opoErr</span> struct that will be set if an error occurs.</td></tr>
+            <tr><td><span class="param">val</span></td><td><span class="code">opoVal</span> to get the value from</td></tr>
+            <tr><td><span class="param">lenp</span></td><td>pointer to an integer what will be set to the length</td></tr>
+            <tr><td class="returns">Returns:</td><td>the key string.</td></tr>
+          </table>
+        </div>
+
+        <div id="opo_val_member_count" class="desc">
+          <div class="title">opo_val_member_count()</div>
+          <div class="synopsis">int opo_val_member_count(opoErr err, opoVal val)</div>
+          <p class="desc-text">
+            Counts the number of direct children of the value specified.
+          </p>
+          <table class="params">
+            <tr><td><span class="param">err</span></td><td>Errors are reported using this argument. It must not be NULL.</td></tr>
+            <tr><td><span class="param">val</span></td><td>the value to count the members of. If not an array or object then the count will be zero.</td></tr>
+            <tr><td class="returns">Returns:</td><td>The number of direct members of the <span class="code">val</span> argument.</td></tr>
+          </table>
+        </div>
+
+        <div id="opo_val_members" class="desc">
+          <div class="title">opo_val_members()</div>
+          <div class="synopsis">opoVal opo_val_members(opoErr err, opoVal val)</div>
+          <p class="desc-text">
+            Returns the first child member of
+            a <span class="code">opoVal</span> that is either an object or
+            array. Since all the children are a block of bytes
+            a <span class="code">for</span> look can be used where the
+            terminating condition is exceeding the bsize of
+            the <span class="code">val</span> and
+            calling <span class="code">opo_val_next()</span> for each
+            subsequent member.
+          </p>
+          <table class="params">
+            <tr><td><span class="param">err</span></td><td>pointer to an initialized <span class="code">opoErr</span> struct that will be set if an error occurs.</td></tr>
+            <tr><td><span class="param">val</span></td><td><span class="code">opoVal</span> to get the members of</td></tr>
+            <tr><td class="returns">Returns:</td><td>the first member.</td></tr>
+          </table>
+        </div>
+
+        <div id="opo_val_next" class="desc">
+          <div class="title">opo_val_next()</div>
+          <div class="synopsis">opoVal opo_val_next(opoVal val)</div>
+          <p class="desc-text">
+            Return the next <span class="code">opoVal</span> following the specified <span class="code">val</span>.
+          </p>
+          <table class="params">
+            <tr><td><span class="param">val</span></td><td><span class="code">opoVal</span> to get following value from</td></tr>
+            <tr><td class="returns">Returns:</td><td>the follwoing or next <span class="code">opoVal</span>.</td></tr>
+          </table>
+        </div>
+
+        <div id="opo_val_size" class="desc">
+          <div class="title">opo_val_size()</div>
+          <div class="synopsis">size_t	opo_val_size(opoVal val)</div>
+          <p class="desc-text">
+            Returns the size of the value contained in
+            the <span class="code">opoVal</span>. For example, a string value
+            would return the length of the string. An array value would return
+            the number of members in the array.
+          </p>
+          <table class="params">
+            <tr><td><span class="param">val</span></td><td><span class="code">opoVal</span> to get the size of</td></tr>
+            <tr><td class="returns">Returns:</td><td>size of the value.</td></tr>
+          </table>
+        </div>
+
+        <div id="opo_val_string" class="desc">
+          <div class="title">opo_val_string()</div>
+          <div class="synopsis">const char* opo_val_string(opoErr err, opoVal val, int *lenp)</div>
+          <p class="desc-text">
+            Gets a string from a <span class="code">opoVal</span> if it is a
+            string type. If not the <span class="code">err</span> is set.  If
+            the <span class="code">lenp</span> pointer is
+            not <span class="code">NULL</span> then the length of the string
+            is set.
+          </p>
+          <table class="params">
+            <tr><td><span class="param">err</span></td><td>pointer to an initialized <span class="code">opoErr</span> struct that will be set if an error occurs.</td></tr>
+            <tr><td><span class="param">val</span></td><td><span class="code">opoVal</span> to get the value from</td></tr>
+            <tr><td><span class="param">lenp</span></td><td>pointer to an integer what will be set to the length</td></tr>
+            <tr><td class="returns">Returns:</td><td>the value.</td></tr>
+          </table>
+        </div>
+
+        <div id="opo_val_time" class="desc">
+          <div class="title">opo_val_time()</div>
+          <div class="synopsis">int64_t opo_val_time(opoErr err, opoVal val)</div>
+          <p class="desc-text">
+            Gets a time value from a <span class="code">opoVal</span> if it is
+            a time type. If not the <span class="code">err</span> is set. The
+            time is in nanoseconds from epoch.
+          </p>
+          <table class="params">
+            <tr><td><span class="param">err</span></td><td>pointer to an initialized <span class="code">opoErr</span> struct that will be set if an error occurs.</td></tr>
+            <tr><td><span class="param">val</span></td><td><span class="code">opoVal</span> to get the value from</td></tr>
+            <tr><td class="returns">Returns:</td><td>the value.</td></tr>
+          </table>
+        </div>
+
+        <div id="opo_val_type" class="desc">
+          <div class="title">opo_val_type()</div>
+          <div class="synopsis">opoValType opo_val_type(opoVal val)</div>
+          <p class="desc-text">
+            Returns the <span class="code">val</span> type.
+          </p>
+          <table class="params">
+            <tr><td><span class="param">val</span></td><td><span class="code">opoVal</span> to get the type of</td></tr>
+            <tr><td class="returns">Returns:</td><td>the type.</td></tr>
+          </table>
+        </div>
+
+        <div id="opo_val_uuid" class="desc">
+          <div class="title">opo_val_uuid()</div>
+          <div class="synopsis">void opo_val_uuid(opoErr err, opoVal val, uint64_t *hip, uint64_t *lop)</div>
+          <p class="desc-text">
+            Gets a UUID value from a <span class="code">opoVal</span> if it is
+            a UUID type. If not the <span class="code">err</span> is set. A
+            UUID can be thought of as a 128 bit number or as a high and low 64
+            bit pair. This function allows the extraction of those high and
+            low unsigned integers from the <span class="code">val</span>.
+          </p>
+          <table class="params">
+            <tr><td><span class="param">err</span></td><td>pointer to an initialized <span class="code">opoErr</span> struct that will be set if an error occurs.</td></tr>
+            <tr><td><span class="param">val</span></td><td><span class="code">opoVal</span> to get the value from</td></tr>
+            <tr><td><span class="param">hip</span></td><td>pointer to the slot for the high half</td></tr>
+            <tr><td><span class="param">lop</span></td><td>pointer to the slot for the low half</td></tr>
+          </table>
+        </div>
+
+        <div id="opo_val_uuid_str" class="desc">
+          <div class="title">opo_val_uuid_str()</div>
+          <div class="synopsis">void opo_val_uuid_str(opoErr err, opoVal val, char *str)</div>
+          <p class="desc-text">
+            Gets a UUID value from a <span class="code">opoVal</span> if it is
+            a UUID type. If not the <span class="code">err</span> is set. The
+            <span class="code">str</span> argument must be at least 37
+            character long to allow the UUID to be copied to the buffer along
+            with a terminator character.
+          </p>
+          <table class="params">
+            <tr><td><span class="param">err</span></td><td>pointer to an initialized <span class="code">opoErr</span> struct that will be set if an error occurs.</td></tr>
+            <tr><td><span class="param">val</span></td><td><span class="code">opoVal</span> to get the value from</td></tr>
+            <tr><td><span class="param">str</span></td><td>buffer to write the UUID to</td></tr>
+          </table>
+        </div>
+
+        <div id="opo_msg_to_ojc" class="desc">
+          <div class="title">opo_msg_to_ojc()</div>
+          <div class="synopsis">ojcVal opo_msg_to_ojc(opoErr err, const opoVal msg)</div>
+          <p class="desc-text">
+            Encodes an <span class="code">opoVal</span> to an OjC value.
+          </p>
+          <table class="params">
+            <tr><td><span class="param">err</span></td><td>pointer to an initialized <span class="code">opoErr</span> struct that will be set if an error occurs.</td></tr>
+            <tr><td><span class="param">msg</span></td><td><span class="code">opoVal</span>message to convert to an OjC value</td></tr>
+            <tr><td class="returns">Returns:</td><td>the converted message.</td></tr>
+          </table>
+        </div>
+
+        <div id="opo_ojc_msg_size" class="desc">
+          <div class="title">opo_ojc_msg_size()</div>
+          <div class="synopsis">size_t opo_ojc_msg_size(ojcVal val)</div>
+          <p class="desc-text">
+            Calculates the size of a buffer needed to encode an OjC value into
+            a <span class="code">opoVal</span>.
+          </p>
+          <table class="params">
+            <tr><td><span class="param">val</span></td><td><span class="code">ojcVal</span> value to calculate the needed size from</td></tr>
+            <tr><td class="returns">Returns:</td><td>the size needed.</td></tr>
+          </table>
+        </div>
+
+        <div id="opo_ojc_fill_msg" class="desc">
+          <div class="title">opo_ojc_fill_msg()</div>
+          <div class="synopsis">opoVal opo_ojc_fill_msg(ojcVal val, uint8_t *buf)</div>
+          <p class="desc-text">
+            Encode an OjC value to a <span class="code">opoVal</span> that is
+            the <span class="code">buf</span> argument. The buffer must be
+            large enough to hold the encoded value.
+          </p>
+          <table class="params">
+            <tr><td><span class="param">val</span></td><td>value to encode</td></tr>
+            <tr><td><span class="param">buf</span></td><td>buffer to fill with the encoded value</td></tr>
+          </table>
+        </div>
+
+        <div id="opo_ojc_to_msg" class="desc">
+          <div class="title">opo_ojc_to_msg()</div>
+          <div class="synopsis">opoVal opo_ojc_to_msg(opoErr err, ojcVal val)</div>
+          <p class="desc-text">
+            Encode an OjC value to a <span class="code">opoVal</span>. The
+            caller is responsible for freeing the returned value.
+          </p>
+          <table class="params">
+            <tr><td><span class="param">err</span></td><td>pointer to an initialized <span class="code">opoErr</span> struct that will be set if an error occurs.</td></tr>
+            <tr><td><span class="param">val</span></td><td>value to encode</td></tr>
+            <tr><td class="returns">Returns:</td><td>an allocated The <span class="code">opoVal</span>.</td></tr>
+          </table>
+        </div>
+
+      </div>
+    </div>
+    <script>
+function displayDesc(e,d){
+    var all = document.getElementsByClassName('desc');
+    for (var i = all.length - 1; 0 <= i; i--) {
+        all[i].style.display = 'none';
+    }
+    all = document.getElementsByClassName('item');
+    for (var i = all.length - 1; 0 <= i; i--) {
+        all[i].className = all[i].className.replace(' selected', '');
+    }
+    document.getElementById(d).style.display = 'block';  
+    e.currentTarget.className += ' selected';
+}
+    </script>
+  </body>
+</html>
