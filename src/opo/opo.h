@@ -12,6 +12,7 @@ extern "C" {
 
 #include <ojc/ojc.h>
 
+#include "client.h"
 #include "builder.h"
 #include "val.h"
 

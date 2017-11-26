@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <stdbool.h>
+#include <sys/time.h>
 
 /**
  * @file test.h
@@ -184,5 +185,14 @@ extern FILE	*ut_out;
  * on the command line with the -v option.
  */
 extern bool	ut_verbose;
+
+static inline  double
+dtime() {
+    struct timeval	tv;
+
+    gettimeofday(&tv, NULL);
+
+    return (double)tv.tv_sec + (double)tv.tv_usec / 1000000.0;
+}
 
 #endif /* __OPO_UT_H__ */

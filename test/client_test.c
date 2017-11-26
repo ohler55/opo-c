@@ -3,27 +3,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <pthread.h>
-#include <sys/time.h>
 #include <unistd.h>
 
-//#include <ojc/ojc.h>
 #include <opo/opo.h>
 
-#include <opo/client.h>
-#include <opo/builder.h>
-
 #include "ut.h"
-
-#define DEBUG	0
-
-static double
-dtime() {
-    struct timeval	tv;
-
-    gettimeofday(&tv, NULL);
-
-    return (double)tv.tv_sec + (double)tv.tv_usec / 1000000.0;
-}
 
 static void
 connect_test() {
@@ -38,6 +22,17 @@ connect_test() {
 static void
 status_callback(opoClient client, bool connected, opoErrCode code, const char *msg) {
     printf("--- %s\n", msg);
+}
+
+void
+print_msg(opoMsg msg) {
+    struct _opoErr	oe = OPO_ERR_INIT;
+    ojcVal		v = opo_msg_to_ojc(&oe, msg);
+    char		*json = ojc_to_str(v, 2);
+
+    printf("%llu: %s\n", (unsigned long long)opo_msg_id(msg), json);
+    ojc_destroy(v);
+    free(json);
 }
 
 static void*
@@ -100,15 +95,7 @@ add_cb(opoRef ref, opoVal response, void *ctx) {
     struct _opoErr	err = OPO_ERR_INIT;
 
     *refp = (uint64_t)opo_val_int(&err, rval);
-#if DEBUG
-    struct _opoErr	oe = OPO_ERR_INIT;
-    ojcVal		v = opo_msg_to_ojc(&oe, response);
-    char		*json = ojc_to_str(v, 2);
-
-    printf("%llu: %s\n", (unsigned long long)opo_msg_id(response), json);
-    ojc_destroy(v);
-    free(json);
-#endif
+    //print_msg(response);
 }
 
 static uint64_t
@@ -153,15 +140,7 @@ query_cb(opoRef ref, opoVal response, void *ctx) {
 
     ut_same_int(0, code, "code not zero.");
     *cntp += 1;
-#if DEBUG
-    struct _opoErr	oe = OPO_ERR_INIT;
-    ojcVal		v = opo_msg_to_ojc(&oe, response);
-    char		*json = ojc_to_str(v, 2);
-
-    printf("%llu: %s\n", (unsigned long long)opo_msg_id(response), json);
-    ojc_destroy(v);
-    free(json);
-#endif
+    //print_msg(response);
 }
 
 static void
@@ -294,7 +273,6 @@ latency_test() {
     printf("--- query latency: %d usecs/query\n", (int)((sum / iter) * 1000000.0));
 
     pthread_join(thread, NULL);
-
     opo_client_close(client);
 }
 
@@ -303,6 +281,4 @@ append_client_tests(utTest tests) {
     ut_appenda(tests, "opo.client.connect", connect_test, NULL);
     ut_appenda(tests, "opo.client.query", query_test, NULL);
     ut_appenda(tests, "opo.client.latency", latency_test, NULL);
-    // TBD query, get response, close
-    // TBD multiple calls, async
 }

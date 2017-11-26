@@ -21,15 +21,6 @@ typedef struct _Jlen {
 
 extern int	build_sample_msg(opoBuilder builder); // defined in builder_test.c
 
-static double
-dtime() {
-    struct timeval	tv;
-
-    gettimeofday(&tv, NULL);
-
-    return (double)tv.tv_sec + (double)tv.tv_usec / 1000000.0;
-}
-
 static void
 ojc_msg_size_test() {
     ojcVal		val;
