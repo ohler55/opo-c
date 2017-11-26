@@ -100,13 +100,14 @@ a.opo {
 .desc-pane {
     width: 100%;
     color: black;
-    font-family: 'HelveticaNeue-Bold', 'Helvetica Neue', 'Arial', sans-serif;
+    font-family: 'HelveticaNeue', 'Helvetica Neue', 'Arial', sans-serif;
     font-size: 16px;
 }
 .desc {
     display: block;
     padding: 16px;
     color: black;
+    font-family: 'HelveticaNeue', 'Helvetica Neue', 'Arial', sans-serif;
 }
 .title {
     display: block;
@@ -126,6 +127,7 @@ a.opo {
 .desc-text {
     margin: 8px 0px 8px 8px;
     padding: 4px;
+    font-weight: normal;
 }
 table.params {
     margin: 0px 0px 0px 16px;

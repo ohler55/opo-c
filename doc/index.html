@@ -41,11 +41,12 @@
         <button class="item level3" onclick="displayDesc(event,'opoClientOptions')">opoClientOptions</button>
         <button class="item level3" onclick="displayDesc(event,'opoQueryCallback')">opoQueryCallback</button>
         <button class="item level3" onclick="displayDesc(event,'opoRef')">opoRef</button>
-        <button class="item level3" onclick="displayDesc(event,'opo_client_cancel')">opo_client_cancel()</button>
         <button class="item level3" onclick="displayDesc(event,'opo_client_close')">opo_client_close()</button>
         <button class="item level3" onclick="displayDesc(event,'opo_client_connect')">opo_client_connect()</button>
+        <button class="item level3" onclick="displayDesc(event,'opo_client_pending_count')">opo_client_pending_count()</button>
         <button class="item level3" onclick="displayDesc(event,'opo_client_process')">opo_client_process()</button>
         <button class="item level3" onclick="displayDesc(event,'opo_client_query')">opo_client_query()</button>
+        <button class="item level3" onclick="displayDesc(event,'opo_client_ready_count')">opo_client_ready_count()</button>
 
         <button class="item level2" onclick="displayDesc(event,'opoErr')">opoErr</button>
         <button class="item level3" onclick="displayDesc(event,'OPO_ERR_INIT')">OPO_ERR_INIT</button>
@@ -54,6 +55,12 @@
         <button class="item level3" onclick="displayDesc(event,'opo_err_no')">opo_err_no()</button>
         <button class="item level3" onclick="displayDesc(event,'opo_err_set')">opo_err_set()</button>
         <button class="item level3" onclick="displayDesc(event,'opo_err_str')">opo_err_str()</button>
+
+        <button class="item level2" onclick="displayDesc(event,'opoMsg')">opoMsg</button>
+        <button class="item level3" onclick="displayDesc(event,'opo_msg_bsize')">opo_msg_bsize</button>
+        <button class="item level3" onclick="displayDesc(event,'opo_msg_id')">opo_msg_id</button>
+        <button class="item level3" onclick="displayDesc(event,'opo_msg_set_id')">opo_msg_set_id</button>
+        <button class="item level3" onclick="displayDesc(event,'opo_msg_val')">opo_msg_val</button>
 
         <button class="item level2" onclick="displayDesc(event,'opoVal')">opoVal</button>
         <button class="item level3" onclick="displayDesc(event,'opoValCallbacks')">opoValCallbacks</button>
@@ -86,17 +93,46 @@
       <div class="desc-pane">
         <div id="Introduction" class="desc">
           <div class="title">Introduction</div>
-
+          <p class="desc-text">
+            <a href="http://opo.technology">OpO</a> is a fast triple store that
+            is ideally suited for storing JSON documents. It has an HTTP API as
+            well as more direct API. The OpO Client is a C client that provides
+            access to that API.
+          </p>
+          <p class="desc-text">
+            The OpO Client provides basic connect, query, and close
+            functions. The queries
+            are <a href="pages/doc/tql/index.html">TQL<a> JSON. They can be
+            constructed with
+            the <a href="https://github.com/ohler55/ojc">OjC</a> library or
+            more efficiently with the opoBuilder. All queries are made
+            asynchronously but can be made synchronous with a simple wrapper
+            function that makes use of the opo_client_process() function.
+          </p>
+          <p class="desc-text">
+            While query responses are asynchronous, processing of the
+            responses is controlled by the caller with the
+            opo_client_process() function. In the unit test a simple thread is
+            created that continually processes responses but the call can be
+            made one at a time for more control over response handling.
+          </p>
         </div>
 
         <div id="Install" class="desc">
           <div class="title">Install</div>
-
+          <p class="desc-text">
+            For the initial release, build (type make) then copy libopoc and the headers in
+            the include directory to a convenient place that will be picked up
+            by the build. You could even leave the project in place and link
+            directly to the repo.
+          </p>
         </div>
 
         <div id="Guides" class="desc">
           <div class="title">Guides</div>
-
+          <p class="desc-text">
+            The unit test are the best source of usage so far. More in the future.
+          </p>
         </div>
 
         <div id="opoBuilder" class="desc">
@@ -532,7 +568,9 @@ typedef struct _opoBuilder {
         <div id="opoClientOptions" class="desc">
           <div class="title">opoClientOptions</div>
           <div class="synopsis">typedef struct _opoClientOptions {
-    double timeout;
+    double            timeout;
+    int               pending_max;
+    opoStatusCallback status_callback;
 } *opoClientOptions;
 </div>
           <p class="desc-text">
@@ -540,6 +578,8 @@ typedef struct _opoBuilder {
           </p>
           <table class="params">
             <tr><td><span class="param">timeout</span></td><td>timeout in seconds for all queries</td></tr>
+            <tr><td><span class="param">pending_max</span></td><td>maximum pending queries</td></tr>
+            <tr><td><span class="param">status_callback</span></td><td>callback for status change</td></tr>
           </table>
         </div>
 
@@ -557,6 +597,20 @@ typedef struct _opoBuilder {
           </table>
         </div>
 
+        <div id="opoStatusCallback" class="desc">
+          <div class="title">opoStatusCallback</div>
+          <div class="synopsis">typedef void (*opoStatusCallback)(opoClient client, bool connected, opoErrCode code, const char *msg)</div>
+          <p class="desc-text">
+            Called on status changes such as connect, closed, or errors.
+          </p>
+          <table class="params">
+            <tr><td><span class="param">client</span></td><td>client to get status from</td></tr>
+            <tr><td><span class="param">connected</span></td><td>whether the client is connected or not</td></tr>
+            <tr><td><span class="param">code</span></td><td>error code if there was an error</td></tr>
+            <tr><td><span class="param">msg</span></td><td>error message or information about the status</td></tr>
+          </table>
+        </div>
+
         <div id="opoRef" class="desc">
           <div class="title">opoRef</div>
           <div class="synopsis">typedef uint64_t opoRef</div>
@@ -565,24 +619,6 @@ typedef struct _opoBuilder {
             returned. That reference included in the server response so that
             the query can be matched to the response.
           </p>
-        </div>
-
-        <div id="opo_client_cancel" class="desc">
-          <div class="title">opo_client_cancel()</div>
-          <div class="synopsis">bool opo_client_cancel(opoClient client, opoRef ref, bool call)</div>
-          <p class="desc-text">
-            Cancels the query associated with
-            the <span class="code">ref</span> if found. If
-            the <span class="code">call</span> argument is true then the
-            query callback is called with an error response indicating the
-            query was cancelled.
-          </p>
-          <table class="params">
-            <tr><td><span class="param">client</span></td><td>client managing the referenced query</td></tr>
-            <tr><td><span class="param">ref</span></td><td>referenced query</td></tr>
-            <tr><td><span class="param">call</span></td><td>flag indicating whether the callback should be called or not</td></tr>
-            <tr><td class="returns">Returns:</td><td>true if cancelled, false if not.</td></tr>
-          </table>
         </div>
 
         <div id="opo_client_close" class="desc">
@@ -614,6 +650,19 @@ typedef struct _opoBuilder {
             <tr><td><span class="param">port</span></td><td>port the server is listening on</td></tr>
             <tr><td><span class="param">options</span></td><td>options or <span class="code">NULL</span> for the defaults</td></tr>
             <tr><td class="returns">Returns:</td><td>a new client or <span class="code">NULL</span> on error.</td></tr>
+          </table>
+        </div>
+
+        <div id="opo_client_pending_count" class="desc">
+          <div class="title">opo_client_pending_count()</div>
+          <div class="synopsis">int opo_client_pending_count(opoClient client)</div>
+          <p class="desc-text">
+            Returns the current number of pending queries. Note this can
+            change rapidly as responses arrive.
+          </p>
+          <table class="params">
+            <tr><td><span class="param">client</span></td><td>client to get the count from</td></tr>
+            <tr><td class="returns">Returns:</td><td>the number of queries waiting from responses</td></tr>
           </table>
         </div>
 
@@ -661,6 +710,19 @@ typedef struct _opoBuilder {
             <tr><td><span class="param">cb</span></td><td>callback function to call with a response</td></tr>
             <tr><td><span class="param">ctx</span></td><td>context that will be included in the callback</td></tr>
             <tr><td class="returns">Returns:</td><td>a reference to the query</td></tr>
+          </table>
+        </div>
+
+        <div id="opo_client_ready_count" class="desc">
+          <div class="title">opo_client_ready_count()</div>
+          <div class="synopsis">int opo_client_ready_count(opoClient client)</div>
+          <p class="desc-text">
+            Returns the current number of responses ready for processing. Note
+            this can change rapidly as responses arrive.
+          </p>
+          <table class="params">
+            <tr><td><span class="param">client</span></td><td>client to get the count from</td></tr>
+            <tr><td class="returns">Returns:</td><td>the number of responses ready to be processed</td></tr>
           </table>
         </div>
 
@@ -778,6 +840,65 @@ typedef struct _opoBuilder {
           </p>
           <table class="params">
             <tr><td class="returns">Returns:</td><td>descriptive string for the code.</td></tr>
+          </table>
+        </div>
+
+        <div id="opoMsg" class="desc">
+          <div class="title">opoMsg</div>
+          <div class="synopsis">typedef const uint8_t *opoMsg;</div>
+          <p class="desc-text">
+            An <span class="code">opoMsg</span> a series of bytes that is the
+            encoded form of a JSON like tree structure. It consists of 8 bytes
+            at the start for a 64 bit unsigned integer that is the message
+            identifier followed by an <span class="code">opoVal</span>.
+          </p>
+        </div>
+
+        <div id="opo_msg_bsize" class="desc">
+          <div class="title">opo_msg_bsize()</div>
+          <div class="synopsis">size_t opo_msg_bsize(opoMsg msg)</div>
+          <p class="desc-text">
+            Returns the byte size of the message.
+          </p>
+          <table class="params">
+            <tr><td><span class="param">msg</span></td><td><span class="code">opoMsg</span> to the size of</td></tr>
+            <tr><td class="returns">Returns:</td><td>the bytes size.</td></tr>
+          </table>
+        </div>
+
+        <div id="opo_msg_id" class="desc">
+          <div class="title">opo_msg_id()</div>
+          <div class="synopsis">uint64_t opo_msg_id(opoMsg msg)</div>
+          <p class="desc-text">
+            Gets the ID of the <span class="code">opoMsg</span>.
+          </p>
+          <table class="params">
+            <tr><td><span class="param">msg</span></td><td><span class="code">opoMsg</span> to get ID from</td></tr>
+            <tr><td class="returns">Returns:</td><td>the ID.</td></tr>
+          </table>
+        </div>
+
+        <div id="opo_msg_set_id" class="desc">
+          <div class="title">opo_msg_set_id()</div>
+          <div class="synopsis">void opo_msg_set_id(uint8_t *msg, uint64_t id)</div>
+          <p class="desc-text">
+            Sets the ID of the message.
+          </p>
+          <table class="params">
+            <tr><td><span class="param">msg</span></td><td><span class="code">opoMsg</span> as a byte array to the ID on</td></tr>
+            <tr><td><span class="param">id</span></td><td>ID to set on the message</td></tr>
+          </table>
+        </div>
+
+        <div id="opo_msg_val" class="desc">
+          <div class="title">opo_msg_val()</div>
+          <div class="synopsis">opoVal opo_msg_val(opoMsg msg)</div>
+          <p class="desc-text">
+            Returns the <span class="code">opoVal</span> of the <span class="code">opoMsg</span>.
+          </p>
+          <table class="params">
+            <tr><td><span class="param">msg</span></td><td><span class="code">opoMsg</span> to get the value from</td></tr>
+            <tr><td class="returns">Returns:</td><td>the value.</td></tr>
           </table>
         </div>
 

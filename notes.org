@@ -9,13 +9,6 @@
 
 - first merge
 
-- doc
- - options
-  - pending_max
-  - status_callback
-   - void (*cb)(opoClient client, bool connected, opoErrCode, const char *msg)
- - update docs for new functions and changes in args
-
 - benchmarks with latency
  - large array for start and then delta after a match
 
@@ -38,3 +31,4 @@
  - implement reconnect
  - doc
   - implement open and close or topic
+  - local links should highlight correct item on left side
