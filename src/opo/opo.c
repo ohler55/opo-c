@@ -527,7 +527,12 @@ opo_ojc_to_msg(opoErr err, ojcVal val) {
 // approach.
 ojcVal
 opo_msg_to_ojc(opoErr err, opoVal msg) {
-    const uint8_t	*end = msg + opo_msg_bsize(msg);
+    return opo_val_to_ojc(err, msg + 8);
+}
+
+ojcVal
+opo_val_to_ojc(opoErr err, opoVal val) {
+    const uint8_t	*end = val + opo_val_bsize(val);
     struct _ParseCtx	ctx;
 
     memset(&ctx, 0, sizeof(ctx));
@@ -535,12 +540,11 @@ opo_msg_to_ojc(opoErr err, opoVal msg) {
     ctx.cur = ctx.stack - 1;
     ctx.end = ctx.stack + sizeof(ctx.stack) / sizeof(*ctx.stack);
 
-    msg += 8; // move past msg ID
-    while (msg < end) {
-	if (ctx.stack <= ctx.cur && ctx.cur->end <= msg) {
+    while (val < end) {
+	if (ctx.stack <= ctx.cur && ctx.cur->end <= val) {
 	    ctx.cur--;
 	}
-	switch (*msg++) {
+	switch (*val++) {
 	case VAL_NULL:
 	    push_parse_value(err, &ctx, ojc_create_null());
 	    break;
@@ -551,80 +555,80 @@ opo_msg_to_ojc(opoErr err, opoVal msg) {
 	    push_parse_value(err, &ctx, ojc_create_bool(false));
 	    break;
 	case VAL_INT1:
-	    push_parse_value(err, &ctx, ojc_create_int((int64_t)(int8_t)*msg));
-	    msg++;
+	    push_parse_value(err, &ctx, ojc_create_int((int64_t)(int8_t)*val));
+	    val++;
 	    break;
 	case VAL_INT2: {
 	    uint16_t	num;;
 
-	    msg = read_uint16(msg, &num);
+	    val = read_uint16(val, &num);
 	    push_parse_value(err, &ctx, ojc_create_int((int64_t)(int16_t)num));
 	    break;
 	}
 	case VAL_INT4: {
 	    uint32_t	num;;
 
-	    msg = read_uint32(msg, &num);
+	    val = read_uint32(val, &num);
 	    push_parse_value(err, &ctx, ojc_create_int((int64_t)(int32_t)num));
 	    break;
 	}
 	case VAL_INT8: {
 	    uint64_t	num;
 
-	    msg = read_uint64(msg, &num);
+	    val = read_uint64(val, &num);
 	    push_parse_value(err, &ctx, ojc_create_int((int64_t)num));
 	    break;
 	}
 	case VAL_STR1: {
-	    uint8_t	len = *msg++;
+	    uint8_t	len = *val++;
 
-	    push_parse_value(err, &ctx, ojc_create_str((const char*)msg, (int)len));
-	    msg += len + 1;
+	    push_parse_value(err, &ctx, ojc_create_str((const char*)val, (int)len));
+	    val += len + 1;
 	    break;
 	}
 	case VAL_STR2: {
 	    uint16_t	len;
 	    
-	    msg = read_uint16(msg, &len);
-	    push_parse_value(err, &ctx, ojc_create_str((const char*)msg, (int)len));
-	    msg += len + 1;
+	    val = read_uint16(val, &len);
+	    push_parse_value(err, &ctx, ojc_create_str((const char*)val, (int)len));
+	    val += len + 1;
 	    break;
 	}
 	case VAL_STR4: {
 	    uint32_t	len;
 	    
-	    msg = read_uint32(msg, &len);
-	    push_parse_value(err, &ctx, ojc_create_str((const char*)msg, (int)len));
-	    msg += len + 1;
+	    val = read_uint32(val, &len);
+	    push_parse_value(err, &ctx, ojc_create_str((const char*)val, (int)len));
+	    val += len + 1;
 	    break;
 	}
 	case VAL_KEY1: {
-	    uint8_t	len = *msg++;
+	    uint8_t	len = *val++;
 
-	    ctx.key = (const char*)msg;
+	    ctx.key = (const char*)val;
 	    ctx.klen = len;
-	    msg += len + 1;
+	    val += len + 1;
 	    break;
 	}
 	case VAL_KEY2: {
 	    uint16_t	len;
 	    
-	    msg = read_uint16(msg, &len);
-	    ctx.key = (const char*)msg;
+	    val = read_uint16(val, &len);
+	    ctx.key = (const char*)val;
 	    ctx.klen = len;
-	    msg += len + 1;
+	    val += len + 1;
 	    break;
 	}
 	case VAL_DEC: {
-	    uint8_t	len = *msg++;
+	    uint8_t	len = *val++;
 	    char	buf[256];
 	    double	d;
 		
-	    memcpy(buf, msg, (size_t)len);
+	    memcpy(buf, val, (size_t)len);
 	    buf[len] = '\0';
 	    d = strtod(buf, NULL);
 	    push_parse_value(err, &ctx, ojc_create_double(d));
-	    msg += len;
+	    val += len;
 	    break;
 	}
 	case VAL_UUID: {
@@ -632,8 +636,8 @@ opo_msg_to_ojc(opoErr err, opoVal msg) {
 	    uint64_t	lo;
 	    char	buf[40];
 	    
-	    msg = read_uint64(msg, &hi);
-	    msg = read_uint64(msg, &lo);
+	    val = read_uint64(val, &hi);
+	    val = read_uint64(val, &lo);
 	    sprintf(buf, "%08lx-%04lx-%04lx-%04lx-%012lx",
 		    (unsigned long)(hi >> 32),
 		    (unsigned long)((hi >> 16) & 0x000000000000FFFFUL),
@@ -647,7 +651,7 @@ opo_msg_to_ojc(opoErr err, opoVal msg) {
 	case VAL_TIME: {
 	    uint64_t	nsec;
 	    
-	    msg = read_uint64(msg, &nsec);
+	    val = read_uint64(val, &nsec);
 	    char	buf[64];
 	    struct tm	tm;
 	    time_t	t = (time_t)(nsec / 1000000000LL);
@@ -672,11 +676,11 @@ opo_msg_to_ojc(opoErr err, opoVal msg) {
 		ojcVal		obj = ojc_create_object();
 		uint32_t	size;
 
-		msg = read_uint32(msg, &size);
+		val = read_uint32(val, &size);
 		if (OPO_ERR_OK == push_parse_value(err, &ctx, obj)) {
 		    ctx.cur++;
 		    ctx.cur->val = obj;
-		    ctx.cur->end = msg + size;
+		    ctx.cur->end = val + size;
 		}
 	    }
 	    break;
@@ -688,11 +692,11 @@ opo_msg_to_ojc(opoErr err, opoVal msg) {
 		ojcVal	array = ojc_create_array();
 		uint32_t	size;
 
-		msg = read_uint32(msg, &size);
+		val = read_uint32(val, &size);
 		if (OPO_ERR_OK == push_parse_value(err, &ctx, array)) {
 		    ctx.cur++;
 		    ctx.cur->val = array;
-		    ctx.cur->end = msg + size;
+		    ctx.cur->end = val + size;
 		}
 	    }
 	    break;
