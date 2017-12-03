@@ -488,7 +488,7 @@ opo_client_close(opoClient client) {
 }
 
 opoRef
-opo_client_query(opoErr err, opoClient client, opoVal query, opoQueryCallback cb, void *ctx) {
+opo_client_query(opoErr err, opoClient client, opoMsg query, opoQueryCallback cb, void *ctx) {
     size_t	size = opo_msg_bsize(query);
 
     while (atomic_flag_test_and_set(&client->tail_lock)) {

@@ -88,8 +88,20 @@ opo_val_bsize(opoVal val) {
 	    break;
 	case VAL_UUID:	size = 17;	break;
 	case VAL_TIME:	size = 9;	break;
-	case VAL_OBJ:
-	case VAL_ARRAY: {
+	case VAL_OBJ1:
+	case VAL_ARRAY1:
+	    size = (size_t)*(val + 1) + 2;
+	    break;
+	case VAL_OBJ2:
+	case VAL_ARRAY2: {
+	    uint16_t	num;
+	    
+	    read_uint16(val + 1, &num);
+	    size = (size_t)num + 3;
+	    break;
+	}
+	case VAL_OBJ4:
+	case VAL_ARRAY4: {
 	    uint32_t	num;
 	    
 	    read_uint32(val + 1, &num);
@@ -171,8 +183,12 @@ opo_val_type(opoVal val) {
 	case VAL_DEC:	type = OPO_VAL_DEC;	break;
 	case VAL_UUID:	type = OPO_VAL_UUID;	break;
 	case VAL_TIME:	type = OPO_VAL_TIME;	break;
-	case VAL_OBJ:	type = OPO_VAL_OBJ;	break;
-	case VAL_ARRAY:	type = OPO_VAL_ARRAY;	break;
+	case VAL_OBJ1:	type = OPO_VAL_OBJ;	break;
+	case VAL_OBJ2:	type = OPO_VAL_OBJ;	break;
+	case VAL_OBJ4:	type = OPO_VAL_OBJ;	break;
+	case VAL_ARRAY1:type = OPO_VAL_ARRAY;	break;
+	case VAL_ARRAY2:type = OPO_VAL_ARRAY;	break;
+	case VAL_ARRAY4:type = OPO_VAL_ARRAY;	break;
 	default:				break;
 	}
     }
@@ -353,7 +369,36 @@ val_iterate(opoErr err, opoVal val, opoValCallbacks callbacks, void *ctx, opoVal
 		val += 8;
 	    }
 	    break;
-	case VAL_OBJ:
+	case VAL_OBJ1:
+	    if (NULL != callbacks->begin_object) {
+		cont = callbacks->begin_object(err, ctx);
+	    }
+	    if (cont) {
+		uint8_t	size = *val++;
+
+		cont = val_iterate(err, val, callbacks, ctx, val + size);
+		val += size;
+	    }
+	    if (NULL != callbacks->end_object && cont) {
+		cont = callbacks->end_object(err, ctx);
+	    }
+	    break;
+	case VAL_OBJ2:
+	    if (NULL != callbacks->begin_object) {
+		cont = callbacks->begin_object(err, ctx);
+	    }
+	    if (cont) {
+		uint16_t	size;
+
+		val = read_uint16(val, &size);
+		cont = val_iterate(err, val, callbacks, ctx, val + size);
+		val += size;
+	    }
+	    if (NULL != callbacks->end_object && cont) {
+		cont = callbacks->end_object(err, ctx);
+	    }
+	    break;
+	case VAL_OBJ4:
 	    if (NULL != callbacks->begin_object) {
 		cont = callbacks->begin_object(err, ctx);
 	    }
@@ -368,7 +413,36 @@ val_iterate(opoErr err, opoVal val, opoValCallbacks callbacks, void *ctx, opoVal
 		cont = callbacks->end_object(err, ctx);
 	    }
 	    break;
-	case VAL_ARRAY:
+	case VAL_ARRAY1:
+	    if (NULL != callbacks->begin_array) {
+		cont = callbacks->begin_array(err, ctx);
+	    }
+	    if (cont) {
+		uint8_t	size = *val++;
+
+		cont = val_iterate(err, val, callbacks, ctx, val + size);
+		val += size;
+	    }
+	    if (NULL != callbacks->end_array && cont) {
+		cont = callbacks->end_array(err, ctx);
+	    }
+	    break;
+	case VAL_ARRAY2:
+	    if (NULL != callbacks->begin_array) {
+		cont = callbacks->begin_array(err, ctx);
+	    }
+	    if (cont) {
+		uint16_t	size;
+
+		val = read_uint16(val, &size);
+		cont = val_iterate(err, val, callbacks, ctx, val + size);
+		val += size;
+	    }
+	    if (NULL != callbacks->end_array && cont) {
+		cont = callbacks->end_array(err, ctx);
+	    }
+	    break;
+	case VAL_ARRAY4:
 	    if (NULL != callbacks->begin_array) {
 		cont = callbacks->begin_array(err, ctx);
 	    }
@@ -411,7 +485,7 @@ val_key(opoVal val, int *lenp) {
 	*lenp = (int)*val++;;
 	key = (const char*)val;
 	break;
-    case VAL_STR2: {
+    case VAL_KEY2: {
 	uint16_t	len;
 	    
 	val = read_uint16(val, &len);
@@ -427,28 +501,42 @@ val_key(opoVal val, int *lenp) {
 
 opoVal
 opo_val_get(opoVal val, const char *path) {
-    if (NULL == path || '\0' == *path) {
+    if (NULL == path || '\0' == *path || NULL == val) {
 	return val;
     }
     const char	*dot = path;
     uint32_t	size;
     opoVal	end;
+    ValType	vt = *val++;
     
     for (; '.' != *dot && '\0' != *dot; dot++) {
     }
-    switch (*val++) {
-    case VAL_OBJ: {
+    switch (vt) {
+    case VAL_OBJ1:
+    case VAL_OBJ2:
+    case VAL_OBJ4: {
 	const char	*key;
 	int		len = dot - path;
 	int		klen;
 
-	int	x = 10;
-
-	val = read_uint32(val, &size);
+	switch (vt) {
+	case VAL_OBJ1:
+	    size = *val++;
+	    break;
+	case VAL_OBJ2: {
+	    uint16_t	s16;
+	    
+	    val = read_uint16(val, &s16);
+	    size = s16;
+	    break;
+	}
+	case VAL_OBJ4:
+	default:
+	    val = read_uint32(val, &size);
+	    break;
+	}
 	end = val + size;
 	while (val < end) {
-	    if (x-- < 0) { break; }
-	    
 	    key = val_key(val, &klen);
 	    val += opo_val_bsize(val);
 	    if (len == klen && 0 == strncmp(key, path, len)) {
@@ -461,14 +549,31 @@ opo_val_get(opoVal val, const char *path) {
 	}
 	break;
     }
-    case VAL_ARRAY: {
+    case VAL_ARRAY1:
+    case VAL_ARRAY2:
+    case VAL_ARRAY4: {
 	char	*iend;
 	long	i = strtol(path, &iend, 10);
 
 	if (iend != dot) {
 	    break;
 	}
-	val = read_uint32(val, &size);
+	switch (vt) {
+	case VAL_ARRAY1:
+	    size = *val++;
+	    break;
+	case VAL_ARRAY2: {
+	    uint16_t	s16;
+	    
+	    val = read_uint16(val, &s16);
+	    size = s16;
+	    break;
+	}
+	case VAL_ARRAY4:
+	default:
+	    val = read_uint32(val, &size);
+	    break;
+	}
 	end = val + size;
 	for (; val < end; i--) {
 	    if (0 == i) {
@@ -700,10 +805,24 @@ opo_val_members(opoErr err, opoVal val) {
     
     if (NULL == val) {
 	opo_err_set(err, OPO_ERR_TYPE, "NULL is not a object or array value");
-    } else if (VAL_OBJ != *val && VAL_ARRAY != *val) {
-	opo_err_set(err, OPO_ERR_TYPE, "not an object or array value");
     } else {
-	members = val + 5;
+	switch (*val) {
+	case VAL_OBJ1:
+	case VAL_ARRAY1:
+	    members = val + 2;
+	    break;
+	case VAL_OBJ2:
+	case VAL_ARRAY2:
+	    members = val + 3;
+	    break;
+	case VAL_OBJ4:
+	case VAL_ARRAY4:
+	    members = val + 5;
+	    break;
+	default:
+	    opo_err_set(err, OPO_ERR_TYPE, "not an object or array value");
+	    break;
+	}
     }
     return members;
 }
@@ -722,10 +841,28 @@ opo_val_member_count(opoErr err, opoVal val) {
     int		cnt = 0;
     opoVal	end;
     uint32_t	size;
-
-    switch (*val++) {
-    case VAL_OBJ:
-	val = read_uint32(val, &size);
+    ValType	vt = *val++;
+    
+    switch (vt) {
+    case VAL_OBJ1:
+    case VAL_OBJ2:
+    case VAL_OBJ4:
+	switch (vt) {
+	case VAL_OBJ1:
+	    size = *val++;
+	    break;
+	case VAL_OBJ2: {
+	    uint16_t	s16;
+	
+	    val = read_uint16(val, &s16);
+	    size = s16;
+	    break;
+	}
+	case VAL_OBJ4:
+	default:
+	    val = read_uint32(val, &size);
+	    break;
+	}
 	end = val + size;
 	while (val < end) {
 	    cnt++;
@@ -733,8 +870,25 @@ opo_val_member_count(opoErr err, opoVal val) {
 	    val += opo_val_bsize(val);
 	}
 	break;
-    case VAL_ARRAY:
-	val = read_uint32(val, &size);
+    case VAL_ARRAY1:
+    case VAL_ARRAY2:
+    case VAL_ARRAY4:
+	switch (vt) {
+	case VAL_ARRAY1:
+	    size = *val++;
+	    break;
+	case VAL_ARRAY2: {
+	    uint16_t	s16;
+	
+	    val = read_uint16(val, &s16);
+	    size = s16;
+	    break;
+	}
+	case VAL_ARRAY4:
+	default:
+	    val = read_uint32(val, &size);
+	    break;
+	}
 	end = val + size;
 	while (val < end) {
 	    cnt++;

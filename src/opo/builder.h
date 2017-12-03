@@ -26,7 +26,7 @@ extern "C" {
 
     extern opoErrCode	opo_builder_init(opoErr err, opoBuilder builder, uint8_t *buf, size_t size);
     extern void		opo_builder_cleanup(opoBuilder builder);
-    extern opoErrCode	opo_builder_finish(opoBuilder builder);
+    extern void		opo_builder_finish(opoBuilder builder);
     extern size_t	opo_builder_length(opoBuilder builder);
     extern opoMsg	opo_builder_take(opoBuilder builder);
 

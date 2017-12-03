@@ -188,7 +188,7 @@ bsize_test() {
 
     size_t	size = opo_msg_bsize(builder.head);
 
-    ut_same_int(98, size, "incorrect size");
+    ut_same_int(92, size, "incorrect size");
     opo_builder_cleanup(&builder);
 }
 

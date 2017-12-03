@@ -153,7 +153,39 @@ builder_push_key(opoErr err, opoBuilder builder, const char *str, size_t len) {
 
     return OPO_ERR_OK;
 }
-    
+
+static void
+pop(opoBuilder builder) {
+    if (builder->stack > builder->top) {
+	return;
+    }
+    uint8_t	*start = builder->head + *builder->top;
+    uint32_t	size = (uint32_t)(builder->cur - start - 5);
+
+    if (size <= 0x000000ffU) {
+	if (VAL_OBJ4 == *start) {
+	    *start++ = VAL_OBJ1;
+	} else {
+	    *start++ = VAL_ARRAY1;
+	}
+	memmove(start + 1, start + 4, size);
+	*start = (uint8_t)size;
+	builder->cur -= 3;
+    } else if (size <= 0x0000ffffU) {
+	if (VAL_OBJ4 == *start) {
+	    *start++ = VAL_OBJ2;
+	} else {
+	    *start++ = VAL_ARRAY2;
+	}
+	memmove(start + 2, start + 4, size);
+	fill_uint16(start, size);
+	builder->cur -= 2;
+    } else {
+	fill_uint32(start + 1, size);
+    }
+    builder->top--;
+}
+
 opoErrCode
 opo_builder_init(opoErr err, opoBuilder builder, uint8_t *buf, size_t size) {
     if (NULL == buf) {
@@ -184,15 +216,11 @@ opo_builder_cleanup(opoBuilder builder) {
     }
 }
 
-opoErrCode
+void
 opo_builder_finish(opoBuilder builder) {
-    uint8_t	*start;
-
-    for (; builder->stack <= builder->top; builder->top--) {
-	start = builder->head + *builder->top;
-	fill_uint32(start + 1, (uint32_t)(builder->cur - start - 5));
+    while (builder->stack <= builder->top) {
+	pop(builder);
     }
-    return 0;
 }
 
 size_t
@@ -230,17 +258,19 @@ check_key(opoErr err, opoBuilder builder, const char *key, int klen) {
 	if (NULL != key) {
 	    return opo_err_set(err, OPO_ERR_ARG, "only members of an object are keyed");
 	}
-    } else if (NULL != key) {
-	// TBD check for obj
-	if (VAL_OBJ != *(builder->head + *builder->top)) {
-	    return opo_err_set(err, OPO_ERR_ARG, "only members of an object are keyed");
-	}
-	if (0 >= klen) {
-	    klen = strlen(key);
-	}
-	builder_push_key(err, builder, key, klen);
-    } else if (VAL_ARRAY != *(builder->head + *builder->top)) {
-	return opo_err_set(err, OPO_ERR_ARG, "members of an object must be keyed");
+    } else {
+	ValType	vt = *(builder->head + *builder->top);
+	
+	if (NULL != key) {
+	    if (VAL_OBJ1 != vt && VAL_OBJ2 != vt && VAL_OBJ4 != vt) {
+		return opo_err_set(err, OPO_ERR_ARG, "only members of an object are keyed");
+	    }
+	    if (0 >= klen) {
+		klen = strlen(key);
+	    }
+	    builder_push_key(err, builder, key, klen);
+	} else if (VAL_ARRAY1 != vt && VAL_ARRAY2 != vt && VAL_ARRAY4 != vt) {
+	    return opo_err_set(err, OPO_ERR_ARG, "members of an object must be keyed");}
     }
     return OPO_ERR_OK;
 }
@@ -259,7 +289,7 @@ opo_builder_push_object(opoErr err, opoBuilder builder, const char *key, int kle
     if (OPO_ERR_OK != builder_assure(err, builder, 5)) {
 	return err->code;
     }
-    *builder->cur++ = VAL_OBJ;
+    *builder->cur++ = VAL_OBJ4; // may get condensed on pop
     builder->cur += 4;
 
     return OPO_ERR_OK;
@@ -276,7 +306,7 @@ opo_builder_push_array(opoErr err, opoBuilder builder, const char *key, int klen
     builder->top++;
     *builder->top = builder->cur - builder->head;
 	
-    *builder->cur++ = VAL_ARRAY;
+    *builder->cur++ = VAL_ARRAY4; // may get condensed later
     builder->cur += 4;
 
     return OPO_ERR_OK;
@@ -287,10 +317,7 @@ opo_builder_pop(opoErr err, opoBuilder builder) {
     if (builder->stack > builder->top) {
 	return opo_err_set(err, OPO_ERR_OVERFLOW, "nothing left to pop");
     }
-    uint8_t	*start = builder->head + *builder->top;
-    
-    fill_uint32(start + 1, (uint32_t)(builder->cur - start - 5));
-    builder->top--;
+    pop(builder);
 
     return OPO_ERR_OK;
 }

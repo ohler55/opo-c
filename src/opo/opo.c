@@ -433,7 +433,7 @@ wire_fill(ojcVal val, uint8_t *w) {
 	break;
     }
     case OJC_ARRAY: {
-	*w++ = VAL_ARRAY;
+	*w++ = VAL_ARRAY4;
 	uint8_t	*start = w;
 
 	w += 4;
@@ -444,7 +444,7 @@ wire_fill(ojcVal val, uint8_t *w) {
 	break;
     }
     case OJC_OBJECT: {
-	*w++ = VAL_OBJ;
+	*w++ = VAL_OBJ4;
 	uint8_t		*start = w;
 	const char	*key;
 	int		len;
@@ -668,7 +668,38 @@ opo_val_to_ojc(opoErr err, opoVal val) {
 	    push_parse_value(err, &ctx, ojc_create_str(buf, TIME_STR_LEN));
 	    break;
 	}
-	case VAL_OBJ:
+	case VAL_OBJ1:
+	    if (ctx.end - 1 <= ctx.cur) {
+		err->code = OJC_PARSE_ERR;
+		snprintf(err->msg, sizeof(err->msg), "too deeply nested");
+	    } else {
+		ojcVal	obj = ojc_create_object();
+		uint8_t	size = *val++;
+
+		if (OPO_ERR_OK == push_parse_value(err, &ctx, obj)) {
+		    ctx.cur++;
+		    ctx.cur->val = obj;
+		    ctx.cur->end = val + size;
+		}
+	    }
+	    break;
+	case VAL_OBJ2:
+	    if (ctx.end - 1 <= ctx.cur) {
+		err->code = OJC_PARSE_ERR;
+		snprintf(err->msg, sizeof(err->msg), "too deeply nested");
+	    } else {
+		ojcVal		obj = ojc_create_object();
+		uint16_t	size;
+
+		val = read_uint16(val, &size);
+		if (OPO_ERR_OK == push_parse_value(err, &ctx, obj)) {
+		    ctx.cur++;
+		    ctx.cur->val = obj;
+		    ctx.cur->end = val + size;
+		}
+	    }
+	    break;
+	case VAL_OBJ4:
 	    if (ctx.end - 1 <= ctx.cur) {
 		err->code = OJC_PARSE_ERR;
 		snprintf(err->msg, sizeof(err->msg), "too deeply nested");
@@ -684,7 +715,38 @@ opo_val_to_ojc(opoErr err, opoVal val) {
 		}
 	    }
 	    break;
-	case VAL_ARRAY:
+	case VAL_ARRAY1:
+	    if (ctx.end - 1 <= ctx.cur) {
+		err->code = OJC_PARSE_ERR;
+		snprintf(err->msg, sizeof(err->msg), "too deeply nested");
+	    } else {
+		ojcVal	array = ojc_create_array();
+		uint8_t	size = *val++;
+
+		if (OPO_ERR_OK == push_parse_value(err, &ctx, array)) {
+		    ctx.cur++;
+		    ctx.cur->val = array;
+		    ctx.cur->end = val + size;
+		}
+	    }
+	    break;
+	case VAL_ARRAY2:
+	    if (ctx.end - 1 <= ctx.cur) {
+		err->code = OJC_PARSE_ERR;
+		snprintf(err->msg, sizeof(err->msg), "too deeply nested");
+	    } else {
+		ojcVal	array = ojc_create_array();
+		uint16_t	size;
+
+		val = read_uint16(val, &size);
+		if (OPO_ERR_OK == push_parse_value(err, &ctx, array)) {
+		    ctx.cur++;
+		    ctx.cur->val = array;
+		    ctx.cur->end = val + size;
+		}
+	    }
+	    break;
+	case VAL_ARRAY4:
 	    if (ctx.end - 1 <= ctx.cur) {
 		err->code = OJC_PARSE_ERR;
 		snprintf(err->msg, sizeof(err->msg), "too deeply nested");
