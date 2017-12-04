@@ -18,6 +18,7 @@
 #include <unistd.h>
 
 #include "opo.h"
+#include "internal.h"
 #include "client.h"
 
 #define MIN_SLEEP	(1.0 / (double)CLOCKS_PER_SEC)
@@ -65,6 +66,8 @@ struct _opoClient {
     atomic_int		waiting;
     int			rsock;
     int			wsock;
+
+    opoDict		dict;
 };
 
 static void
@@ -229,9 +232,9 @@ processs_msg(opoClient client, opoMsg msg) {
 	}
 	while (q != client->on_deck) {
 	    if (NULL != client->on_deck->cb) {
-		uint8_t		lost_msg[1024];
+		uint8_t			lost_msg[1024];
 		struct _opoBuilder	b;
-		struct _opoErr	err = OPO_ERR_INIT;
+		struct _opoErr		err = OPO_ERR_INIT;
 	    
 		opo_builder_init(&err, &b, lost_msg, sizeof(lost_msg));
 		opo_builder_push_object(&err, &b, NULL, 0);
@@ -421,6 +424,7 @@ opo_client_connect(opoErr err, const char *host, int port, opoClientOptions opti
 	int	pending_max = 4096;
 	
 	client->sock = sock;
+	client->dict = NULL;
 	if (NULL == options) {
 	    client->timeout = 2.0;
 	    client->status_callback = NULL;
@@ -430,6 +434,12 @@ opo_client_connect(opoErr err, const char *host, int port, opoClientOptions opti
 	    pending_max = options->pending_max;
 	    if (pending_max < 1) {
 		pending_max = 1;
+	    }
+	    if (NULL != options->words) {
+		client->dict = opo_dict_create(err, options->words);
+		if (OPO_ERR_OK != err->code) {
+		    return NULL;
+		}
 	    }
 	}
 	client->q = (Query)malloc(sizeof(struct _Query) * pending_max);
@@ -462,6 +472,8 @@ opo_client_connect(opoErr err, const char *host, int port, opoClientOptions opti
 	if (0 < client->sock && NULL != client->status_callback) {
 	    status_callback(client, true, OPO_ERR_OK, "connected to %s:%d", host, port);
 	}
+	// TBD form dict registration message and send, with callback for confirmation, call status_callback on success or failure
+	// need dict message type
     }
     return client;
 }
@@ -483,6 +495,9 @@ opo_client_close(opoClient client) {
     }
     if (0 < client->rsock) {
 	close(client->rsock);
+    }
+    if (NULL != client->dict) {
+	opo_dict_destroy(client->dict);
     }
     free(client);
 }
@@ -541,7 +556,7 @@ opo_client_process(opoClient client, int max, double wait) {
     while (0 >= max || cnt < max) {
 	if (NULL != (q = take_next_ready(client, wait))) {
 	    if (NULL != q->cb) {
-		q->cb(q->id, q->resp, q->ctx);
+		q->cb(client, q->id, q->resp, q->ctx);
 	    }
 	    free((uint8_t*)q->resp);
 	    q->id = 0;
@@ -564,3 +579,14 @@ int
 opo_client_ready_count(opoClient client) {
     return (int)((client->on_deck + client->pending_max - client->head) % client->pending_max);
 }
+
+void
+opo_client_set_dictionary(opoClient client, opoBuilder builder) {
+    builder->dict = client->dict;
+}
+
+opoDict
+opo_client_dictionary(opoClient client) {
+    return client->dict;
+}
+

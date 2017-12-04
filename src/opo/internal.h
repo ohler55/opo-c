@@ -31,8 +31,10 @@ extern "C" {
 	VAL_ARRAY1	= (uint8_t)'a',
 	VAL_ARRAY2	= (uint8_t)'A',
 	VAL_ARRAY4	= (uint8_t)'[',
+	VAL_DICS	= (uint8_t)'q',
+	VAL_DICK	= (uint8_t)'Q',
     } ValType;
-
+    
 #ifdef __cplusplus
 }
 #endif

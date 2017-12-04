@@ -43,10 +43,18 @@
         <button class="item level3" onclick="displayDesc(event,'opoRef')">opoRef</button>
         <button class="item level3" onclick="displayDesc(event,'opo_client_close')">opo_client_close()</button>
         <button class="item level3" onclick="displayDesc(event,'opo_client_connect')">opo_client_connect()</button>
+        <button class="item level3" onclick="displayDesc(event,'opo_client_dictionary')">opo_client_dictionary()</button>
         <button class="item level3" onclick="displayDesc(event,'opo_client_pending_count')">opo_client_pending_count()</button>
         <button class="item level3" onclick="displayDesc(event,'opo_client_process')">opo_client_process()</button>
         <button class="item level3" onclick="displayDesc(event,'opo_client_query')">opo_client_query()</button>
         <button class="item level3" onclick="displayDesc(event,'opo_client_ready_count')">opo_client_ready_count()</button>
+        <button class="item level3" onclick="displayDesc(event,'opo_client_set_dictionary')">opo_client_set_dictionary()</button>
+
+        <button class="item level2" onclick="displayDesc(event,'opoDict')">opoDict</button>
+        <button class="item level3" onclick="displayDesc(event,'opo_dict_create')">opo_dict_create()</button>
+        <button class="item level3" onclick="displayDesc(event,'opo_dict_destroy')">opo_dict_destroy()</button>
+        <button class="item level3" onclick="displayDesc(event,'opo_dict_index')">opo_dict_index()</button>
+        <button class="item level3" onclick="displayDesc(event,'opo_dict_word')">opo_dict_word()</button>
 
         <button class="item level2" onclick="displayDesc(event,'opoErr')">opoErr</button>
         <button class="item level3" onclick="displayDesc(event,'OPO_ERR_INIT')">OPO_ERR_INIT</button>
@@ -84,9 +92,9 @@
 
         <span class="cat">functions</span>
         <button class="item level2" onclick="displayDesc(event,'opo_msg_to_ojc')">opo_msg_to_ojc()</button>
-        <button class="item level2" onclick="displayDesc(event,'opo_ojc_msg_size')">opo_ojc_msg_size()</button>
         <button class="item level2" onclick="displayDesc(event,'opo_ojc_fill_msg')">opo_ojc_fill_msg()</button>
         <button class="item level2" onclick="displayDesc(event,'opo_ojc_to_msg')">opo_ojc_to_msg()</button>
+        <button class="item level2" onclick="displayDesc(event,'opo_val_to_ojc')">opo_val_to_ojc()</button>
 
       </div>
 
@@ -186,6 +194,7 @@ typedef struct _opoBuilder {
     bool    own;
     bool    *top;
     bool    stack[OPO_MSG_MAX_DEPTH];
+    opoDict dict;
 } *opoBuilder;
 </div>
           <p class="desc-text">
@@ -208,6 +217,7 @@ typedef struct _opoBuilder {
             <tr><td><span class="param">own</span></td><td>a flag indicating the builder owns the message buffer</td></tr>
             <tr><td><span class="param">top</span></td><td>a pointer to the current top of the stack where the latest object or array is</td></tr>
             <tr><td><span class="param">stack</span></td><td>stack used to keep track of objets and array while building</td></tr>
+            <tr><td><span class="param">dict</span></td><td>dictionary for compressing messages, set using the client</td></tr>
           </table>
         </div>
 
@@ -611,6 +621,7 @@ typedef struct _opoBuilder {
     double            timeout;
     int               pending_max;
     opoStatusCallback status_callback;
+    const char        **words;
 } *opoClientOptions;
 </div>
           <p class="desc-text">
@@ -620,17 +631,19 @@ typedef struct _opoBuilder {
             <tr><td><span class="param">timeout</span></td><td>timeout in seconds for all queries</td></tr>
             <tr><td><span class="param">pending_max</span></td><td>maximum pending queries</td></tr>
             <tr><td><span class="param">status_callback</span></td><td>callback for status change</td></tr>
+            <tr><td><span class="param">words</span></td><td>commonly used words for dictionary optimization, optional</td></tr>
           </table>
         </div>
 
         <div id="opoQueryCallback" class="desc">
           <div class="title">opoQueryCallback</div>
-          <div class="synopsis">typedef void (*opoQueryCallback)(opoRef ref, opoVal response, void *ctx)</div>
+          <div class="synopsis">typedef void (*opoQueryCallback)(opoClient client, opoRef ref, opoVal response, void *ctx)</div>
           <p class="desc-text">
             Responses to asynchronous queries are delivered by calling the
             callback function specified when the query is made.
           </p>
           <table class="params">
+            <tr><td><span class="param">client</span></td><td>client initiating the callback</td></tr>
             <tr><td><span class="param">ref</span></td><td>reference to the query</td></tr>
             <tr><td><span class="param">response</span></td><td>response to the query</td></tr>
             <tr><td><span class="param">ctx</span></td><td>context given when the query was made</td></tr>
@@ -706,6 +719,18 @@ typedef struct _opoBuilder {
           </table>
         </div>
 
+        <div id="opo_client_dictionary" class="desc">
+          <div class="title">opo_client_dictionary()</div>
+          <div class="synopsis">opoDict opo_client_dictionary(opoClient client)</div>
+          <p class="desc-text">
+            Returns the client dictionary.
+          </p>
+          <table class="params">
+            <tr><td><span class="param">client</span></td><td>client to get the dictionary from</td></tr>
+            <tr><td class="returns">Returns:</td><td>the client dictionary.</td></tr>
+          </table>
+        </div>
+
         <div id="opo_client_process" class="desc">
           <div class="title">opo_client_process()</div>
           <div class="synopsis">int opo_client_process(opoClient client, int max, double wait)</div>
@@ -763,6 +788,90 @@ typedef struct _opoBuilder {
           <table class="params">
             <tr><td><span class="param">client</span></td><td>client to get the count from</td></tr>
             <tr><td class="returns">Returns:</td><td>the number of responses ready to be processed</td></tr>
+          </table>
+        </div>
+
+        <div id="opo_client_set_dictionary" class="desc">
+          <div class="title">opo_client_set_dictionary()</div>
+          <div class="synopsis">int opo_client_set_dictionary(opoClient client, opoBuilder builder)</div>
+          <p class="desc-text">
+            Sets the dictionary in the builder to the client dictionary. Only
+            the client dictionary should be used when exchanging messages with
+            the server.
+          </p>
+          <table class="params">
+            <tr><td><span class="param">client</span></td><td>client to get the dictionary from</td></tr>
+            <tr><td><span class="param">builder</span></td><td>builder to set the dictionary on</td></tr>
+          </table>
+        </div>
+
+        <div id="opoDict" class="desc">
+          <div class="title">opoDict</div>
+          <div class="synopsis">typedef struct _opoDictEntry {
+    uint8_t len;
+    uint8_t index;
+    uint8_t set;
+    char    *str;
+} *opoDictEntry;
+    
+typedef struct _opoDict {
+    struct _opoDictEntry entries[256];
+} *opoDict;
+</div>
+          <p class="desc-text">
+            The structs used to form the dictionary used for compressing
+            messages. Details are shown but the function APIs should be used
+            instead of modifying the field directly.
+          </p>
+        </div>
+
+        <div id="opo_dict_create" class="desc">
+          <div class="title">opo_dict_create()</div>
+          <div class="synopsis">opoDict opo_dict_create(opoErr err, const char **words)</div>
+          <p class="desc-text">
+            Creates a new dictionary with the words provided.
+          </p>
+          <table class="params">
+            <tr><td><span class="param">err</span></td><td>error to fill on error</td></tr>
+            <tr><td><span class="param">words</span></td><td>a NULL terminated array of words for the dictionary</td></tr>
+            <tr><td class="returns">Returns:</td><td>a new dictionary.</td></tr>
+          </table>
+        </div>
+
+        <div id="opo_dict_destroy" class="desc">
+          <div class="title">opo_dict_destroy()</div>
+          <div class="synopsis">void opo_dict_destroy(opoDict dict)</div>
+          <p class="desc-text">
+            Dictionary to clear and free.
+          </p>
+          <table class="params">
+            <tr><td><span class="param">dict</span></td><td>dictionary to destroy</td></tr>
+          </table>
+        </div>
+
+        <div id="opo_dict_index" class="desc">
+          <div class="title">opo_dict_index()</div>
+          <div class="synopsis">int opo_dict_index(opoDict dict, const char *word, int len)</div>
+          <p class="desc-text">
+            Return the index of the word specified or -1 if the word is not in the dictionary.
+          </p>
+          <table class="params">
+            <tr><td><span class="param">dict</span></td><td>dictionary to get the index from</td></tr>
+            <tr><td><span class="param">word</span></td><td>word to search for</td></tr>
+            <tr><td class="returns">Returns:</td><td>the index or -1.</td></tr>
+          </table>
+        </div>
+
+        <div id="opo_dict_word" class="desc">
+          <div class="title">opo_dict_word()</div>
+          <div class="synopsis">const char* opo_dict_word(opoDict dict, uint8_t index)</div>
+          <p class="desc-text">
+            Return the word associated with the index or NULL if no word is associated with the index.
+          </p>
+          <table class="params">
+            <tr><td><span class="param">dict</span></td><td>dictionary to search in</td></tr>
+            <tr><td><span class="param">index</span></td><td>index to get the word for</td></tr>
+            <tr><td class="returns">Returns:</td><td>the word associated with the index.</td></tr>
           </table>
         </div>
 
@@ -1118,7 +1227,8 @@ typedef struct _opoBuilder {
           <div class="synopsis">opoErrCode opo_val_iterate(opoErr          err,
                            opoVal          val,
                            opoValCallbacks callbacks,
-                           void            *ctx)</div>
+                           void            *ctx,
+                           opoDict         dict)</div>
           <p class="desc-text">
             Iterates over a <span class="code">opoVal</span> tree following
             each branch and calling the appropriate function in
@@ -1127,10 +1237,16 @@ typedef struct _opoBuilder {
             the callbacks or <span class="code">OPO_ERR_OK</span> if no error
             was set.
           </p>
+          <p class="desc-text">
+            The <span class="code">dict</span> argument must match the
+            dictionary used to create the value. In most cases this is the
+            client that received or created the message.
+          </p>
           <table class="params">
             <tr><td><span class="param">err</span></td><td>pointer to an initialized <span class="code">opoErr</span> struct that will be set if an error occurs.</td></tr>
             <tr><td><span class="param">val</span></td><td><span class="code">opoVal</span> to iterate over</td></tr>
             <tr><td><span class="param">ctx</span></td><td>context to pass to the callbacks</td></tr>
+            <tr><td><span class="param">dict</span></td><td>dictionary the value was created with</td></tr>
             <tr><td class="returns">Returns:</td><td>the value of <span class="code">err-&gt;code</span>.</td></tr>
           </table>
         </div>
@@ -1145,10 +1261,16 @@ typedef struct _opoBuilder {
             not <span class="code">NULL</span> then the length of the key
             string is set.
           </p>
+          <p class="desc-text">
+            The <span class="code">dict</span> argument must match the
+            dictionary used to create the value. In most cases this is the
+            client that received or created the message.
+          </p>
           <table class="params">
             <tr><td><span class="param">err</span></td><td>pointer to an initialized <span class="code">opoErr</span> struct that will be set if an error occurs.</td></tr>
             <tr><td><span class="param">val</span></td><td><span class="code">opoVal</span> to get the value from</td></tr>
             <tr><td><span class="param">lenp</span></td><td>pointer to an integer what will be set to the length</td></tr>
+            <tr><td><span class="param">dict</span></td><td>dictionary the value was created with</td></tr>
             <tr><td class="returns">Returns:</td><td>the key string.</td></tr>
           </table>
         </div>
@@ -1215,7 +1337,7 @@ typedef struct _opoBuilder {
 
         <div id="opo_val_string" class="desc">
           <div class="title">opo_val_string()</div>
-          <div class="synopsis">const char* opo_val_string(opoErr err, opoVal val, int *lenp)</div>
+          <div class="synopsis">const char* opo_val_string(opoErr err, opoVal val, int *lenp, opoDict dict)</div>
           <p class="desc-text">
             Gets a string from a <span class="code">opoVal</span> if it is a
             string type. If not the <span class="code">err</span> is set.  If
@@ -1223,10 +1345,16 @@ typedef struct _opoBuilder {
             not <span class="code">NULL</span> then the length of the string
             is set.
           </p>
+          <p class="desc-text">
+            The <span class="code">dict</span> argument must match the
+            dictionary used to create the value. In most cases this is the
+            client that received or created the message.
+          </p>
           <table class="params">
             <tr><td><span class="param">err</span></td><td>pointer to an initialized <span class="code">opoErr</span> struct that will be set if an error occurs.</td></tr>
             <tr><td><span class="param">val</span></td><td><span class="code">opoVal</span> to get the value from</td></tr>
             <tr><td><span class="param">lenp</span></td><td>pointer to an integer what will be set to the length</td></tr>
+            <tr><td><span class="param">dict</span></td><td>dictionary the value was created with</td></tr>
             <tr><td class="returns">Returns:</td><td>the value.</td></tr>
           </table>
         </div>
@@ -1295,55 +1423,83 @@ typedef struct _opoBuilder {
 
         <div id="opo_msg_to_ojc" class="desc">
           <div class="title">opo_msg_to_ojc()</div>
-          <div class="synopsis">ojcVal opo_msg_to_ojc(opoErr err, const opoVal msg)</div>
+          <div class="synopsis">ojcVal opo_msg_to_ojc(opoErr err, const opoMsg msg, opoDict dict)</div>
           <p class="desc-text">
             Encodes an <span class="code">opoVal</span> to an OjC value.
+          </p>
+          <p class="desc-text">
+            The <span class="code">dict</span> argument must match the
+            dictionary used to create the value. In most cases this is the
+            client that received or created the message.
           </p>
           <table class="params">
             <tr><td><span class="param">err</span></td><td>pointer to an initialized <span class="code">opoErr</span> struct that will be set if an error occurs.</td></tr>
             <tr><td><span class="param">msg</span></td><td><span class="code">opoVal</span>message to convert to an OjC value</td></tr>
+            <tr><td><span class="param">dict</span></td><td>dictionary the value was created with</td></tr>
+            <tr><td><span class="param">dict</span></td><td>dictionary the value was created with</td></tr>
             <tr><td class="returns">Returns:</td><td>the converted message.</td></tr>
-          </table>
-        </div>
-
-        <div id="opo_ojc_msg_size" class="desc">
-          <div class="title">opo_ojc_msg_size()</div>
-          <div class="synopsis">size_t opo_ojc_msg_size(ojcVal val)</div>
-          <p class="desc-text">
-            Calculates the size of a buffer needed to encode an OjC value into
-            a <span class="code">opoVal</span>.
-          </p>
-          <table class="params">
-            <tr><td><span class="param">val</span></td><td><span class="code">ojcVal</span> value to calculate the needed size from</td></tr>
-            <tr><td class="returns">Returns:</td><td>the size needed.</td></tr>
           </table>
         </div>
 
         <div id="opo_ojc_fill_msg" class="desc">
           <div class="title">opo_ojc_fill_msg()</div>
-          <div class="synopsis">opoVal opo_ojc_fill_msg(ojcVal val, uint8_t *buf)</div>
+          <div class="synopsis">opoVal opo_ojc_fill_msg(opoErr err, ojcVal val, uint8_t *buf, size_t size, opoDict dict)</div>
           <p class="desc-text">
             Encode an OjC value to a <span class="code">opoVal</span> that is
             the <span class="code">buf</span> argument. The buffer must be
             large enough to hold the encoded value.
           </p>
+          <p class="desc-text">
+            The <span class="code">dict</span> argument must match the
+            dictionary used to create the value. In most cases this is the
+            client that received or created the message.
+          </p>
           <table class="params">
+            <tr><td><span class="param">err</span></td><td>error to set on error</td></tr>
             <tr><td><span class="param">val</span></td><td>value to encode</td></tr>
             <tr><td><span class="param">buf</span></td><td>buffer to fill with the encoded value</td></tr>
+            <tr><td><span class="param">size</span></td><td>buffer size</td></tr>
+            <tr><td><span class="param">dict</span></td><td>dictionary the value was created with</td></tr>
           </table>
         </div>
 
         <div id="opo_ojc_to_msg" class="desc">
           <div class="title">opo_ojc_to_msg()</div>
-          <div class="synopsis">opoVal opo_ojc_to_msg(opoErr err, ojcVal val)</div>
+          <div class="synopsis">opoVal opo_ojc_to_msg(opoErr err, ojcVal val, opoDict dict)</div>
           <p class="desc-text">
             Encode an OjC value to a <span class="code">opoVal</span>. The
             caller is responsible for freeing the returned value.
           </p>
+          <p class="desc-text">
+            The <span class="code">dict</span> argument must match the
+            dictionary used to create the value. In most cases this is the
+            client that received or created the message.
+          </p>
           <table class="params">
             <tr><td><span class="param">err</span></td><td>pointer to an initialized <span class="code">opoErr</span> struct that will be set if an error occurs.</td></tr>
             <tr><td><span class="param">val</span></td><td>value to encode</td></tr>
+            <tr><td><span class="param">dict</span></td><td>dictionary the value was created with</td></tr>
             <tr><td class="returns">Returns:</td><td>an allocated The <span class="code">opoVal</span>.</td></tr>
+          </table>
+        </div>
+
+        <div id="opo_val_to_ojc" class="desc">
+          <div class="title">opo_val_to_ojc()</div>
+          <div class="synopsis">ojcVal opo_val_to_ojc(opoErr err, const opoVal val, opoDict dict)</div>
+          <p class="desc-text">
+            Encodes an <span class="code">opoVal</span> to an OjC value.
+          </p>
+          <p class="desc-text">
+            The <span class="code">dict</span> argument must match the
+            dictionary used to create the value. In most cases this is the
+            client that received or created the message.
+          </p>
+          <table class="params">
+            <tr><td><span class="param">err</span></td><td>pointer to an initialized <span class="code">opoErr</span> struct that will be set if an error occurs.</td></tr>
+            <tr><td><span class="param">msg</span></td><td><span class="code">opoVal</span>message to convert to an OjC value</td></tr>
+            <tr><td><span class="param">dict</span></td><td>dictionary the value was created with</td></tr>
+            <tr><td><span class="param">dict</span></td><td>dictionary the value was created with</td></tr>
+            <tr><td class="returns">Returns:</td><td>the converted message.</td></tr>
           </table>
         </div>
 

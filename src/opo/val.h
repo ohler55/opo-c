@@ -11,6 +11,7 @@ extern "C" {
 #include <stdint.h>
 #include <stdio.h>
 
+#include "dict.h"
 #include "err.h"
 
     typedef const uint8_t	*opoVal;
@@ -22,6 +23,7 @@ extern "C" {
 	OPO_VAL_BOOL	= (uint8_t)'b',
 	OPO_VAL_INT	= (uint8_t)'i',
 	OPO_VAL_STR	= (uint8_t)'s',
+	OPO_VAL_KEY	= (uint8_t)'k',
 	OPO_VAL_DEC	= (uint8_t)'d',
 	OPO_VAL_UUID	= (uint8_t)'u',
 	OPO_VAL_TIME	= (uint8_t)'t',
@@ -50,15 +52,15 @@ extern "C" {
     extern size_t	opo_val_size(opoVal val);
     extern opoValType	opo_val_type(opoVal val);
 
-    extern opoErrCode	opo_val_iterate(opoErr err, opoVal val, opoValCallbacks callbacks, void *ctx);
+    extern opoErrCode	opo_val_iterate(opoErr err, opoVal val, opoValCallbacks callbacks, void *ctx, opoDict dict);
 
     extern opoVal	opo_val_get(opoVal val, const char *path);
 
     extern bool		opo_val_bool(opoErr err, opoVal val);
     extern int64_t	opo_val_int(opoErr err, opoVal val);
     extern double	opo_val_double(opoErr err, opoVal val);
-    extern const char*	opo_val_string(opoErr err, opoVal val, int *lenp);
-    extern const char*	opo_val_key(opoErr err, opoVal key, int *lenp);
+    extern const char*	opo_val_string(opoErr err, opoVal val, int *lenp, opoDict dict);
+    extern const char*	opo_val_key(opoErr err, opoVal key, int *lenp, opoDict dict);
     extern void		opo_val_uuid_str(opoErr err, opoVal val, char *str);
     extern void		opo_val_uuid(opoErr err, opoVal val, uint64_t *hip, uint64_t *lop);
     extern int64_t	opo_val_time(opoErr err, opoVal val);

@@ -43,7 +43,7 @@ build_sample_msg(opoBuilder builder) {
 }
 
 void
-builder_build_buf_test() {
+buf_test() {
     struct _opoBuilder	builder;
     struct _opoErr	err = OPO_ERR_INIT;
     uint8_t		data[1024];
@@ -59,7 +59,7 @@ builder_build_buf_test() {
 }
 
 void
-builder_build_alloc_test() {
+alloc_test() {
     struct _opoBuilder	builder;
     struct _opoErr	err = OPO_ERR_INIT;
     
@@ -74,7 +74,7 @@ builder_build_alloc_test() {
 }
 
 void
-builder_build_val_test() {
+val_test() {
     struct _opoBuilder	builder;
     struct _opoErr	err = OPO_ERR_INIT;
     uint8_t		data[1024];
@@ -106,8 +106,50 @@ builder_build_val_test() {
 }
 
 void
+dict_test() {
+    struct _opoBuilder	builder;
+    struct _opoErr	err = OPO_ERR_INIT;
+    uint8_t		data[1024];
+    const char		*words[] = {
+	"yes",
+	"no",
+	"int",
+	"array",
+	"string",
+	"a string",
+	NULL,
+    };
+    opoDict		dict = opo_dict_create(&err, words);
+
+    ut_same_int(OPO_ERR_OK, err.code, "error creating dictionary. %s", err.msg);
+    
+    opo_builder_init(&err, &builder, data, sizeof(data));
+    builder.dict = dict;
+
+    opo_builder_push_object(&err, &builder, NULL, 0);
+    opo_builder_push_bool(&err, &builder, true, "yes", -1);
+    opo_builder_push_bool(&err, &builder, false, "no", -1);
+    opo_builder_push_int(&err, &builder, 1234, "int", -1);
+    opo_builder_push_array(&err, &builder, "array", -1);
+    opo_builder_pop(&err, &builder);
+    opo_builder_push_string(&err, &builder, "a string", -1, "string", -1);
+    opo_builder_finish(&builder);
+
+    const char	*expect = "\
+00 00 00 00 00 00 00 00  6F 13 51 00 74 51 01 66   ........ o.Q.tQ.f\n\
+51 02 32 04 D2 51 03 61  00 51 04 71 05            Q.2..Q.a .Q.q.\n";
+    char	buf[1024];
+
+    ut_hex_dump_buf(data, (int)opo_builder_length(&builder), buf);
+    ut_same(expect, buf, "hex dump mismatch");
+    opo_builder_cleanup(&builder);
+    opo_dict_destroy(dict);
+}
+
+void
 append_builder_tests(utTest tests) {
-    ut_appenda(tests, "opo.builder.buf", builder_build_buf_test, NULL);
-    ut_appenda(tests, "opo.builder.alloc", builder_build_alloc_test, NULL);
-    ut_appenda(tests, "opo.builder.val", builder_build_val_test, NULL);
+    ut_appenda(tests, "opo.builder.buf", buf_test, NULL);
+    ut_appenda(tests, "opo.builder.alloc", alloc_test, NULL);
+    ut_appenda(tests, "opo.builder.val", val_test, NULL);
+    ut_appenda(tests, "opo.builder.dict", dict_test, NULL);
 }

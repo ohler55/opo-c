@@ -127,7 +127,7 @@ iterate_test() {
     };
     *buf = '\0';
 
-    opo_val_iterate(&err, opo_msg_val(builder.head), &callbacks, buf);
+    opo_val_iterate(&err, opo_msg_val(builder.head), &callbacks, buf, NULL);
     
     ut_same("{nil:null yes:true no:false int:12345 array:[-23 1.230000 string 123e4567-e89b-12d3-a456-426655440000 2017-03-14T15:09:26.123456789Z ]}", buf,
 	"incorrect output");
@@ -169,7 +169,7 @@ iterate_stop_test() {
     };
     *buf = '\0';
 
-    opo_val_iterate(&err, opo_msg_val(builder.head), &callbacks, buf);
+    opo_val_iterate(&err, opo_msg_val(builder.head), &callbacks, buf, NULL);
     
     ut_same("{nil:null yes:true no:false int:12345 ", buf, "incorrect output");
     opo_builder_cleanup(&builder);
@@ -454,16 +454,16 @@ value_str_test() {
     
     opo_builder_init(&err, &builder, data, sizeof(data));
     opo_builder_push_string(&err, &builder, "hello", -1, NULL, 0);
-    ut_same("hello", opo_val_string(&err, opo_msg_val(builder.head), NULL), "incorrect value");
+    ut_same("hello", opo_val_string(&err, opo_msg_val(builder.head), NULL, NULL), "incorrect value");
 
     int	len = 0;
     
-    ut_same("hello", opo_val_string(&err, opo_msg_val(builder.head), &len), "incorrect value2");
+    ut_same("hello", opo_val_string(&err, opo_msg_val(builder.head), &len, NULL), "incorrect value2");
     ut_same_int(5, len, "incorrect length");
 
     opo_builder_init(&err, &builder, data, sizeof(data));
     opo_builder_push_bool(&err, &builder, false, NULL, 0);
-    opo_val_string(&err, opo_msg_val(builder.head), NULL);
+    opo_val_string(&err, opo_msg_val(builder.head), NULL, NULL);
     ut_same_int(OPO_ERR_TYPE, err.code, "incorrect error code");
 }
 
@@ -540,7 +540,7 @@ get_array_test() {
     opoVal	v;
     
     v = opo_val_get(top, "array.2");
-    ut_same("string", opo_val_string(&err, v, NULL), "incorrect value");
+    ut_same("string", opo_val_string(&err, v, NULL, NULL), "incorrect value");
     opo_builder_cleanup(&builder);
 }
 
@@ -558,7 +558,7 @@ members_test() {
 
     ut_not_null(members, "members should not be null for an object");
     // first member should be a key
-    ut_same("nil", opo_val_key(&err, members, NULL), "first key mismatch");
+    ut_same("nil", opo_val_key(&err, members, NULL, NULL), "first key mismatch");
 
     char	keys[256];
     const char	*s;
@@ -567,7 +567,7 @@ members_test() {
     *keys = '\0';
 
     for (; members < end; members = opo_val_next(members)) {
-	if (NULL != (s = opo_val_key(&err, members, NULL))) {
+	if (NULL != (s = opo_val_key(&err, members, NULL, NULL))) {
 	    strcat(keys, s);
 	    strcat(keys, " ");
 	}

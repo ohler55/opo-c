@@ -10,6 +10,7 @@ extern "C" {
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "dict.h"
 #include "err.h"
 #include "val.h"
 
@@ -22,6 +23,7 @@ extern "C" {
 	bool		own;
 	uint64_t	*top;
 	uint64_t	stack[OPO_MSG_MAX_DEPTH]; // offset from head to start of array or object
+	opoDict		dict;
     } *opoBuilder;
 
     extern opoErrCode	opo_builder_init(opoErr err, opoBuilder builder, uint8_t *buf, size_t size);

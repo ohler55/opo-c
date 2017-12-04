@@ -7,6 +7,7 @@
 
 #include "ut.h"
 
+extern void	append_dict_tests(utTest tests);
 extern void	append_builder_tests(utTest tests);
 extern void	append_val_tests(utTest tests);
 extern void	append_opo_tests(utTest tests);
@@ -16,6 +17,7 @@ int
 main(int argc, char **argv) {
     struct _utTest	tests[1024] = { { NULL, NULL } };
 
+    append_dict_tests(tests);
     append_builder_tests(tests);
     append_val_tests(tests);
     append_opo_tests(tests);

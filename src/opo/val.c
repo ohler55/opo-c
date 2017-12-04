@@ -56,6 +56,8 @@ opo_val_bsize(opoVal val) {
 	case VAL_INT2:	size = 3;	break;
 	case VAL_INT4:	size = 5;	break;
 	case VAL_INT8:	size = 9;	break;
+	case VAL_DICS:	size = 2;	break;
+	case VAL_DICK:	size = 2;	break;
 	case VAL_STR1:
 	    size = 3 + (size_t)*(val + 1);
 	    break;
@@ -125,6 +127,8 @@ opo_val_size(opoVal val) {
 	case VAL_INT2:	size = 2;	break;
 	case VAL_INT4:	size = 4;	break;
 	case VAL_INT8:	size = 8;	break;
+	case VAL_DICS:	size = 2;	break;
+	case VAL_DICK:	size = 2;	break;
 	case VAL_STR1:
 	    size = (size_t)*(val + 1);
 	    break;
@@ -189,6 +193,10 @@ opo_val_type(opoVal val) {
 	case VAL_ARRAY1:type = OPO_VAL_ARRAY;	break;
 	case VAL_ARRAY2:type = OPO_VAL_ARRAY;	break;
 	case VAL_ARRAY4:type = OPO_VAL_ARRAY;	break;
+	case VAL_DICS:	type = OPO_VAL_STR;	break;
+	case VAL_KEY1:	type = OPO_VAL_KEY;	break;
+	case VAL_KEY2:	type = OPO_VAL_KEY;	break;
+	case VAL_DICK:	type = OPO_VAL_KEY;	break;
 	default:				break;
 	}
     }
@@ -196,7 +204,7 @@ opo_val_type(opoVal val) {
 }
 
 static bool
-val_iterate(opoErr err, opoVal val, opoValCallbacks callbacks, void *ctx, opoVal end) {
+val_iterate(opoErr err, opoVal val, opoValCallbacks callbacks, void *ctx, opoVal end, opoDict dict) {
     bool	cont = true;
 
     while (val < end) {
@@ -376,7 +384,7 @@ val_iterate(opoErr err, opoVal val, opoValCallbacks callbacks, void *ctx, opoVal
 	    if (cont) {
 		uint8_t	size = *val++;
 
-		cont = val_iterate(err, val, callbacks, ctx, val + size);
+		cont = val_iterate(err, val, callbacks, ctx, val + size, dict);
 		val += size;
 	    }
 	    if (NULL != callbacks->end_object && cont) {
@@ -391,7 +399,7 @@ val_iterate(opoErr err, opoVal val, opoValCallbacks callbacks, void *ctx, opoVal
 		uint16_t	size;
 
 		val = read_uint16(val, &size);
-		cont = val_iterate(err, val, callbacks, ctx, val + size);
+		cont = val_iterate(err, val, callbacks, ctx, val + size, dict);
 		val += size;
 	    }
 	    if (NULL != callbacks->end_object && cont) {
@@ -406,7 +414,7 @@ val_iterate(opoErr err, opoVal val, opoValCallbacks callbacks, void *ctx, opoVal
 		uint32_t	size;
 
 		val = read_uint32(val, &size);
-		cont = val_iterate(err, val, callbacks, ctx, val + size);
+		cont = val_iterate(err, val, callbacks, ctx, val + size, dict);
 		val += size;
 	    }
 	    if (NULL != callbacks->end_object && cont) {
@@ -420,7 +428,7 @@ val_iterate(opoErr err, opoVal val, opoValCallbacks callbacks, void *ctx, opoVal
 	    if (cont) {
 		uint8_t	size = *val++;
 
-		cont = val_iterate(err, val, callbacks, ctx, val + size);
+		cont = val_iterate(err, val, callbacks, ctx, val + size, dict);
 		val += size;
 	    }
 	    if (NULL != callbacks->end_array && cont) {
@@ -435,7 +443,7 @@ val_iterate(opoErr err, opoVal val, opoValCallbacks callbacks, void *ctx, opoVal
 		uint16_t	size;
 
 		val = read_uint16(val, &size);
-		cont = val_iterate(err, val, callbacks, ctx, val + size);
+		cont = val_iterate(err, val, callbacks, ctx, val + size, dict);
 		val += size;
 	    }
 	    if (NULL != callbacks->end_array && cont) {
@@ -450,13 +458,47 @@ val_iterate(opoErr err, opoVal val, opoValCallbacks callbacks, void *ctx, opoVal
 		uint32_t	size;
 
 		val = read_uint32(val, &size);
-		cont = val_iterate(err, val, callbacks, ctx, val + size);
+		cont = val_iterate(err, val, callbacks, ctx, val + size, dict);
 		val += size;
 	    }
 	    if (NULL != callbacks->end_array && cont) {
 		cont = callbacks->end_array(err, ctx);
 	    }
 	    break;
+	case VAL_DICS: {
+	    if (NULL == dict) {
+		opo_err_set(err, OPO_ERR_PARSE, "dictionary required");
+		break;
+	    }
+	    opoDictEntry	de = &dict->entries[*val];
+
+	    if (false == de->set) {
+		opo_err_set(err, OPO_ERR_PARSE, "dictionary entry missing");
+		break;
+	    }
+	    if (NULL != callbacks->string) {
+		cont = callbacks->string(err, (const char*)de->str, (int)de->len, ctx);
+	    }
+	    val++;
+	    break;
+	}
+	case VAL_DICK: {
+	    if (NULL == dict) {
+		opo_err_set(err, OPO_ERR_PARSE, "dictionary required");
+		break;
+	    }
+	    opoDictEntry	de = &dict->entries[*val];
+
+	    if (false == de->set) {
+		opo_err_set(err, OPO_ERR_PARSE, "dictionary entry missing");
+		break;
+	    }
+	    if (NULL != callbacks->key) {
+		cont = callbacks->key(err, (const char*)de->str, (int)de->len, ctx);
+	    }
+	    val++;
+	    break;
+	}
 	default:
 	    opo_err_set(err, OPO_ERR_PARSE, "corrupt message format");
 	    break;
@@ -470,8 +512,8 @@ val_iterate(opoErr err, opoVal val, opoValCallbacks callbacks, void *ctx, opoVal
 }
 
 opoErrCode
-opo_val_iterate(opoErr err, opoVal val, opoValCallbacks callbacks, void *ctx) {
-    val_iterate(err, val, callbacks, ctx, val + 1);
+opo_val_iterate(opoErr err, opoVal val, opoValCallbacks callbacks, void *ctx, opoDict dict) {
+    val_iterate(err, val, callbacks, ctx, val + 1, dict);
 
     return err->code;
 }
@@ -671,7 +713,7 @@ opo_val_double(opoErr err, opoVal val) {
 }
 
 const char*
-opo_val_string(opoErr err, opoVal val, int *lenp) {
+opo_val_string(opoErr err, opoVal val, int *lenp, opoDict dict) {
     if (NULL == val) {
 	opo_err_set(err, OPO_ERR_TYPE, "NULL is not an string value");
 	return NULL;
@@ -708,6 +750,23 @@ opo_val_string(opoErr err, opoVal val, int *lenp) {
 	str = (const char*)val;
 	break;
     }
+    case VAL_DICS: {
+	if (NULL == dict) {
+	    opo_err_set(err, OPO_ERR_PARSE, "dictionary required");
+	    break;
+	}
+	opoDictEntry	de = &dict->entries[*val];
+
+	if (false == de->set) {
+	    opo_err_set(err, OPO_ERR_PARSE, "dictionary entry missing");
+	    break;
+	}
+	str = de->str;
+	if (NULL != lenp) {
+	    *lenp = (int)de->len;
+	}
+	break;
+    }
     default:
 	opo_err_set(err, OPO_ERR_TYPE, "not a string value");
 	break;
@@ -716,7 +775,7 @@ opo_val_string(opoErr err, opoVal val, int *lenp) {
 }
 
 const char*
-opo_val_key(opoErr err, opoVal val, int *lenp) {
+opo_val_key(opoErr err, opoVal val, int *lenp, opoDict dict) {
     if (NULL == val) {
 	opo_err_set(err, OPO_ERR_TYPE, "NULL is not an string value");
 	return NULL;
@@ -731,7 +790,7 @@ opo_val_key(opoErr err, opoVal val, int *lenp) {
 	val++;
 	key = (const char*)val;
 	break;
-    case VAL_STR2: {
+    case VAL_KEY2: {
 	uint16_t	len;
 	    
 	val = read_uint16(val, &len);
@@ -739,6 +798,23 @@ opo_val_key(opoErr err, opoVal val, int *lenp) {
 	    *lenp = (int)len;
 	}
 	key = (const char*)val;
+	break;
+    }
+    case VAL_DICK: {
+	if (NULL == dict) {
+	    opo_err_set(err, OPO_ERR_PARSE, "dictionary required");
+	    break;
+	}
+	opoDictEntry	de = &dict->entries[*val];
+
+	if (false == de->set) {
+	    opo_err_set(err, OPO_ERR_PARSE, "dictionary entry missing");
+	    break;
+	}
+	key = de->str;
+	if (NULL != lenp) {
+	    *lenp = (int)de->len;
+	}
 	break;
     }
     default:

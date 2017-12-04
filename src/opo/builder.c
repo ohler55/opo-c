@@ -154,6 +154,17 @@ builder_push_key(opoErr err, opoBuilder builder, const char *str, size_t len) {
     return OPO_ERR_OK;
 }
 
+static int
+builder_push_dict(opoErr err, opoBuilder builder, ValType vt, uint8_t index) {
+    if (OPO_ERR_OK != builder_assure(err, builder, 2)) {
+	return err->code;
+    }
+    *builder->cur++ = vt;
+    *builder->cur++ = index;
+
+    return OPO_ERR_OK;
+}
+
 static void
 pop(opoBuilder builder) {
     if (builder->stack > builder->top) {
@@ -205,6 +216,7 @@ opo_builder_init(opoErr err, opoBuilder builder, uint8_t *buf, size_t size) {
     memset(builder->head, 0, 8);      // message ID
     memset(builder->stack, 0, sizeof(builder->stack));
     builder->top = builder->stack - 1;
+    builder->dict = NULL;
     
     return OPO_ERR_OK;
 }
@@ -228,7 +240,7 @@ opo_builder_length(opoBuilder builder) {
     return builder->cur - builder->head;
 }
 
-opoVal
+opoMsg
 opo_builder_take(opoBuilder builder) {
     uint8_t	*msg;
 
@@ -268,7 +280,13 @@ check_key(opoErr err, opoBuilder builder, const char *key, int klen) {
 	    if (0 >= klen) {
 		klen = strlen(key);
 	    }
-	    builder_push_key(err, builder, key, klen);
+	    int	index = opo_dict_index(builder->dict, key, klen);
+
+	    if (0 <= index) {
+		builder_push_dict(err, builder, VAL_DICK, index);
+	    } else {
+		builder_push_key(err, builder, key, klen);
+	    }
 	} else if (VAL_ARRAY1 != vt && VAL_ARRAY2 != vt && VAL_ARRAY4 != vt) {
 	    return opo_err_set(err, OPO_ERR_ARG, "members of an object must be keyed");}
     }
@@ -403,10 +421,14 @@ opo_builder_push_string(opoErr err, opoBuilder builder, const char *value, int l
     if (OPO_ERR_OK != check_key(err, builder, key, klen)) {
 	return err->code;
     }
-    if (OPO_ERR_OK != builder_push_str(err, builder, value, len)) {
-	return err->code;
+    int	index = opo_dict_index(builder->dict, value, len);
+
+    if (0 <= index) {
+	builder_push_dict(err, builder, VAL_DICS, index);
+    } else {
+	builder_push_str(err, builder, value, len);
     }
-    return OPO_ERR_OK;
+    return err->code;
 }
 
 opoErrCode
