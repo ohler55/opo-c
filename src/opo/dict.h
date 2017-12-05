@@ -12,14 +12,15 @@ extern "C" {
 #include "err.h"
     
     typedef struct _opoDictEntry {
-	uint8_t	len;
-	uint8_t	index;
-	uint8_t	set;
-	char	*str;
+	uint32_t	rank;
+	uint8_t		len;
+	uint8_t		index;
+	char		*str;
     } *opoDictEntry;
     
     typedef struct _opoDict {
 	struct _opoDictEntry	entries[256];
+	int			size;
     } *opoDict;
 
     extern opoDict	opo_dict_create(opoErr err, const char **words);

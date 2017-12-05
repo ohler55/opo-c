@@ -525,7 +525,7 @@ opo_val_to_ojc(opoErr err, opoVal val, opoDict dict) {
 	    }
 	    opoDictEntry	de = &dict->entries[*val];
 
-	    if (false == de->set) {
+	    if (NULL == de->str) {
 		opo_err_set(err, OPO_ERR_PARSE, "dictionary entry missing");
 		break;
 	    }
@@ -540,7 +540,7 @@ opo_val_to_ojc(opoErr err, opoVal val, opoDict dict) {
 	    }
 	    opoDictEntry	de = &dict->entries[*val];
 
-	    if (false == de->set) {
+	    if (NULL == de->str) {
 		opo_err_set(err, OPO_ERR_PARSE, "dictionary entry missing");
 		break;
 	    }

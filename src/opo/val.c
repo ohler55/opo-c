@@ -472,7 +472,7 @@ val_iterate(opoErr err, opoVal val, opoValCallbacks callbacks, void *ctx, opoVal
 	    }
 	    opoDictEntry	de = &dict->entries[*val];
 
-	    if (false == de->set) {
+	    if (NULL == de->str) {
 		opo_err_set(err, OPO_ERR_PARSE, "dictionary entry missing");
 		break;
 	    }
@@ -489,7 +489,7 @@ val_iterate(opoErr err, opoVal val, opoValCallbacks callbacks, void *ctx, opoVal
 	    }
 	    opoDictEntry	de = &dict->entries[*val];
 
-	    if (false == de->set) {
+	    if (NULL == de->str) {
 		opo_err_set(err, OPO_ERR_PARSE, "dictionary entry missing");
 		break;
 	    }
@@ -757,7 +757,7 @@ opo_val_string(opoErr err, opoVal val, int *lenp, opoDict dict) {
 	}
 	opoDictEntry	de = &dict->entries[*val];
 
-	if (false == de->set) {
+	if (NULL == de->str) {
 	    opo_err_set(err, OPO_ERR_PARSE, "dictionary entry missing");
 	    break;
 	}
@@ -807,7 +807,7 @@ opo_val_key(opoErr err, opoVal val, int *lenp, opoDict dict) {
 	}
 	opoDictEntry	de = &dict->entries[*val];
 
-	if (false == de->set) {
+	if (NULL == de->str) {
 	    opo_err_set(err, OPO_ERR_PARSE, "dictionary entry missing");
 	    break;
 	}

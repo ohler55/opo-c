@@ -23,7 +23,6 @@ extern "C" {
 	double			timeout;
 	int			pending_max;
 	opoStatusCallback	status_callback;
-	const char		**words;
     } *opoClientOptions;
 
     extern opoClient	opo_client_connect(opoErr err, const char *host, int port, opoClientOptions options);

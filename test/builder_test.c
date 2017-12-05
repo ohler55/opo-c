@@ -136,8 +136,8 @@ dict_test() {
     opo_builder_finish(&builder);
 
     const char	*expect = "\
-00 00 00 00 00 00 00 00  6F 13 51 00 74 51 01 66   ........ o.Q.tQ.f\n\
-51 02 32 04 D2 51 03 61  00 51 04 71 05            Q.2..Q.a .Q.q.\n";
+00 00 00 00 00 00 00 00  6F 13 51 0F 74 51 06 66   ........ o.Q.tQ.f\n\
+51 0A 32 04 D2 51 15 61  00 51 1D 71 23            Q.2..Q.a .Q.q#\n";
     char	buf[1024];
 
     ut_hex_dump_buf(data, (int)opo_builder_length(&builder), buf);

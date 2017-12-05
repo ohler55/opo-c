@@ -56,7 +56,7 @@ build_query(opoClient client, uint8_t *query, size_t qsize, uint64_t ref, int64_
     // A query instead of a get/fetch.
     opo_builder_push_int(&err, &builder, 1, "limit", 5);
     opo_builder_push_array(&err, &builder, "where", 5);
-    opo_builder_push_string(&err, &builder, "EQ", 2, NULL, 0);
+    opo_builder_push_string(&err, &builder, "eq", 2, NULL, 0);
     opo_builder_push_string(&err, &builder, "kind", 4, NULL, 0);
     opo_builder_push_string(&err, &builder, "Trade", 5, NULL, 0);
     opo_builder_pop(&err, &builder);
@@ -78,7 +78,7 @@ delete_records(opoClient client) {
     opo_builder_init(&err, &builder, query, sizeof(query));
     opo_builder_push_object(&err, &builder, NULL, -1);
     opo_builder_push_array(&err, &builder, "where", -1);
-    opo_builder_push_string(&err, &builder, "EQ", 2, NULL, -1);
+    opo_builder_push_string(&err, &builder, "eq", 2, NULL, -1);
     opo_builder_push_string(&err, &builder, "kind", 4, NULL, -1);
     opo_builder_push_string(&err, &builder, "Trade", 5, NULL, -1);
     opo_builder_pop(&err, &builder);
@@ -158,74 +158,6 @@ query_test() {
 	.timeout = 0.2,
 	.pending_max = 1024,
 	.status_callback = status_callback,
-    };
-    opoClient	client = opo_client_connect(&err, "127.0.0.1", 6364, &options);
-
-    ut_same_int(OPO_ERR_OK, err.code, "error connecting. %s", err.msg);
-
-    uint64_t	ref = setup_records(client);
-    uint8_t	query[1024];
-    int		cnt = 0;
-    pthread_t	thread;
-
-    pthread_create(&thread, NULL, process_loop, client);
-    build_query(client, query, sizeof(query), ref, 0);
-    opo_client_query(&err, client, query, query_cb, &cnt);
-
-    // Wait for processing thread to get started.
-    for (int i = 100; 0 < i; i--) {
-	if (0 < cnt) {
-	    break;
-	}
-	usleep(1000);
-    }
-    cnt--;
-    int		iter = 100000;
-    double	dt = dtime() + 5.0; // used as timeout first
-    double	start = dtime();
-    
-    for (int i = iter; 0 < i; i--) {
-	build_query(client, query, sizeof(query), ref, 0);
-	opo_client_query(&err, client, query, query_cb, &cnt);
-	if (OPO_ERR_OK != err.code) {
-	    printf("*** error sending %s\n", err.msg);
-	}
-    }
-    // Wait for all to complete
-    while (cnt < iter && dtime() < dt) {
-	usleep(100);
-    }
-    dt = dtime() - start;
-    printf("--- query rate: %d in %0.3f secs  %d queries/sec\n", cnt, dt, (int)((double)cnt / dt));
-
-    pthread_join(thread, NULL);
-    opo_client_close(client);
-}
-
-static void
-query_dict_test() {
-    struct _opoErr		err = OPO_ERR_INIT;
-    const char			*words[] = {
-	"kind",
-	"when",
-	"symbol",
-	"quantity",
-	"price",
-	"insert"
-	"select",
-	"where",
-	"code",
-	"results",
-	"Trade",
-	"limit",
-	"EQ",
-	NULL,
-    };
-    struct _opoClientOptions	options = {
-	.timeout = 0.2,
-	.pending_max = 1024,
-	.status_callback = status_callback,
-	.words = words,
     };
     opoClient	client = opo_client_connect(&err, "127.0.0.1", 6364, &options);
 
@@ -355,6 +287,5 @@ void
 append_client_tests(utTest tests) {
     ut_appenda(tests, "opo.client.connect", connect_test, NULL);
     ut_appenda(tests, "opo.client.query", query_test, NULL);
-    ut_appenda(tests, "opo.client.query.dict", query_dict_test, NULL);
     ut_appenda(tests, "opo.client.latency", latency_test, NULL);
 }

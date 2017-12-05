@@ -435,12 +435,6 @@ opo_client_connect(opoErr err, const char *host, int port, opoClientOptions opti
 	    if (pending_max < 1) {
 		pending_max = 1;
 	    }
-	    if (NULL != options->words) {
-		client->dict = opo_dict_create(err, options->words);
-		if (OPO_ERR_OK != err->code) {
-		    return NULL;
-		}
-	    }
 	}
 	client->q = (Query)malloc(sizeof(struct _Query) * pending_max);
 	client->end = client->q + pending_max;
