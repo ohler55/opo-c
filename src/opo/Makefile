@@ -19,8 +19,8 @@ PUB_HEADERS=opo.h err.h val.h builder.h client.h
 TARGET=$(LIB_DIR)/libopoc.a
 
 # external
-LIB_DIRS=-L../../../ojc/lib
-INC_DIRS=-I../../../ojc/include
+LIB_DIRS=-L../../../ojc/lib -L../../../oak/lib
+INC_DIRS=-I../../../ojc/include -I../../../oak/include
 LIBS=-lojc -lm -lpthread
 
 all: $(LIB_DIR) $(INC_DIR) $(TARGET)

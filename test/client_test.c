@@ -48,7 +48,9 @@ build_query(uint8_t *query, size_t qsize, int64_t rid, uint64_t ref) {
 
     opo_builder_init(&err, &builder, query, qsize);
     opo_builder_push_object(&err, &builder, NULL, -1);
-    opo_builder_push_int(&err, &builder, rid, "rid", -1);
+    if (0 < rid) {
+	opo_builder_push_int(&err, &builder, rid, "rid", -1);
+    }
 #if 0
     // A query instead of a get/fetch.
     opo_builder_push_int(&err, &builder, 1, "limit", -1);
@@ -84,7 +86,7 @@ delete_records(opoClient client) {
 
     opo_client_query(&err, client, query, NULL, NULL);
     cnt = opo_client_process(client, 1, 1.0);
-    ut_same_int(1, cnt, "failed to process a query", err.msg);
+    ut_same_int(1, cnt, "failed to process a delete query", err.msg);
 }
 
 static void
@@ -118,8 +120,8 @@ add_records(opoClient client) {
 	opo_client_query(&err, client, query, add_cb, &ref);
     }
     cnt = opo_client_process(client, 10, 1.0);
-    ut_same_int(10, cnt, "failed to process a query", err.msg);
-
+    ut_same_int(10, cnt, "failed to process all add query", err.msg);
+    
     return ref;
 }
 
@@ -138,9 +140,9 @@ query_cb(opoRef ref, opoVal response, void *ctx) {
     struct _opoErr	err = OPO_ERR_INIT;
     int64_t		code = opo_val_int(&err, cval);
 
+    //print_msg(response);
     ut_same_int(0, code, "code not zero.");
     *cntp += 1;
-    //print_msg(response);
 }
 
 static void
@@ -157,12 +159,11 @@ query_test() {
 
     uint64_t	ref = setup_records(client);
     uint8_t	query[1024];
-    int64_t	rid = 123;
     int		cnt = 0;
     pthread_t	thread;
 
     pthread_create(&thread, NULL, process_loop, client);
-    build_query(query, sizeof(query), rid++, ref);
+    build_query(query, sizeof(query), 0, ref);
     opo_client_query(&err, client, query, query_cb, &cnt);
 
     // Wait for processing thread to get started.
@@ -178,7 +179,7 @@ query_test() {
     double	start = dtime();
     
     for (int i = iter; 0 < i; i--) {
-	build_query(query, sizeof(query), rid++, ref);
+	build_query(query, sizeof(query), 0, ref);
 	opo_client_query(&err, client, query, query_cb, &cnt);
 	if (OPO_ERR_OK != err.code) {
 	    printf("*** error sending %s\n", err.msg);
@@ -190,6 +191,80 @@ query_test() {
     }
     dt = dtime() - start;
     printf("--- query rate: %d in %0.3f secs  %d queries/sec\n", cnt, dt, (int)((double)cnt / dt));
+
+    pthread_join(thread, NULL);
+    opo_client_close(client);
+}
+
+static void
+async_query_cb(opoRef ref, opoVal response, void *ctx) {
+    int64_t		*cntp = (int64_t*)ctx;
+    opoVal		top = opo_msg_val(response);
+    struct _opoErr	err = OPO_ERR_INIT;
+    int64_t		code = opo_val_int(&err, opo_val_get(top, "code"));
+    int64_t		rref = opo_val_int(&err, opo_val_get(top, "ref"));
+
+    //print_msg(response);
+    ut_same_int(0, code, "code not zero.");
+    if (0 != rref) {
+	*cntp = rref;
+    } else {
+	*cntp += 1;
+    }
+}
+
+static void
+async_query_test() {
+    struct _opoErr		err = OPO_ERR_INIT;
+    int64_t			cnt = 0;
+    struct _opoClientOptions	options = {
+	.timeout = 0.2,
+	.pending_max = 1024,
+	.status_callback = status_callback,
+	.query_callback = async_query_cb,
+	.query_ctx = &cnt,
+    };
+    opoClient	client = opo_client_connect(&err, "127.0.0.1", 6364, &options);
+
+    ut_same_int(OPO_ERR_OK, err.code, "error connecting. %s", err.msg);
+
+    setup_records(client);
+
+    int64_t	ref = cnt;
+    uint8_t	query[1024];
+    pthread_t	thread;
+
+    cnt = 0;
+    
+    pthread_create(&thread, NULL, process_loop, client);
+    build_query(query, sizeof(query), 0, ref);
+    opo_client_query(&err, client, query, NULL, NULL);
+
+    // Wait for processing thread to get started.
+    for (int i = 100; 0 < i; i--) {
+	if (0 < cnt) {
+	    break;
+	}
+	usleep(1000);
+    }
+    cnt--;
+    int		iter = 100000;
+    double	dt = dtime() + 5.0; // used as timeout first
+    double	start = dtime();
+    
+    for (int i = iter; 0 < i; i--) {
+	build_query(query, sizeof(query), 0, ref);
+	opo_client_query(&err, client, query, query_cb, &cnt);
+	if (OPO_ERR_OK != err.code) {
+	    printf("*** error sending %s\n", err.msg);
+	}
+    }
+    // Wait for all to complete
+    while (cnt < iter && dtime() < dt) {
+	usleep(100);
+    }
+    dt = dtime() - start;
+    printf("--- query rate: %ld in %0.3f secs  %d queries/sec\n", cnt, dt, (int)((double)cnt / dt));
 
     pthread_join(thread, NULL);
     opo_client_close(client);
@@ -280,5 +355,6 @@ void
 append_client_tests(utTest tests) {
     ut_appenda(tests, "opo.client.connect", connect_test, NULL);
     ut_appenda(tests, "opo.client.query", query_test, NULL);
+    ut_appenda(tests, "opo.client.async.query", async_query_test, NULL);
     ut_appenda(tests, "opo.client.latency", latency_test, NULL);
 }

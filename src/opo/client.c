@@ -17,6 +17,8 @@
 #include <time.h>
 #include <unistd.h>
 
+#include <oak/queue.h>
+
 #include "opo.h"
 #include "client.h"
 
@@ -50,6 +52,10 @@ struct _opoClient {
     pthread_t		recv_thread;
     atomic_ullong	next_id;
     opoStatusCallback	status_callback;
+    opoQueryCallback	query_callback;
+    void		*query_ctx;
+
+    struct _oakQueue	async_queue;
 
     Query		q;
     Query		end;
@@ -217,7 +223,7 @@ pending_find(opoClient client, uint64_t id) {
 }
 
 static void
-processs_msg(opoClient client, opoMsg msg) {
+process_msg(opoClient client, opoMsg msg) {
     uint64_t	id = opo_msg_id(msg);
     Query	q = client->on_deck;;
 
@@ -322,7 +328,11 @@ recv_loop(void *ctx) {
 			    if (size < bcnt) {
 				memmove(buf, buf + size, bcnt - size);
 			    }
-			    processs_msg(client, msg);
+			    if (NULL == client->query_callback) {
+				process_msg(client, msg);
+			    } else {
+				oak_queue_push(&client->async_queue, msg);
+			    }
 			    msg = NULL;
 			    msize = 0;
 			    mcnt = 0;
@@ -348,7 +358,11 @@ recv_loop(void *ctx) {
 		} else {
 		    mcnt += cnt;
 		    if (msize == mcnt) {
-			processs_msg(client, msg);
+			if (NULL == client->query_callback) {
+			    process_msg(client, msg);
+			} else {
+			    oak_queue_push(&client->async_queue, msg);
+			}
 			msg = NULL;
 			msize = 0;
 			mcnt = 0;
@@ -424,6 +438,8 @@ opo_client_connect(opoErr err, const char *host, int port, opoClientOptions opti
 	if (NULL == options) {
 	    client->timeout = 2.0;
 	    client->status_callback = NULL;
+	    client->query_callback = NULL;
+	    client->query_ctx = NULL;
 	} else {
 	    client->timeout = options->timeout;
 	    client->status_callback = options->status_callback;
@@ -431,7 +447,11 @@ opo_client_connect(opoErr err, const char *host, int port, opoClientOptions opti
 	    if (pending_max < 1) {
 		pending_max = 1;
 	    }
+	    client->query_callback = options->query_callback;
+	    client->query_ctx = options->query_ctx;
 	}
+	oak_queue_multi_init(&client->async_queue, 1024, false, true);
+
 	client->q = (Query)malloc(sizeof(struct _Query) * pending_max);
 	client->end = client->q + pending_max;
 	client->pending_max = pending_max;
@@ -490,66 +510,89 @@ opo_client_close(opoClient client) {
 opoRef
 opo_client_query(opoErr err, opoClient client, opoVal query, opoQueryCallback cb, void *ctx) {
     size_t	size = opo_msg_bsize(query);
+    uint64_t	qid;
 
-    while (atomic_flag_test_and_set(&client->tail_lock)) {
-	dsleep(RETRY_SECS);
-    }
-    if (Q_CLEAR != atomic_load(&client->tail->state)) {
-	if (0.0 < client->timeout) {
-	    double	give_up = dtime() + client->timeout;
-
-	    while (Q_CLEAR != atomic_load(&client->tail->state)) {
-		if (give_up < dtime()) {
-		    atomic_flag_clear(&client->tail_lock);
-		    opo_err_set(err, EAGAIN, "write failed, busy");
-		    return 0;
-		}
-		dsleep(RETRY_SECS);
-	    }
-	} else {
-	    atomic_flag_clear(&client->tail_lock);
-	    opo_err_set(err, EAGAIN, "write failed, busy");
-	    return 0;
+    if (NULL != client->query_callback) {
+	qid = atomic_fetch_add(&client->next_id, 1);
+	opo_msg_set_id((uint8_t*)query, qid);
+	if (size != write(client->sock, query, size)) {
+	    opo_err_no(err, "write failed");
 	}
-    }
-    Query	q = client->tail;
+    } else {
+	while (atomic_flag_test_and_set(&client->tail_lock)) {
+	    dsleep(RETRY_SECS);
+	}
+	if (Q_CLEAR != atomic_load(&client->tail->state)) {
+	    if (0.0 < client->timeout) {
+		double	give_up = dtime() + client->timeout;
 
-    q->id = atomic_fetch_add(&client->next_id, 1);
-    q->cb = cb;
-    q->ctx = ctx;
-    q->when = dtime();
-    query_set_state(q, Q_SENT);
+		while (Q_CLEAR != atomic_load(&client->tail->state)) {
+		    if (give_up < dtime()) {
+			atomic_flag_clear(&client->tail_lock);
+			opo_err_set(err, EAGAIN, "write failed, busy");
+			return 0;
+		    }
+		    dsleep(RETRY_SECS);
+		}
+	    } else {
+		atomic_flag_clear(&client->tail_lock);
+		opo_err_set(err, EAGAIN, "write failed, busy");
+		return 0;
+	    }
+	}
+	Query	q = client->tail;
+	
+	qid = atomic_fetch_add(&client->next_id, 1);
+	q->id = qid;
+	q->cb = cb;
+	q->ctx = ctx;
+	q->when = dtime();
+	query_set_state(q, Q_SENT);
 
-    client->tail++;
-    if (client->end <= client->tail) {
-	client->tail = client->q;
+	client->tail++;
+	if (client->end <= client->tail) {
+	    client->tail = client->q;
+	}
+	opo_msg_set_id((uint8_t*)query, q->id);
+	if (size != write(client->sock, query, size)) {
+	    opo_err_no(err, "write failed");
+	}
+	atomic_flag_clear(&client->tail_lock);
     }
-    opo_msg_set_id((uint8_t*)query, q->id);
-    if (size != write(client->sock, query, size)) {
-	opo_err_no(err, "write failed");
-    }
-    atomic_flag_clear(&client->tail_lock);
-
-    return q->id;
+    return qid;
 }
 
 int
 opo_client_process(opoClient client, int max, double wait) {
-    Query	q;
-    int		cnt = 0;
+    int	cnt = 0;
 
-    while (0 >= max || cnt < max) {
-	if (NULL != (q = take_next_ready(client, wait))) {
-	    if (NULL != q->cb) {
-		q->cb(q->id, q->resp, q->ctx);
+    if (NULL == client->query_callback) {
+	Query	q;
+
+	while (0 >= max || cnt < max) {
+	    if (NULL != (q = take_next_ready(client, wait))) {
+		if (NULL != q->cb) {
+		    q->cb(q->id, q->resp, q->ctx);
+		}
+		free((uint8_t*)q->resp);
+		q->id = 0;
+		q->resp = NULL;
+		query_set_state(q, Q_CLEAR); // must be last modification to query
+		cnt++;
+	    } else if (0.0 <= wait) {
+		break;
 	    }
-	    free((uint8_t*)q->resp);
-	    q->id = 0;
-	    q->resp = NULL;
-	    query_set_state(q, Q_CLEAR); // must be last modification to query
+	}
+    } else {
+	opoMsg	msg;
+	
+	while (0 >= max || cnt < max) {
+	    if (NULL == (msg = (opoMsg)oak_queue_pop(&client->async_queue, wait))) {
+		break;
+	    }
+	    client->query_callback(opo_msg_id(msg), msg, client->query_ctx);
+	    free((uint8_t*)msg);
 	    cnt++;
-	} else if (0.0 <= wait) {
-	    break;
 	}
     }
     return cnt;

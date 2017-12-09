@@ -14,9 +14,11 @@ INC_DIR=../include
 SRCS=$(shell find $(SRC_DIR) -type f -name "*.c" -print)
 OBJS=$(SRCS:.c=.o)
 
-INC_DIRS=-I../../ojc/include
-LIB_DIRS=-L../../ojc/lib
-LIBS=-lopoc -lojc -lm -lpthread
+LIB_DIRS=-L../../ojc/lib -L../../oak/lib
+INC_DIRS=-I../../ojc/include -I../../oak/include
+#INC_DIRS=-I../../ojc/include
+#LIB_DIRS=-L../../ojc/lib
+LIBS=-lopoc -lojc -loak -lm -lpthread
 TARGET=run_tests
 
 all: $(TARGET)
