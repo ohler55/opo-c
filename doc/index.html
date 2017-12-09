@@ -66,8 +66,10 @@
 
         <button class="item level2" onclick="displayDesc(event,'opoMsg')">opoMsg</button>
         <button class="item level3" onclick="displayDesc(event,'opo_msg_bsize')">opo_msg_bsize</button>
+        <button class="item level3" onclick="displayDesc(event,'opo_msg_dup')">opo_msg_dup</button>
         <button class="item level3" onclick="displayDesc(event,'opo_msg_id')">opo_msg_id</button>
         <button class="item level3" onclick="displayDesc(event,'opo_msg_set_id')">opo_msg_set_id</button>
+        <button class="item level3" onclick="displayDesc(event,'opo_msg_size_ok')">opo_msg_size_ok</button>
         <button class="item level3" onclick="displayDesc(event,'opo_msg_val')">opo_msg_val</button>
 
         <button class="item level2" onclick="displayDesc(event,'opoVal')">opoVal</button>
@@ -153,7 +155,7 @@ add_cb(opoRef ref, opoVal response, void *ctx) {
     opoVal		rval = 
 
     struct _opoErr	err = OPO_ERR_INIT;
-    if (OPO_ERR_OK != opo_val_int(&err, opo_val_get(opo_msg_val(response), "code"))) {
+    if (OPO_ERR_OK != opo_val_int(&err, opo_val_get(opo_msg_val(response), "code", opo_client_dictionary(client)))) {
 	printf("error response\n");
     } else {
 	printf("got it!\n");
@@ -621,7 +623,6 @@ typedef struct _opoBuilder {
     double            timeout;
     int               pending_max;
     opoStatusCallback status_callback;
-    const char        **words;
 } *opoClientOptions;
 </div>
           <p class="desc-text">
@@ -631,7 +632,6 @@ typedef struct _opoBuilder {
             <tr><td><span class="param">timeout</span></td><td>timeout in seconds for all queries</td></tr>
             <tr><td><span class="param">pending_max</span></td><td>maximum pending queries</td></tr>
             <tr><td><span class="param">status_callback</span></td><td>callback for status change</td></tr>
-            <tr><td><span class="param">words</span></td><td>commonly used words for dictionary optimization, optional</td></tr>
           </table>
         </div>
 
@@ -1015,6 +1015,18 @@ typedef struct _opoDict {
           </table>
         </div>
 
+        <div id="opo_msg_dup" class="desc">
+          <div class="title">opo_msg_dup()</div>
+          <div class="synopsis">opoMsg opo_msg_dup(opoMsg msg)</div>
+          <p class="desc-text">
+            Returns a duplicate copy of a message or NULL if memory allocation fails.
+          </p>
+          <table class="params">
+            <tr><td><span class="param">msg</span></td><td><span class="code">opoMsg</span> to duplicate of</td></tr>
+            <tr><td class="returns">Returns:</td><td>the duplicate message.</td></tr>
+          </table>
+        </div>
+
         <div id="opo_msg_id" class="desc">
           <div class="title">opo_msg_id()</div>
           <div class="synopsis">uint64_t opo_msg_id(opoMsg msg)</div>
@@ -1036,6 +1048,19 @@ typedef struct _opoDict {
           <table class="params">
             <tr><td><span class="param">msg</span></td><td><span class="code">opoMsg</span> as a byte array to the ID on</td></tr>
             <tr><td><span class="param">id</span></td><td>ID to set on the message</td></tr>
+          </table>
+        </div>
+
+        <div id="opo_msg_size_ok" class="desc">
+          <div class="title">opo_msg_size_ok()</div>
+          <div class="synopsis">bool opo_msg_size_ok(opoMsg msg, size_t len)</div>
+          <p class="desc-text">
+            Returns true if enough bytes are present as indicated by the
+            length to determine the message size.
+          </p>
+          <table class="params">
+            <tr><td><span class="param">msg</span></td><td><span class="code">opoMsg</span> check of</td></tr>
+            <tr><td class="returns">Returns:</td><td>true if the message is long enough to determine the size.</td></tr>
           </table>
         </div>
 
@@ -1194,7 +1219,7 @@ typedef struct _opoDict {
 
         <div id="opo_val_get" class="desc">
           <div class="title">opo_val_get()</div>
-          <div class="synopsis">opoVal opo_val_get(opoVal val, const char *path)</div>
+          <div class="synopsis">opoVal opo_val_get(opoVal val, const char *path, opoDict dict)</div>
           <p class="desc-text">
             Gets a member from an object or
             array <span class="code">opoVal</span>. The function will walk the

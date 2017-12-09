@@ -542,7 +542,7 @@ val_key(opoVal val, int *lenp) {
 }
 
 opoVal
-opo_val_get(opoVal val, const char *path) {
+opo_val_get(opoVal val, const char *path, opoDict dict) {
     if (NULL == path || '\0' == *path || NULL == val) {
 	return val;
     }
@@ -578,6 +578,29 @@ opo_val_get(opoVal val, const char *path) {
 	    break;
 	}
 	end = val + size;
+	if (NULL != dict) {
+	    int	i = opo_dict_index(dict, path, len);
+
+	    if (0 <= i) {
+		while (val < end) {
+		    if (VAL_DICK == *val) {
+			val++;
+			if (i == *val) {
+			    val++;
+			    if ('\0' == *dot) {
+				return val;
+			    }
+			    return opo_val_get(val, dot + 1, dict);
+			}
+			val++;
+		    } else {
+			val += opo_val_bsize(val);
+		    }
+		    val += opo_val_bsize(val);
+		}
+	    }
+	}
+	// Did not find using the dictionary so try the string.
 	while (val < end) {
 	    key = val_key(val, &klen);
 	    val += opo_val_bsize(val);
@@ -585,7 +608,7 @@ opo_val_get(opoVal val, const char *path) {
 		if ('\0' == *dot) {
 		    return val;
 		}
-		return opo_val_get(val, dot + 1);
+		return opo_val_get(val, dot + 1, dict);
 	    }
 	    val += opo_val_bsize(val);
 	}
@@ -622,7 +645,7 @@ opo_val_get(opoVal val, const char *path) {
 		if ('\0' == *dot) {
 		    return val;
 		}
-		return opo_val_get(val, dot + 1);
+		return opo_val_get(val, dot + 1, dict);
 	    }
 	    val += opo_val_bsize(val);
 	}
@@ -1003,3 +1026,35 @@ opo_msg_set_id(uint8_t *msg, uint64_t id) {
     *msg++ = (uint8_t)(0x00000000000000ff & (id >> 8));
     *msg = (uint8_t)(0x00000000000000ff & id);
 }
+
+opoMsg
+opo_msg_dup(opoMsg msg) {
+    uint8_t	*dup;
+    size_t	size = opo_msg_bsize(msg);
+
+    if (NULL != (dup = (uint8_t*)malloc(size))) {
+	memcpy(dup, msg, size);
+    }
+    return dup;
+}
+
+bool
+opo_msg_size_ok(opoMsg msg, size_t len) {
+    if (10 <= len) {
+	switch (msg[9]) {
+	case VAL_ARRAY1:
+	case VAL_OBJ1:
+	    return true;
+	case VAL_ARRAY2:
+	case VAL_OBJ2:
+	    return 11 <= len;
+	case VAL_ARRAY4:
+	case VAL_OBJ4:
+	    return 13 <= len;
+	default:
+	    break;
+	}
+    }
+    return false;
+}
+

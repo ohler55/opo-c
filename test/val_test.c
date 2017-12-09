@@ -520,10 +520,10 @@ get_test() {
     opoVal	top = opo_msg_val(builder.head);
     opoVal	v;
     
-    v = opo_val_get(top, "int");
+    v = opo_val_get(top, "int", NULL);
     ut_same_int(12345, opo_val_int(&err, v), "incorrect value");
 
-    ut_null(opo_val_get(top, "bad"), "expected null from get bad");
+    ut_null(opo_val_get(top, "bad", NULL), "expected null from get bad");
     opo_builder_cleanup(&builder);
 }
 
@@ -539,7 +539,7 @@ get_array_test() {
     opoVal	top = opo_msg_val(builder.head);
     opoVal	v;
     
-    v = opo_val_get(top, "array.2");
+    v = opo_val_get(top, "array.2", NULL);
     ut_same("string", opo_val_string(&err, v, NULL, NULL), "incorrect value");
     opo_builder_cleanup(&builder);
 }

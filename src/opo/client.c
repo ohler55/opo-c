@@ -385,6 +385,64 @@ recv_loop(void *ctx) {
     return NULL;
 }
 
+static opoDict
+read_dict(opoErr err, int sock) {
+    uint8_t	buf[1024];
+    int		cnt;
+    int		bcnt = 0;
+
+    for (int i = 1000; 0 < i; i--) {
+	if (0 > (cnt = recv(sock, buf + bcnt, sizeof(buf) - bcnt, 0))) {
+	    if (EAGAIN == errno) {
+		usleep(1000);
+		continue;
+	    } else {
+		opo_err_set(err, OPO_ERR_READ, "failed to establish connection to server. %s", strerror(errno));
+		return NULL;
+	    }
+	} else {
+	    bcnt += cnt;
+	    if (opo_msg_size_ok(buf, bcnt)) {
+		break;
+	    }
+	}
+    }
+    size_t	size = opo_msg_bsize((opoMsg)buf);
+    uint8_t	*msg;
+    
+    if (NULL == (msg = (uint8_t*)malloc(size))) {
+	opo_err_set(err, OPO_ERR_READ, "failed to establish connection to server");
+	return NULL;
+    }
+    memcpy(msg, buf, bcnt);
+    while (bcnt < size) {
+	if (0 > (cnt = recv(sock, msg + bcnt, size - bcnt, 0))) {
+	    if (EAGAIN == errno) {
+		usleep(100);
+		continue;
+	    } else {
+		opo_err_set(err, OPO_ERR_READ, "failed to read dictionary from server. %s", strerror(errno));
+		return NULL;
+	    }
+	} else {
+	    bcnt += cnt;
+	}
+    }
+    const char	*words[256];
+    const char	**wp = words;
+    opoVal	m = opo_val_members(err, opo_msg_val(msg));
+    uint8_t	*end = msg + size;
+
+    for (; m < end; m = opo_val_next(m)) {
+	if (NULL != (*wp = opo_val_string(err, m, NULL, NULL))) {
+	    wp++;
+	}
+    }
+    *wp = NULL;
+
+    return opo_dict_create(err, words);
+}
+
 opoClient
 opo_client_connect(opoErr err, const char *host, int port, opoClientOptions options) {
     struct addrinfo	*res = get_addr_info(err, host, port);
@@ -462,12 +520,16 @@ opo_client_connect(opoErr err, const char *host, int port, opoClientOptions opti
 	if (0 != (stat = pthread_create(&client->recv_thread, NULL, recv_loop, client))) {
 	    client->active = false;
 	    opo_err_set(err, stat, "failed create receiving thread. %s", strerror(stat));
+	    opo_client_close(client);
+	    return NULL;
 	}
 	if (0 < client->sock && NULL != client->status_callback) {
 	    status_callback(client, true, OPO_ERR_OK, "connected to %s:%d", host, port);
 	}
-	// TBD form dict registration message and send, with callback for confirmation, call status_callback on success or failure
-	// need dict message type
+	if (NULL == (client->dict = read_dict(err, client->sock))) {
+	    opo_client_close(client);
+	    return NULL;
+	}
     }
     return client;
 }
@@ -534,6 +596,7 @@ opo_client_query(opoErr err, opoClient client, opoMsg query, opoQueryCallback cb
 	client->tail = client->q;
     }
     opo_msg_set_id((uint8_t*)query, q->id);
+
     if (size != write(client->sock, query, size)) {
 	opo_err_no(err, "write failed");
     }

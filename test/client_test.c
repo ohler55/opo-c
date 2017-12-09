@@ -25,9 +25,9 @@ status_callback(opoClient client, bool connected, opoErrCode code, const char *m
 }
 
 void
-print_msg(opoMsg msg) {
+print_msg(opoMsg msg, opoClient client) {
     struct _opoErr	oe = OPO_ERR_INIT;
-    ojcVal		v = opo_msg_to_ojc(&oe, msg, NULL);
+    ojcVal		v = opo_msg_to_ojc(&oe, msg, opo_client_dictionary(client));
     char		*json = ojc_to_str(v, 2);
 
     printf("%llu: %s\n", (unsigned long long)opo_msg_id(msg), json);
@@ -94,11 +94,11 @@ static void
 add_cb(opoClient client, opoRef ref, opoVal response, void *ctx) {
     uint64_t		*refp = (uint64_t*)ctx;
     opoVal		top = opo_msg_val(response);
-    opoVal		rval = opo_val_get(top, "ref");
+    opoVal		rval = opo_val_get(top, "ref", opo_client_dictionary(client));
     struct _opoErr	err = OPO_ERR_INIT;
 
     *refp = (uint64_t)opo_val_int(&err, rval);
-    //print_msg(response);
+    //print_msg(response, client);
 }
 
 static uint64_t
@@ -141,12 +141,11 @@ query_cb(opoClient client, opoRef ref, opoVal response, void *ctx) {
     // Check the return error code to make sure the results are as
     // expected. The overhead is minimal.
     struct _opoErr	err = OPO_ERR_INIT;
-    int64_t		code = opo_val_int(&err, opo_val_get(opo_msg_val(response), "code"));
+    int64_t		code = opo_val_int(&err, opo_val_get(opo_msg_val(response), "code", opo_client_dictionary(client)));
 
-    ut_same_int(OPO_ERR_OK, err.code, "code not zero.");
+    //print_msg(response, client);
+    ut_same_int(OPO_ERR_OK, err.code, "code not in message.");
     ut_same_int(0, code, "code not zero.");
-
-    //print_msg(response);
 
     *((int*)ctx) += 1;
 }
@@ -180,7 +179,7 @@ query_test() {
 	usleep(1000);
     }
     cnt--;
-    int		iter = 100000;
+    int		iter = 1000000;
     double	dt = dtime() + 5.0; // used as timeout first
     double	start = dtime();
     
@@ -212,7 +211,7 @@ static void
 latency_cb(opoClient client, opoRef ref, opoVal response, void *ctx) {
     Lat			lat = (Lat)ctx;
     opoVal		top = opo_msg_val(response);
-    opoVal		rval = opo_val_get(top, "rid");
+    opoVal		rval = opo_val_get(top, "rid", opo_client_dictionary(client));
     struct _opoErr	err = OPO_ERR_INIT;
     int64_t		rid = opo_val_int(&err, rval);
 

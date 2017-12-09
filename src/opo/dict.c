@@ -8,12 +8,12 @@
 
 static const char	*reserved[] = {
     "\001$",
-    "\002and",
     "\002eq",
     "\002gt",
     "\002in",
     "\002lt",
     "\002or",
+    "\003and",
     "\003gte",
     "\003has",
     "\003lte",

@@ -54,7 +54,7 @@ extern "C" {
 
     extern opoErrCode	opo_val_iterate(opoErr err, opoVal val, opoValCallbacks callbacks, void *ctx, opoDict dict);
 
-    extern opoVal	opo_val_get(opoVal val, const char *path);
+    extern opoVal	opo_val_get(opoVal val, const char *path, opoDict dict);
 
     extern bool		opo_val_bool(opoErr err, opoVal val);
     extern int64_t	opo_val_int(opoErr err, opoVal val);
@@ -71,6 +71,9 @@ extern "C" {
     extern uint64_t	opo_msg_id(opoMsg msg);
     extern void		opo_msg_set_id(uint8_t *msg, uint64_t id);
     extern size_t	opo_msg_bsize(opoMsg msg);
+    extern opoMsg	opo_msg_dup(opoMsg msg);
+    extern bool		opo_msg_size_ok(opoMsg msg, size_t len);
+
     static inline opoVal opo_msg_val(opoMsg msg) {
 	return msg + 8;
     }
