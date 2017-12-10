@@ -442,13 +442,9 @@ opo_val_get(opoVal val, const char *path) {
 	int		len = dot - path;
 	int		klen;
 
-	int	x = 10;
-
 	val = read_uint32(val, &size);
 	end = val + size;
 	while (val < end) {
-	    if (x-- < 0) { break; }
-	    
 	    key = val_key(val, &klen);
 	    val += opo_val_bsize(val);
 	    if (len == klen && 0 == strncmp(key, path, len)) {

@@ -48,19 +48,21 @@ build_query(uint8_t *query, size_t qsize, int64_t rid, uint64_t ref) {
 
     opo_builder_init(&err, &builder, query, qsize);
     opo_builder_push_object(&err, &builder, NULL, -1);
-    opo_builder_push_int(&err, &builder, rid, "rid", -1);
+    if (0 < rid) {
+	opo_builder_push_int(&err, &builder, rid, "rid", 3);
+    }
 #if 0
     // A query instead of a get/fetch.
-    opo_builder_push_int(&err, &builder, 1, "limit", -1);
-    opo_builder_push_array(&err, &builder, "where", -1);
+    opo_builder_push_int(&err, &builder, 1, "limit", 5);
+    opo_builder_push_array(&err, &builder, "where", 5);
     opo_builder_push_string(&err, &builder, "EQ", 2, NULL, -1);
     opo_builder_push_string(&err, &builder, "kind", 4, NULL, -1);
-    opo_builder_push_string(&err, &builder, "Foo", 3, NULL, -1);
+    opo_builder_push_string(&err, &builder, "Trade", 5, NULL, -1);
     opo_builder_pop(&err, &builder);
 #else
-    opo_builder_push_int(&err, &builder, (int64_t)ref, "where", -1);
+    opo_builder_push_int(&err, &builder, (int64_t)ref, "where", 5);
 #endif
-    opo_builder_push_string(&err, &builder, "$", 1, "select", -1);
+    opo_builder_push_string(&err, &builder, "$", 1, "select", 6);
     opo_builder_finish(&builder);
 }
 
@@ -77,7 +79,7 @@ delete_records(opoClient client) {
     opo_builder_push_array(&err, &builder, "where", -1);
     opo_builder_push_string(&err, &builder, "EQ", 2, NULL, -1);
     opo_builder_push_string(&err, &builder, "kind", 4, NULL, -1);
-    opo_builder_push_string(&err, &builder, "Test", 4, NULL, -1);
+    opo_builder_push_string(&err, &builder, "Trade", -1, NULL, -1);
     opo_builder_pop(&err, &builder);
     opo_builder_push_null(&err, &builder, "delete", -1);
     opo_builder_finish(&builder);
@@ -110,9 +112,13 @@ add_records(opoClient client) {
 	opo_builder_init(&err, &builder, query, sizeof(query));
 	opo_builder_push_object(&err, &builder, NULL, -1);
 	opo_builder_push_object(&err, &builder, "insert", -1);
-	opo_builder_push_string(&err, &builder, "Test", 4, "kind", 4);
-	opo_builder_push_int(&err, &builder, i, "num", 3);
-	opo_builder_push_string(&err, &builder, "something", -1, "str", 3);
+
+	opo_builder_push_string(&err, &builder, "Trade", 5, "kind", 4);
+	opo_builder_push_int(&err, &builder, 1512247371000000000LL + i, "when", 4);
+	opo_builder_push_string(&err, &builder, "OPO", 3, "symbol", 6);
+	opo_builder_push_int(&err, &builder, 100, "quantity", 8);
+	opo_builder_push_int(&err, &builder, 100 + i, "price", 5);
+
 	opo_builder_finish(&builder);
 
 	opo_client_query(&err, client, query, add_cb, &ref);
@@ -157,12 +163,11 @@ query_test() {
 
     uint64_t	ref = setup_records(client);
     uint8_t	query[1024];
-    int64_t	rid = 123;
     int		cnt = 0;
     pthread_t	thread;
 
     pthread_create(&thread, NULL, process_loop, client);
-    build_query(query, sizeof(query), rid++, ref);
+    build_query(query, sizeof(query), 0, ref);
     opo_client_query(&err, client, query, query_cb, &cnt);
 
     // Wait for processing thread to get started.
@@ -178,7 +183,7 @@ query_test() {
     double	start = dtime();
     
     for (int i = iter; 0 < i; i--) {
-	build_query(query, sizeof(query), rid++, ref);
+	build_query(query, sizeof(query), 0, ref);
 	opo_client_query(&err, client, query, query_cb, &cnt);
 	if (OPO_ERR_OK != err.code) {
 	    printf("*** error sending %s\n", err.msg);
@@ -193,6 +198,66 @@ query_test() {
 
     pthread_join(thread, NULL);
     opo_client_close(client);
+}
+
+static void
+dual_query_test() {
+    struct _opoErr		err = OPO_ERR_INIT;
+    struct _opoClientOptions	options = {
+	.timeout = 0.2,
+	.pending_max = 1024,
+	.status_callback = status_callback,
+    };
+    opoClient	c1 = opo_client_connect(&err, "127.0.0.1", 6364, &options);
+    opoClient	c2 = opo_client_connect(&err, "127.0.0.1", 6364, &options);
+
+    ut_same_int(OPO_ERR_OK, err.code, "error connecting. %s", err.msg);
+
+    uint64_t	ref = setup_records(c1);
+    uint8_t	query[1024];
+    int		cnt1 = 0;
+    int		cnt2 = 0;
+    pthread_t	t1;
+    pthread_t	t2;
+
+    pthread_create(&t1, NULL, process_loop, c1);
+    pthread_create(&t2, NULL, process_loop, c2);
+    build_query(query, sizeof(query), 0, ref);
+    opo_client_query(&err, c1, query, query_cb, &cnt1);
+    opo_client_query(&err, c2, query, query_cb, &cnt2);
+
+    // Wait for processing thread to get started.
+    for (int i = 100; 0 < i; i--) {
+	if (0 < cnt1 && 0 < cnt2) {
+	    break;
+	}
+	usleep(1000);
+    }
+    cnt1--;
+    cnt2--;
+    int		iter = 100000;
+    double	dt = dtime() + 5.0; // used as timeout first
+    double	start = dtime();
+    
+    for (int i = iter; 0 < i; i--) {
+	//build_query(query, sizeof(query), 0, ref);
+	opo_client_query(&err, c1, query, query_cb, &cnt1);
+	opo_client_query(&err, c2, query, query_cb, &cnt2);
+	if (OPO_ERR_OK != err.code) {
+	    printf("*** error sending %s\n", err.msg);
+	}
+    }
+    // Wait for all to complete
+    while (cnt1 < iter && cnt2 < iter && dtime() < dt) {
+	usleep(100);
+    }
+    dt = dtime() - start;
+    printf("--- query rate: %d in %0.3f secs  %d queries/sec\n", cnt1 + cnt2, dt, (int)((double)(cnt1 + cnt2) / dt));
+
+    pthread_join(t1, NULL);
+    pthread_join(t2, NULL);
+    opo_client_close(c1);
+    opo_client_close(c2);
 }
 
 typedef struct _Lat {
@@ -280,5 +345,6 @@ void
 append_client_tests(utTest tests) {
     ut_appenda(tests, "opo.client.connect", connect_test, NULL);
     ut_appenda(tests, "opo.client.query", query_test, NULL);
+    ut_appenda(tests, "opo.client.dual.query", dual_query_test, NULL);
     ut_appenda(tests, "opo.client.latency", latency_test, NULL);
 }
