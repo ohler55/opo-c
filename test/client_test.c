@@ -1,5 +1,6 @@
 // Copyright 2017 by Peter Ohler, All Rights Reserved
 
+#include <stdatomic.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <pthread.h>
@@ -200,6 +201,77 @@ query_test() {
     opo_client_close(client);
 }
 
+typedef struct _ACtx {
+    uint64_t		ref;
+    atomic_int_fast64_t	pending;
+} *ACtx;
+
+static void
+async_query_cb(opoRef ref, opoVal response, void *ctx) {
+    ACtx		ax = (ACtx)ctx;
+    opoVal		top = opo_msg_val(response);
+    struct _opoErr	err = OPO_ERR_INIT;
+    int64_t		code = opo_val_int(&err, opo_val_get(top, "code"));
+    int64_t		rref = opo_val_int(&err, opo_val_get(top, "ref"));
+
+    //print_msg(response);
+    ut_same_int(0, code, "code not zero.");
+    if (0 != rref) {
+	ax->ref = rref;
+    } else {
+	atomic_fetch_sub(&ax->pending, 1);
+    }
+}
+
+static void
+async_query_test() {
+    struct _opoErr	err = OPO_ERR_INIT;
+    struct _ACtx	ctx;
+
+    ctx.ref = 0;
+    atomic_init(&ctx.pending, 0);
+
+    struct _opoClientOptions	options = {
+	.timeout = 0.2,
+	.pending_max = 1024,
+	.status_callback = status_callback,
+	.query_callback = async_query_cb,
+	.query_ctx = &ctx,
+    };
+    opoClient	client = opo_client_connect(&err, "127.0.0.1", 6364, &options);
+
+    ut_same_int(OPO_ERR_OK, err.code, "error connecting. %s", err.msg);
+
+    setup_records(client);
+
+    uint8_t	query[1024];
+    pthread_t	thread;
+
+    pthread_create(&thread, NULL, process_loop, client);
+
+    int		iter = 100000;
+    double	dt = dtime() + 5.0; // used as timeout first
+    double	start = dtime();
+    
+    for (int i = iter; 0 < i; i--) {
+	build_query(query, sizeof(query), 0, ctx.ref);
+	opo_client_query(&err, client, query, NULL, NULL);
+	if (OPO_ERR_OK != err.code) {
+	    printf("*** error sending: %s\n", err.msg);
+	    opo_err_clear(&err);
+	}
+    }
+    // Wait for all to complete
+    while (0 < atomic_load(&ctx.pending) && dtime() < dt) {
+	usleep(100);
+    }
+    dt = dtime() - start;
+    printf("--- query rate: %d in %0.3f secs  %d queries/sec\n", iter, dt, (int)((double)iter / dt));
+
+    pthread_join(thread, NULL);
+    opo_client_close(client);
+}
+
 static void
 dual_query_test() {
     struct _opoErr		err = OPO_ERR_INIT;
@@ -346,5 +418,6 @@ append_client_tests(utTest tests) {
     ut_appenda(tests, "opo.client.connect", connect_test, NULL);
     ut_appenda(tests, "opo.client.query", query_test, NULL);
     ut_appenda(tests, "opo.client.dual.query", dual_query_test, NULL);
+    ut_appenda(tests, "opo.client.async.query", async_query_test, NULL);
     ut_appenda(tests, "opo.client.latency", latency_test, NULL);
 }

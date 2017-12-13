@@ -21,6 +21,8 @@ extern "C" {
 	double			timeout;
 	int			pending_max;
 	opoStatusCallback	status_callback;
+ 	opoQueryCallback	query_callback;
+ 	void			*query_ctx;
     } *opoClientOptions;
 
     extern opoClient	opo_client_connect(opoErr err, const char *host, int port, opoClientOptions options);

@@ -1,6 +1,7 @@
 
 
 - plan
+ - use poll in queue instead of dsleep in pop
  - implement reconnect
  - doc
   - implement open and close or topic
