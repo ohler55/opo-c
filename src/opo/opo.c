@@ -506,7 +506,7 @@ opo_ojc_fill_msg(ojcVal val, uint8_t *buf) {
     wire_fill(val, buf + 8);
 }
 
-opoVal
+opoMsg
 opo_ojc_to_msg(opoErr err, ojcVal val) {
     if (NULL == val) {
 	return NULL;

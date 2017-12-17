@@ -16,7 +16,7 @@ extern "C" {
 #include "builder.h"
 #include "val.h"
 
-    extern opoVal	opo_ojc_to_msg(opoErr err, ojcVal val);
+    extern opoMsg	opo_ojc_to_msg(opoErr err, ojcVal val);
     extern ojcVal	opo_msg_to_ojc(opoErr err, opoMsg msg);
     extern ojcVal	opo_val_to_ojc(opoErr err, opoVal msg);
     extern void		opo_ojc_fill_msg(ojcVal val, uint8_t *buf);

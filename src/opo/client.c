@@ -500,7 +500,7 @@ opo_client_query(opoErr err, opoClient client, opoVal query, opoQueryCallback cb
 		usleep(10);
 	    }
 	}
-	opo_msg_set_id((uint8_t*)query, qid);
+	//opo_msg_set_id((uint8_t*)query, qid);
 	if (size != write(client->sock, query, size)) {
 	    opo_err_no(err, "write failed");
 	}

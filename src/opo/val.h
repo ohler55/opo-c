@@ -69,6 +69,7 @@ extern "C" {
     extern uint64_t	opo_msg_id(opoMsg msg);
     extern void		opo_msg_set_id(uint8_t *msg, uint64_t id);
     extern size_t	opo_msg_bsize(opoMsg msg);
+
     static inline opoVal opo_msg_val(opoMsg msg) {
 	return msg + 8;
     }
