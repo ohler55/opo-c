@@ -332,6 +332,64 @@ dual_query_test() {
     opo_client_close(c2);
 }
 
+static void
+dual_async_test() {
+    struct _opoErr		err = OPO_ERR_INIT;
+    struct _ACtx		ctx1;
+    struct _ACtx		ctx2;
+
+    ctx1.ref = 0;
+    ctx2.ref = 0;
+    atomic_init(&ctx1.pending, 0);
+    atomic_init(&ctx2.pending, 0);
+    struct _opoClientOptions	options = {
+	.timeout = 0.2,
+	.pending_max = 4096,
+	.status_callback = status_callback,
+	.query_callback = async_query_cb,
+	.query_ctx = &ctx1,
+    };
+    opoClient	c1 = opo_client_connect(&err, "127.0.0.1", 6364, &options);
+    options.query_ctx = &ctx2;
+    opoClient	c2 = opo_client_connect(&err, "127.0.0.1", 6364, &options);
+
+    ut_same_int(OPO_ERR_OK, err.code, "error connecting. %s", err.msg);
+
+    setup_records(c1);
+    
+    uint8_t	query[1024];
+    pthread_t	t1;
+    pthread_t	t2;
+
+    pthread_create(&t1, NULL, process_loop, c1);
+    pthread_create(&t2, NULL, process_loop, c2);
+    build_query(query, sizeof(query), 0, ctx1.ref);
+
+    int		iter = 100000;
+    double	dt = dtime() + 5.0; // used as timeout first
+    double	start = dtime();
+    
+    for (int i = iter; 0 < i; i--) {
+	//build_query(query, sizeof(query), 0, ref);
+	opo_client_query(&err, c1, query, NULL, NULL);
+	opo_client_query(&err, c2, query, NULL, NULL);
+	if (OPO_ERR_OK != err.code) {
+	    printf("*** error sending %s\n", err.msg);
+	}
+    }
+    // Wait for all to complete
+    while (0 < atomic_load(&ctx1.pending) && 0 < atomic_load(&ctx2.pending) && dtime() < dt) {
+	usleep(100);
+    }
+    dt = dtime() - start;
+    printf("--- query rate: %d in %0.3f secs  %d queries/sec\n", iter * 2, dt, (int)((double)(iter * 2) / dt));
+
+    pthread_join(t1, NULL);
+    pthread_join(t2, NULL);
+    opo_client_close(c1);
+    opo_client_close(c2);
+}
+
 typedef struct _Lat {
     int		cnt;
     int		max_rid;
@@ -417,7 +475,8 @@ void
 append_client_tests(utTest tests) {
     ut_appenda(tests, "opo.client.connect", connect_test, NULL);
     ut_appenda(tests, "opo.client.query", query_test, NULL);
-    ut_appenda(tests, "opo.client.dual.query", dual_query_test, NULL);
     ut_appenda(tests, "opo.client.async.query", async_query_test, NULL);
+    ut_appenda(tests, "opo.client.dual.query", dual_query_test, NULL);
+    ut_appenda(tests, "opo.client.dual.async", dual_async_test, NULL);
     ut_appenda(tests, "opo.client.latency", latency_test, NULL);
 }
