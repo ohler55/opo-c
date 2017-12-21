@@ -18,3 +18,5 @@ controlled by the caller with the opo_client_process() function. In the unit
 test a simple thread is created that continually processes responses but the
 call can be made one at a time for more control over response handling.
 
+Documentation on the API are at
+[http://opo.technology/doc/opo-c](http://opo.technology/doc/opo-c).
