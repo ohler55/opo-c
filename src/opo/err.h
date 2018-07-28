@@ -5,7 +5,7 @@
 
 #include <errno.h>
 
-#ifdef Linux
+#ifndef ELAST
 #define ELAST 160
 #endif
 
