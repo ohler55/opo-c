@@ -212,9 +212,9 @@ process_msg(opoClient client, opoMsg msg) {
 	}
 	while (q != client->on_deck) {
 	    if (NULL != client->on_deck->cb) {
-		uint8_t		lost_msg[1024];
+		uint8_t			lost_msg[1024];
 		struct _opoBuilder	b;
-		struct _opoErr	err = OPO_ERR_INIT;
+		struct _opoErr		err = OPO_ERR_INIT;
 	    
 		opo_builder_init(&err, &b, lost_msg, sizeof(lost_msg));
 		opo_builder_push_object(&err, &b, NULL, 0);
