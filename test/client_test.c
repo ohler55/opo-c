@@ -10,10 +10,14 @@
 
 #include "ut.h"
 
+//static const char	*opod_host = "127.0.0.1";
+static const char	*opod_host = "192.168.1.10";
+static int		opod_port = 6364;
+
 static void
 connect_test() {
     struct _opoErr	err = OPO_ERR_INIT;
-    opoClient		client = opo_client_connect(&err, "127.0.0.1", 6364, NULL);
+    opoClient		client = opo_client_connect(&err, opod_host, opod_port, NULL);
 
     ut_same_int(OPO_ERR_OK, err.code, "error connecting. %s", err.msg);
 
@@ -158,7 +162,7 @@ query_test() {
 	.pending_max = 1024,
 	.status_callback = status_callback,
     };
-    opoClient	client = opo_client_connect(&err, "127.0.0.1", 6364, &options);
+    opoClient	client = opo_client_connect(&err, opod_host, opod_port, &options);
 
     ut_same_int(OPO_ERR_OK, err.code, "error connecting. %s", err.msg);
 
@@ -238,7 +242,7 @@ async_query_test() {
 	.query_callback = async_query_cb,
 	.query_ctx = &ctx,
     };
-    opoClient	client = opo_client_connect(&err, "127.0.0.1", 6364, &options);
+    opoClient	client = opo_client_connect(&err, opod_host, opod_port, &options);
 
     ut_same_int(OPO_ERR_OK, err.code, "error connecting. %s", err.msg);
 
@@ -280,8 +284,8 @@ dual_query_test() {
 	.pending_max = 1024,
 	.status_callback = status_callback,
     };
-    opoClient	c1 = opo_client_connect(&err, "127.0.0.1", 6364, &options);
-    opoClient	c2 = opo_client_connect(&err, "127.0.0.1", 6364, &options);
+    opoClient	c1 = opo_client_connect(&err, opod_host, opod_port, &options);
+    opoClient	c2 = opo_client_connect(&err, opod_host, opod_port, &options);
 
     ut_same_int(OPO_ERR_OK, err.code, "error connecting. %s", err.msg);
 
@@ -349,9 +353,9 @@ dual_async_test() {
 	.query_callback = async_query_cb,
 	.query_ctx = &ctx1,
     };
-    opoClient	c1 = opo_client_connect(&err, "127.0.0.1", 6364, &options);
+    opoClient	c1 = opo_client_connect(&err, opod_host, opod_port, &options);
     options.query_ctx = &ctx2;
-    opoClient	c2 = opo_client_connect(&err, "127.0.0.1", 6364, &options);
+    opoClient	c2 = opo_client_connect(&err, opod_host, opod_port, &options);
 
     ut_same_int(OPO_ERR_OK, err.code, "error connecting. %s", err.msg);
 
@@ -418,7 +422,7 @@ latency_test() {
 	.pending_max = 10,
 	.status_callback = status_callback,
     };
-    opoClient	client = opo_client_connect(&err, "127.0.0.1", 6364, &options);
+    opoClient	client = opo_client_connect(&err, opod_host, opod_port, &options);
 
     ut_same_int(OPO_ERR_OK, err.code, "error connecting. %s", err.msg);
 
