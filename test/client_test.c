@@ -10,8 +10,10 @@
 
 #include "ut.h"
 
-//static const char	*opod_host = "127.0.0.1";
-static const char	*opod_host = "192.168.1.10";
+static const char	*opod_host = "127.0.0.1";
+//static const char	*opod_host = "192.168.1.10";
+//static const char	*opod_host = "192.168.1.11";
+
 static int		opod_port = 6364;
 
 static void
@@ -167,12 +169,14 @@ query_test() {
     ut_same_int(OPO_ERR_OK, err.code, "error connecting. %s", err.msg);
 
     uint64_t	ref = setup_records(client);
+
     uint8_t	query[1024];
     int		cnt = 0;
     pthread_t	thread;
 
     pthread_create(&thread, NULL, process_loop, client);
     build_query(query, sizeof(query), 0, ref);
+
     opo_client_query(&err, client, query, query_cb, &cnt);
 
     // Wait for processing thread to get started.
@@ -186,7 +190,7 @@ query_test() {
     int		iter = 100000;
     double	dt = dtime() + 5.0; // used as timeout first
     double	start = dtime();
-    
+
     for (int i = iter; 0 < i; i--) {
 	build_query(query, sizeof(query), 0, ref);
 	opo_client_query(&err, client, query, query_cb, &cnt);
@@ -256,7 +260,7 @@ async_query_test() {
     int		iter = 100000;
     double	dt = dtime() + 5.0; // used as timeout first
     double	start = dtime();
-    
+
     for (int i = iter; 0 < i; i--) {
 	build_query(query, sizeof(query), 0, ctx.ref);
 	opo_client_query(&err, client, query, NULL, NULL);
@@ -314,7 +318,7 @@ dual_query_test() {
     int		iter = 100000;
     double	dt = dtime() + 5.0; // used as timeout first
     double	start = dtime();
-    
+
     for (int i = iter; 0 < i; i--) {
 	//build_query(query, sizeof(query), 0, ref);
 	opo_client_query(&err, c1, query, query_cb, &cnt1);
@@ -360,7 +364,7 @@ dual_async_test() {
     ut_same_int(OPO_ERR_OK, err.code, "error connecting. %s", err.msg);
 
     setup_records(c1);
-    
+
     uint8_t	query[1024];
     pthread_t	t1;
     pthread_t	t2;
@@ -372,7 +376,7 @@ dual_async_test() {
     int		iter = 100000;
     double	dt = dtime() + 5.0; // used as timeout first
     double	start = dtime();
-    
+
     for (int i = iter; 0 < i; i--) {
 	//build_query(query, sizeof(query), 0, ref);
 	opo_client_query(&err, c1, query, NULL, NULL);
@@ -399,7 +403,7 @@ typedef struct _Lat {
     int		max_rid;
     double	*times;
 } *Lat;
-    
+
 static void
 latency_cb(opoRef ref, opoVal response, void *ctx) {
     Lat			lat = (Lat)ctx;
@@ -452,7 +456,7 @@ latency_test() {
     lat.cnt = 0;
 
     double	done = dtime() + 5.0;
-    
+
     for (int i = iter; 0 < i; i--) {
 	lat.times[i - 1] = dtime();
 	build_query(query, sizeof(query), i, ref);
@@ -464,7 +468,7 @@ latency_test() {
 	usleep(100);
     }
     double	sum = 0.0;
-    
+
     for (int i = iter; 0 < i; i--) {
 	sum += lat.times[i - 1];
 	//printf("*** %f usecs\n", lat.times[i - 1] * 1000000.0);
