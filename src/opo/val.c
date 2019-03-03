@@ -13,7 +13,7 @@ read_uint16(const uint8_t *b, uint16_t *nump) {
 
     num = (num << 8) | (uint16_t)*b++;
     *nump = num;
-    
+
     return b;
 }
 
@@ -26,7 +26,7 @@ read_uint32(const uint8_t *b, uint32_t *nump) {
 	num = (num << 8) | (uint32_t)*b;
     }
     *nump = num;
-    
+
     return b;
 }
 
@@ -39,7 +39,7 @@ read_uint64(const uint8_t *b, uint64_t *nump) {
 	num = (num << 8) | (uint64_t)*b;
     }
     *nump = num;
-    
+
     return b;
 }
 
@@ -91,7 +91,7 @@ opo_val_bsize(opoVal val) {
 	case VAL_OBJ:
 	case VAL_ARRAY: {
 	    uint32_t	num;
-	    
+
 	    read_uint32(val + 1, &num);
 	    size = (size_t)num + 5;
 	    break;
@@ -155,7 +155,7 @@ opo_val_size(opoVal val) {
 opoValType
 opo_val_type(opoVal val) {
     opoValType	type = OPO_VAL_NONE;
-    
+
     if (NULL != val) {
 	switch (*val) {
 	case VAL_NULL:	type = OPO_VAL_NULL;	break;
@@ -247,7 +247,7 @@ val_iterate(opoErr err, opoVal val, opoValCallbacks callbacks, void *ctx, opoVal
 	}
 	case VAL_STR2: {
 	    uint16_t	len;
-	    
+
 	    val = read_uint16(val, &len);
 	    if (NULL != callbacks->string) {
 		cont = callbacks->string(err, (const char*)val, (int)len, ctx);
@@ -257,7 +257,7 @@ val_iterate(opoErr err, opoVal val, opoValCallbacks callbacks, void *ctx, opoVal
 	}
 	case VAL_STR4: {
 	    uint32_t	len;
-	    
+
 	    val = read_uint32(val, &len);
 	    if (NULL != callbacks->string) {
 		cont = callbacks->string(err, (const char*)val, (int)len, ctx);
@@ -276,7 +276,7 @@ val_iterate(opoErr err, opoVal val, opoValCallbacks callbacks, void *ctx, opoVal
 	}
 	case VAL_KEY2: {
 	    uint16_t	len;
-	    
+
 	    val = read_uint16(val, &len);
 	    if (NULL != callbacks->key) {
 		cont = callbacks->key(err, (const char*)val, (int)len, ctx);
@@ -303,7 +303,7 @@ val_iterate(opoErr err, opoVal val, opoValCallbacks callbacks, void *ctx, opoVal
 	    if (NULL != callbacks->uuid || NULL != callbacks->uuid_str) {
 		uint64_t	hi;
 		uint64_t	lo;
-	    
+
 		val = read_uint64(val, &hi);
 		val = read_uint64(val, &lo);
 		if (NULL != callbacks->uuid) {
@@ -391,7 +391,7 @@ val_iterate(opoErr err, opoVal val, opoValCallbacks callbacks, void *ctx, opoVal
 	    break;
 	}
     }
-    
+
     return cont;
 }
 
@@ -405,21 +405,22 @@ opo_val_iterate(opoErr err, opoVal val, opoValCallbacks callbacks, void *ctx) {
 static const char*
 val_key(opoVal val, int *lenp) {
     const char	*key = NULL;
-    
+
     switch (*val++) {
     case VAL_KEY1:
 	*lenp = (int)*val++;;
 	key = (const char*)val;
 	break;
-    case VAL_STR2: {
+    case VAL_KEY2: {
 	uint16_t	len;
-	    
+
 	val = read_uint16(val, &len);
 	*lenp = (int)len;
 	key = (const char*)val;
 	break;
     }
     default:
+	*lenp = 0;
 	break;
     }
     return key;
@@ -433,7 +434,7 @@ opo_val_get(opoVal val, const char *path) {
     const char	*dot = path;
     uint32_t	size;
     opoVal	end;
-    
+
     for (; '.' != *dot && '\0' != *dot; dot++) {
     }
     switch (*val++) {
@@ -479,7 +480,7 @@ opo_val_get(opoVal val, const char *path) {
     }
     default:
 	break;
-    }	
+    }
     return NULL;
 }
 
@@ -508,7 +509,7 @@ opo_val_int(opoErr err, opoVal val) {
 	return 0;
     }
     int64_t	i = 0;
-    
+
     switch (*val++) {
     case VAL_INT1:
 	i = (int64_t)(int8_t)*val;
@@ -568,7 +569,7 @@ opo_val_string(opoErr err, opoVal val, int *lenp) {
 	return NULL;
     }
     const char	*str = NULL;
-    
+
     switch (*val++) {
     case VAL_STR1: {
 	uint8_t	len = *val++;
@@ -581,7 +582,7 @@ opo_val_string(opoErr err, opoVal val, int *lenp) {
     }
     case VAL_STR2: {
 	uint16_t	len;
-	    
+
 	val = read_uint16(val, &len);
 	if (NULL != lenp) {
 	    *lenp = (int)len;
@@ -591,7 +592,7 @@ opo_val_string(opoErr err, opoVal val, int *lenp) {
     }
     case VAL_STR4: {
 	uint32_t	len;
-	    
+
 	val = read_uint32(val, &len);
 	if (NULL != lenp) {
 	    *lenp = (int)len;
@@ -613,7 +614,7 @@ opo_val_key(opoErr err, opoVal val, int *lenp) {
 	return NULL;
     }
     const char	*key = NULL;
-    
+
     switch (*val++) {
     case VAL_KEY1:
 	if (NULL != lenp) {
@@ -624,7 +625,7 @@ opo_val_key(opoErr err, opoVal val, int *lenp) {
 	break;
     case VAL_STR2: {
 	uint16_t	len;
-	    
+
 	val = read_uint16(val, &len);
 	if (NULL != lenp) {
 	    *lenp = (int)len;
@@ -648,7 +649,7 @@ opo_val_uuid_str(opoErr err, opoVal val, char *str) {
     } else {
 	uint64_t	hi;
 	uint64_t	lo;
-	
+
 	val++;
 	val = read_uint64(val, &hi);
 	val = read_uint64(val, &lo);
@@ -678,7 +679,7 @@ opo_val_uuid(opoErr err, opoVal val, uint64_t *hip, uint64_t *lop) {
 int64_t
 opo_val_time(opoErr err, opoVal val) {
     uint64_t	t = 0;
-    
+
     if (NULL == val) {
 	opo_err_set(err, OPO_ERR_TYPE, "NULL is not a time value");
     } else if (VAL_TIME != *val) {
@@ -693,7 +694,7 @@ opo_val_time(opoErr err, opoVal val) {
 opoVal
 opo_val_members(opoErr err, opoVal val) {
     opoVal	members = NULL;
-    
+
     if (NULL == val) {
 	opo_err_set(err, OPO_ERR_TYPE, "NULL is not a object or array value");
     } else if (VAL_OBJ != *val && VAL_ARRAY != *val) {
@@ -752,7 +753,7 @@ opo_msg_bsize(opoMsg msg) {
 uint64_t
 opo_msg_id(opoMsg msg) {
     uint64_t	id;
-    
+
     read_uint64(msg, &id);
 
     return id;
